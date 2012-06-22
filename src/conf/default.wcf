@@ -1,0 +1,471 @@
+
+
+# 
+# Dynamic Shared Object (DSO) Support
+#
+# To be able to use the functionality of a module which was built as a DSO you
+# have to place corresponding `LoadModule' lines at this location so the
+# directives contained in it are actually available _before_ they are used.
+# Statically compiled modules (those listed by `httpd -l') do not need
+# to be loaded here.
+#
+# Example:
+# LoadModule foo_module modules/mod_foo.so
+#
+LoadModule access_module modules/mod_access.so
+#LoadModule actions_module modules/mod_actions.so
+#LoadModule alias_module modules/mod_alias.so
+#LoadModule asis_module modules/mod_asis.so
+#LoadModule auth_module modules/mod_auth.so
+#LoadModule auth_anon_module modules/mod_auth_anon.so
+#LoadModule auth_dbm_module modules/mod_auth_dbm.so
+#LoadModule auth_digest_module modules/mod_auth_digest.so
+#LoadModule autoindex_module modules/mod_autoindex.so
+#LoadModule cern_meta_module modules/mod_cern_meta.so
+#LoadModule cgi_module modules/mod_cgi.so
+#LoadModule dav_module modules/mod_dav.so
+#LoadModule dav_fs_module modules/mod_dav_fs.so
+#LoadModule dir_module modules/mod_dir.so
+#LoadModule env_module modules/mod_env.so
+#LoadModule expires_module modules/mod_expires.so
+#LoadModule file_cache_module modules/mod_file_cache.so
+#LoadModule headers_module modules/mod_headers.so
+#LoadModule imap_module modules/mod_imap.so
+#LoadModule include_module modules/mod_include.so
+#LoadModule info_module modules/mod_info.so
+#LoadModule isapi_module modules/mod_isapi.so
+#LoadModule log_config_module modules/mod_log_config.so
+LoadModule mime_module modules/mod_mime.so
+#LoadModule mime_magic_module modules/mod_mime_magic.so
+#LoadModule proxy_module modules/mod_proxy.so
+#LoadModule proxy_connect_module modules/mod_proxy_connect.so
+#LoadModule proxy_http_module modules/mod_proxy_http.so
+#LoadModule proxy_ftp_module modules/mod_proxy_ftp.so
+#LoadModule negotiation_module modules/mod_negotiation.so
+#LoadModule rewrite_module modules/mod_rewrite.so
+#LoadModule setenvif_module modules/mod_setenvif.so
+#LoadModule speling_module modules/mod_speling.so
+#LoadModule status_module modules/mod_status.so
+#LoadModule unique_id_module modules/mod_unique_id.so
+#LoadModule userdir_module modules/mod_userdir.so
+#LoadModule usertrack_module modules/mod_usertrack.so
+#LoadModule vhost_alias_module modules/mod_vhost_alias.so
+#LoadModule ssl_module modules/mod_ssl.so
+LoadModule php5_module modules/php5apache2.dll
+
+PHPINIDir "./conf"
+#
+# DocumentRoot: The directory out of which you will serve your
+# documents. By default, all requests are taken from this directory, but
+# symbolic links and aliases may be used to point to other locations.
+#
+DocumentRoot "../htdocs"
+
+AddType application/x-httpd-php .php
+
+#
+# DefaultIconPath: The path to the icon used when a window a 
+#
+DefaultIconPath "../icons/wepromotethis.ico"
+
+#
+# ServerName: the name of the internal server. Wapache uses this name
+# to determine whether a URL should be processed internally. It can be
+# any legal DNS name. The default is localhost
+#
+ServerName wapache
+
+#
+# RegistryRoot: Where environment variables and cookies are stored
+#
+RegistryRoot "HKEY_CURRENT_USER\Software\Apache Group\Wapache"
+
+#
+# ExternalObject: Whether the window.external object should be 
+# available in the browser scripting environment
+#
+ExternalObject On
+
+#
+# InitialUrl: The URL to open when the program starts. It is possible
+# to have more than one. The opener of first one must be _app. The
+# domain name must match the one specified by ServerName. Otherwise
+# Wapache opens the URL in an external browser
+#
+#InitialUrl _app http://wapache/index.php main
+
+# open the toolbox window
+InitialUrl _app http://wapache/index.php main
+InitialUrl main http://wapache/WePromoteThis.php wepromotethis
+#InitialUrl _app http://wapache/WePromoteThis.php wepromotethis
+
+
+#
+#
+#
+<StandardWindow Main>
+	HorizontalAlign Center
+	VerticalAlign Middle
+	Height 220px
+	Width 450px
+	3DBorder Off     
+	IconPath "../icons/wepromotethis.ico" 
+</StandardWindow>
+
+<StandardWindow wepromotethis>
+	HorizontalAlign Center
+	VerticalAlign Middle
+	Height 200px
+	Width 400px
+	3DBorder Off     
+	IconPath "../icons/wepromotethis.ico" 
+</StandardWindow>
+
+
+<StandardWindow demo_std>
+	Left 1in
+	Top 2in
+	Width 6in
+	Height 4in
+</StandardWindow>
+
+<ToolWindow demo_tool>
+	VerticalAlign Top
+	HorizontalAlign Right
+	Left 10%
+	Top 10px
+	Width 30%
+	Height 50%
+	3DBorder Off     
+</ToolWindow>
+
+<DialogBox demo_dlg>
+	Width 450px
+	Height 330px 
+	3DBorder Off     
+	ScrollBar Off
+	Modal On
+	HelpButton On
+</DialogBox>
+
+<StandardWindow demo_with_3dborder>
+	Left 1in
+	Top 2in
+	Width 4in
+	Height 3in
+	3DBorder On
+</StandardWindow>
+
+<StandardWindow demo_without_3dborder>
+	Left 1in
+	Top 4in
+	Width 4in
+	Height 3in
+	3DBorder Off
+</StandardWindow>
+
+<StandardWindow demo_with_flatscollbar>
+	Left 1in
+	Top 2in
+	Width 4in
+	Height 3in
+	FlatScrollbar On
+</StandardWindow>
+
+<StandardWindow demo_without_flatscollbar>
+	Left 1in
+	Top 4in
+	Width 4in
+	Height 3in
+	FlatScrollbar Off
+</StandardWindow>
+
+<StandardWindow demo_with_innerborder>
+	Left 1in
+	Top 2in
+	Width 4in
+	Height 3in
+	InnerBorder On
+</StandardWindow>
+
+<StandardWindow demo_without_innerborder>
+	Left 1in
+	Top 4in
+	Width 4in
+	Height 3in
+	InnerBorder Off
+</StandardWindow>
+
+<StandardWindow demo_without_minmax>
+	Left 1in
+	Top 4in
+	Width 4in
+	Height 3in
+	MinimizeButton Off
+	MaximizeButton Off
+</StandardWindow>
+
+<StandardWindow demo_without_resize>
+	Left 1in
+	Top 4in
+	Width 4in
+	Height 3in
+	Resizeable Off
+	MaximizeButton Off
+</StandardWindow>
+
+<StandardWindow demo_fullscreen>
+	Fullscreen On
+	Scrollbar Off
+	3DBorder Off
+</StandardWindow>
+
+<StandardWindow demo_frameless>
+	Left 1in
+	Top 2in
+	Width 349px
+	Height 400px
+	Frameless On
+	Scrollbar Off
+	RoundedCorners 30px
+</StandardWindow>
+
+<StandardWindow demo_lefttop>
+	VerticalAlign Top
+	HorizontalAlign Left
+	Width 30%
+	Height 30%
+	Top 10px
+	Left 10px
+</StandardWindow>
+
+<StandardWindow demo_leftmiddle>
+	VerticalAlign Middle
+	HorizontalAlign Left
+	Width 30%
+	Height 30%
+	Left 10px
+</StandardWindow>
+
+<StandardWindow demo_leftbottom>
+	VerticalAlign Bottom
+	HorizontalAlign Left
+	Width 30%
+	Height 30%
+	Bottom 0px
+	Left 10px
+</StandardWindow>
+
+<StandardWindow demo_righttop>
+	VerticalAlign Top
+	HorizontalAlign Right
+	Width 30%
+	Height 30%
+	Right 0
+	Top 1in
+</StandardWindow>
+
+<StandardWindow demo_rightmiddle>
+	VerticalAlign Middle
+	HorizontalAlign Right
+	Width 30%
+	Height 30%
+	Right 0
+</StandardWindow>
+
+<StandardWindow demo_rightbottom>
+	VerticalAlign Bottom
+	HorizontalAlign Right
+	Width 30%
+	Height 30%
+	Right 0
+	Bottom 0
+</StandardWindow>
+
+<StandardWindow demo_center>
+	VerticalAlign Middle
+	HorizontalAlign Center
+	Width 30%
+	Height 30%
+</StandardWindow>
+
+<ToolWindow demo_lefttop_tw>
+	VerticalAlign Top
+	HorizontalAlign Left
+	Width 55%
+	Height 1in
+	Bottom 0px
+	Left 0px
+</ToolWindow>
+
+<ToolWindow demo_leftmiddle_tw>
+	VerticalAlign Middle
+	HorizontalAlign Left
+	Width 2in
+	Height 3in
+	Right 0px
+</ToolWindow>
+
+<ToolWindow demo_leftbottom_tw>
+	VerticalAlign Bottom
+	HorizontalAlign Left
+	Width 55%
+	Height 1in
+	Top 20px
+	Left 0px
+</ToolWindow>
+
+<ToolWindow demo_righttop_tw>
+	VerticalAlign Top
+	HorizontalAlign Right
+	Width 55%
+	Height 1in
+	Right 0
+	Bottom 0
+</ToolWindow>
+
+<ToolWindow demo_rightmiddle_tw>
+	VerticalAlign Middle
+	HorizontalAlign Right
+	Width 2in
+	Height 3in
+	Left 20px	
+</ToolWindow>
+
+<ToolWindow demo_rightbottom_tw>
+	VerticalAlign Bottom
+	HorizontalAlign Right
+	Width 55%
+	Height 1in
+	Right 0
+	Bottom -10px
+</ToolWindow>
+
+<ToolWindow demo_center_tw>
+	VerticalAlign Middle
+	HorizontalAlign Center
+	Width 40%
+	Height 20%
+</ToolWindow>
+
+<StandardWindow demo_dropdown>
+	VerticalAlign Bottom
+	HorizontalAlign Middle
+	Width 50%
+	Height 50%
+	Bottom 32px
+	DropDownMenu dropdown
+</StandardWindow>
+
+<Menu dropdown>
+	SubMenu "&Basic" basic_menu
+	SubMenu "&DOM" dom_menu
+	SubMenu "&Script" script_menu
+	SubMenu "&URL" url_menu
+</Menu>
+
+<Menu basic_menu>
+	BasicMenuItem "&Copy" _this IDM_COPY
+	BasicMenuItem "Select &All" _this IDM_SELECTALL
+	BasicMenuItem "&Print" _this IDM_PRINT
+	BasicMenuItem "Close" _this IDM_CLOSE
+</Menu>
+
+<Menu dom_menu>
+	DOMMenuItem "&English" _this span_id innerHTML "I can eat glass, it doesn't hurt me"
+	DOMMenuItem "&Polish" _this span_id innerHTML "Moge jesc szklo, nie boli mnie to"
+	DOMMenuItem "&Swedish" _this span_id innerHTML "Jag kan äta glas, det gör inte ont"
+</Menu>
+
+<Menu script_menu>
+	ScriptMenuItem "&Alert" _this alert "Hello?"  
+	ScriptMenuItem "&Opener Alert" _opener alert "Hello?"  
+</Menu>
+
+<Menu url_menu>
+	UrlMenuItem "&Internal" _this "http://wapache/test.html"
+	UrlMenuItem "&External" _this "http://www.google.com"
+	UrlMenuItem "&Original" _this "http://wapache/menu_dropdown.html"
+</Menu>
+
+<StandardWindow demo_context>
+	VerticalAlign Bottom
+	HorizontalAlign Middle
+	Width 50%
+	Height 50%
+	Bottom 32px
+	AnchorContextMenu a_menu
+	ImageContextMenu img_menu
+	DefaultContextMenu def_menu
+	TextSelectionContextMenu sel_menu
+	ControlContextMenu ctl_menu
+</StandardWindow>
+
+<Menu a_menu>
+	ScriptMenuItem "Anchor menu" _this alert "Anchor menu"
+</Menu>
+
+<Menu img_menu>
+	ScriptMenuItem "Image menu" _this alert "Image menu"
+</Menu>
+
+<Menu def_menu>
+	ScriptMenuItem "Default menu" _this alert "Default menu"
+</Menu>
+
+<Menu sel_menu>
+	ScriptMenuItem "Selection menu" _this alert "Selection menu"
+</Menu>
+
+<Menu ctl_menu>
+	ScriptMenuItem "Control menu" _this alert "Control menu"
+</Menu>
+
+<SystemTrayIcon icon>
+	AutoExit On
+	RightClickMenu systray
+	LeftClickMenu systray 2
+	DoubleClickMenu systray 3
+	IconPath "../icons/wepromotethis.ico"
+	ToolTip "WePromoteThis.com App"
+</SystemTrayIcon>
+
+<Menu systray>
+	UrlMenuItem "Main" _app "http://wapache/index.php" Main
+	BasicMenuItem "Show" Main IDM_FOCUS
+	ScriptMenuItem "Alert" Main alert "From System Tray"
+	MenuSeparator
+	BasicMenuItem "Exit" _app IDM_EXIT
+</Menu>
+
+<StandardWindow PHP5Info>
+	HorizontalAlign Center
+	VerticalAlign Middle
+	Height 80%
+	Width 80%
+	IconPath "../icons/wepromotethis.ico"
+	DropDownMenu php5info_top
+</StandardWindow>
+
+<Menu php5info_top>
+	SubMenu "&Modules" modules
+</Menu>
+
+<Menu modules>
+	UrlMenuItem "CPDF" _this "http://wapache/info.php#module_cpdf"
+	UrlMenuItem "CURL" _this "http://wapache/info.php#module_curl"
+	UrlMenuItem "DOM" _this "http://wapache/info.php#module_dom"
+	UrlMenuItem "FTP" _this "http://wapache/info.php#module_ftp"
+	UrlMenuItem "GD" _this "http://wapache/info.php#module_gd"
+	UrlMenuItem "Iconv" _this "http://wapache/info.php#module_iconv"
+	UrlMenuItem "XML" _this "http://wapache/info.php#module_libxml"
+	UrlMenuItem "Mcrypt" _this "http://wapache/info.php#module_mcrypt"
+	UrlMenuItem "Mhash" _this "http://wapache/info.php#module_mhash"
+	UrlMenuItem "MySQL" _this "http://wapache/info.php#module_mysql"
+	UrlMenuItem "ODBC" _this "http://wapache/info.php#module_odbc"
+	UrlMenuItem "SimpleXML" _this "http://wapache/info.php#module_SimpleXML"
+	UrlMenuItem "Sockets" _this "http://wapache/info.php#module_sockets"
+	UrlMenuItem "SQLite" _this "http://wapache/info.php#module_SQLite"
+	UrlMenuItem "XML" _this "http://wapache/info.php#module_xml"
+	UrlMenuItem "XSL" _this "http://wapache/info.php#module_xsl"
+</Menu>
