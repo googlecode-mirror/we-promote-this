@@ -1,0 +1,159 @@
+<movie service="craftsman-1.0">
+	<body>
+		<stack>
+			<effect type="none">
+				<image
+					filename="http://assets.stupeflix.com/code/homevideo/images/wiki_Double-O-Arch_Arches_National_Park_2.jpg" />
+			</effect>
+			<text type="zone" vector="true" fontcolor="#ff0000" fontsize="20"
+				weight="bold" stretch="condensed" face="times" align="center,center">
+				Product Title Goes Here
+				<animator type="slide-out" direction="up" margin-end="10.0"
+					duration="1.5" />
+				<filter type="distancemap" distanceWidth="40.0" />
+				<filter type="distancecolor" distanceWidth="40.0" color="#ff0000"
+					strokeColor="#ffffff" strokeOpacity="1.0" strokeWidth="0.02"
+					innerShadowColor="#ff3333" innerShadowOpacity="1.0"
+					innerShadowPosition="0.01,-0.01" dropShadowColor="#000000"
+					dropShadowOpacity="1.0" dropShadowBlurWidth="0.9"
+					dropShadowPosition="0.01,-0.01">
+				</filter>
+				<animator type="custom">
+					<key time="0.0" pos="0,.85,0" />
+				</animator>
+			</text>
+			<overlay width="1" bottom="0.0" height="0.20">
+				<effect type="none">
+					<image color="#ffffff" />
+					<filter type="alpha" margin-end="10.0" alphaStart="1.0"
+						alphaEnd="0.0" duration="1.5" />
+				</effect>
+			</overlay>
+			<text type="zone" vector="true" fontsize="16" stretch="condensed"
+				face="times" align="center,center">
+				Find Out More Now:
+				<animator type="slide-out" direction="up" margin-end="0.0"
+					duration="11.0" />
+				<filter type="distancemap" distanceWidth="40.0" />
+				<filter type="distancecolor" distanceWidth="40.0" color="#000000"
+					strokeColor="#ffffff" strokeOpacity="1.0" strokeWidth="0.02"
+					dropShadowColor="#000000" dropShadowOpacity="1.0"
+					dropShadowBlurWidth="0.9" dropShadowPosition="0.01,-0.01">
+				</filter>
+				<animator type="custom">
+					<key time="0.0" pos="0,-0.70,0" />
+				</animator>
+			</text>
+			<text type="zone" vector="true" fontsize="20" weight="bold"
+				stretch="condensed" face="times" align="center,center">
+				http://ChrisQueen.com/CB/FATPRIVATE
+				<animator type="slide-out" direction="up" margin-end="0.0"
+					duration="11.0" />
+				<animator type="grow" growStart="0.0" growEnd="0.2"
+					margin-end="11.0" duration="2.0" />
+				<filter type="distancemap" distanceWidth="40.0" />
+				<filter type="distancecolor" distanceWidth="40.0" color="#0000ff"
+					strokeColor="#ffffff" strokeOpacity="1.0" strokeWidth="0.01"
+					dropShadowColor="#000000" dropShadowOpacity="1.0"
+					dropShadowBlurWidth="1" dropShadowPosition="0.01,-0.01">
+				</filter>
+				<animator type="custom">
+					<key time="0.0" pos="0,-0.86,0" />
+				</animator>
+			</text>
+			<audio
+				filename="http://assets.stupeflix.com/code/tutorials/audio/soundtracks/Flypaper.mp3"
+				duration=".." fadeout="2" volume="0.25" />
+			<sequence>
+				<stack>
+					<text type="advanced" fontsize="14" weight="bold" style="italic"
+						reference="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&#10;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&#10;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&#10;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&#10;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&#10;"
+						stretch="condensed" face="times">
+						This will be the product description. The words should wrap and
+						use the full width when there are
+						no pictures involved. Maybe there should be a limit on how many
+						lines are displayed at one time.
+						<!-- Make the text appear in 1 second, sliding from the left -->
+						<animator type="slide-in" direction="left" duration="3.0" />
+						<!-- Make the text disappear in 1 second, sliding from the left -->
+						<animator type="slide-out" direction="left" margin-end="0.0"
+							duration="1.0" />
+						<!-- Make the text slowly move to improve attractiveness -->
+						<animator type="slide" direction="left" duration=".." />
+						<!-- Text will appear in 1.5s from totally transparent, to totally 
+							opaque (in addition to the slide-in effect) -->
+						<filter type="alpha" alphaStart="0.0" alphaEnd="1.0"
+							duration="3.0" />
+						<!-- Text will disappear in 1.5s from totally opaque, to totally transparent 
+							(in addition to the slide-out effect) -->
+						<!-- Note the margin-end that will fix the effect to the end of text 
+							effect. (just like a CSS property, but for time) -->
+						<filter type="alpha" margin-end="0.0" alphaStart="1.0"
+							alphaEnd="0.0" duration="1.5" />
+					</text>
+					<animator type="custom">
+						<key time="0.0" pos="-1.4,0.3,0" />
+					</animator>
+					<audio voice="neospeech:julie" margin-start="3.0">This will be the
+						product description. The words should wrap and use the full width
+						when there are
+						no pictures involved. Maybe there should be a limit on how many
+						lines are displayed at one time.
+         </audio>
+				</stack>
+				<stack>
+					<text type="advanced" fontsize="14" weight="bold" style="italic"
+						reference="AAAAAAAAAAAAAAA&#10;AAAAAAAAAAAAAAA&#10;AAAAAAAAAAAAAAA&#10;AAAAAAAAAAAAAAA&#10;AAAAAAAAAAAAAAA&#10;"
+						stretch="condensed" face="times">
+						This is the end of the text. The text should stay to one side.
+						That way the picture can be displayed on the
+						other side. Good bye.
+						<!-- Make the text appear in 1 second, sliding from the left -->
+						<animator type="slide-in" direction="left" duration="1.0" />
+						<!-- Make the text disappear in 1 second, sliding from the left -->
+						<animator type="slide" direction="left" duration=".." />
+						<!-- Text will appear in 1.5s from totally transparent, to totally 
+							opaque (in addition to the slide-in effect) -->
+						<filter type="alpha" alphaStart="0.0" alphaEnd="1.0"
+							duration="1.5" />
+						<!-- Text will disappear in 1.5s from totally opaque, to totally transparent 
+							(in addition to the slide-out effect) -->
+						<!-- Note the margin-end that will fix the effect to the end of text 
+							effect. (just like a CSS property, but for time) -->
+						<filter type="alpha" margin-end="10.0" alphaStart="1.0"
+							alphaEnd="0.0" duration="1.5" />
+					</text>
+					<animator type="custom">
+						<key time="0.0" pos="-1.4,0.5,0" />
+					</animator>
+					<overlay width="0.4" height="0.4" right="-0.3" top="0.50">
+						<effect type="none">
+							<image
+								filename="http://www.newshawker.com/wp-content/uploads/2011/03/Powerball-Numbers.jpg" />
+							<!-- Make the text appear in 1 second, sliding from the left -->
+							<animator type="slide-in" direction="up" duration="2.0" />
+							<!-- Make the text disappear in 1 second, sliding from the left -->
+							<animator type="slide-out" direction="down" margin-end="0.0"
+								duration="1.0" />
+							<!-- Text will appear in 1.5s from totally transparent, to totally 
+								opaque (in addition to the slide-in effect) -->
+							<filter type="alpha" alphaStart="0.0" alphaEnd="1.0"
+								duration="1.5" />
+							<!-- Text will disappear in 1.5s from totally opaque, to totally transparent 
+								(in addition to the slide-out effect) -->
+							<!-- Note the margin-end that will fix the effect to the end of text 
+								effect. (just like a CSS property, but for time) -->
+							<filter type="alpha" margin-end="10.0" alphaStart="1.0"
+								alphaEnd="0.0" duration="1.5" />
+						</effect>
+					</overlay>
+					<audio voice="neospeech:julie" margin-end="10.0">This is the end of
+						the text. The text should stay to one side. That way the picture
+						can be displayed on the
+						other side. Good bye.
+         </audio>
+				</stack>
+			</sequence>
+		</stack>
+	</body>
+</movie>

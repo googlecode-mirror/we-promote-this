@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ConfigurationConstants>
+	<mysqlServerIP>cbank11v2.db.6934650.hostedresource.com</mysqlServerIP>
+	<mysqlServerIP2>50.63.244.101</mysqlServerIP2>
+	<dbname>cbank11v2</dbname>
+	<dbuser>cbank11v2</dbuser>
+	<dbpassword>Cbtedb11</dbpassword>
+	<wpip>chr1216808373562.db.6934650.hostedresource.com</wpip>
+	<wpdbname>chr1216808373562</wpdbname>
+	<wpdbuser>chr1216808373562</wpdbuser>
+	<wpdbpassword>Wordpress11</wpdbpassword>
+	<emailhost>smtp.gmail.com</emailhost>
+	<emailport>25</emailport>
+	<emailauth>1</emailauth>
+	<emailusername>admin@chrisqueen.com</emailusername>
+	<emailpassword>Neeuq011$</emailpassword>
+	<emaildisplayname>Chris Queen</emaildisplayname>
+	<emaildailylimit>20</emaildailylimit>
+	<googletranslateapi>AIzaSyCzYBOlWIFTaVnHvFUA4XJD0-FI1V2jqIg</googletranslateapi>
+	<googleimagesearchapi>ABQIAAAAvWWi240hv5JdVZU6YdgO5xRYbrDOPQBOzWWwyHg3l-YWvBzgrBQVIjpNdNUM4MUPHCCL--fsKsGJVg</googleimagesearchapi>
+	<clickbankid>cq2smooth</clickbankid>
+	<linksmax>5</linksmax>
+	<RemoteHostRSSFeed>http://www.WePromoteThis.com/feeds/</RemoteHostRSSFeed>
+	<RemoteHost>wepromotethis.com/</RemoteHost>
+	<RemoteServer>ftp://chrisqueen11:Neeuq011!@chrisqueen.com/</RemoteServer>
+	<RemoteHostRootFolder>ClickBank-Traffic-Explosion/</RemoteHostRootFolder>
+	<RemoteServerVideoLocation>WPT/Video/WPTCreatedVideos/</RemoteServerVideoLocation>
+	<LocalServer>localhost</LocalServer>
+	<LocalServerVideoLocation>F:/WePromoteThis/src/WPT/Video/CBCreatedVideos/</LocalServerVideoLocation>
+	<SpinnerServer>http://api.spinnerchief.com:443/</SpinnerServer>
+	<SpinnerUser>cbank11</SpinnerUser>
+	<SpinnerPassword>Cbtedb11</SpinnerPassword>
+	<SpinnerAPI>b8ed07f9276342e7b</SpinnerAPI>
+	<LogLocation>WPT/Logs/</LogLocation>
+	<ArticleAuthor>Christopher D. Queen</ArticleAuthor>
+	<decaptchauser>frostbyte07</decaptchauser>
+	<decaptchapass>Neeuq011$</decaptchapass>
+	<stupeflixAccessKey>LpqLdqkJbCmz6UqM92BZ</stupeflixAccessKey>
+	<stupeflixSecretKey>xcnLiR257pDNITB1AGFWOnEp3bLTq791f3MTfL1B</stupeflixSecretKey>
+	<stupeflixHost>http://services.stupeflix.com/</stupeflixHost>
+	<dpaduser>cbank11</dpaduser>
+	<dpadpassword>Cbtedb11v2</dpadpassword>
+</ConfigurationConstants>
