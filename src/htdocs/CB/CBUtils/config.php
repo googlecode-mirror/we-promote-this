@@ -1,5 +1,5 @@
 <?php
-
+// These are constants that should be hidden from the end users (located on their computer)
 define("mysqlServerIP","cbank11v2.db.6934650.hostedresource.com");
 define("mysqlServerIP2","50.63.244.101");
 define("dbname","cbank11v2");
