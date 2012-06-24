@@ -4,6 +4,11 @@ require_once ("CB/WPTVideoCreator.php");
 
 class WePromoteThis extends CBAbstract {
 	
+	function __construct() {
+		$this->checkForUpdates ();
+		parent::__construct ();
+	}
+	
 	function constructClass() {
 		// put in start time
 		
@@ -28,6 +33,47 @@ class WePromoteThis extends CBAbstract {
 			$this->killP ( "WePromoteThis.exe" );
 		}
 		exit ( 0 );
+	}
+	
+	function checkForUpdates() {
+		$updateUrl = "http://we-promote-this.googlecode.com/files/latestver.txt";
+		$fileContents = file_get_contents ( $updateUrl );
+		$fileArray = explode ( ',', $fileContents );
+		$version = $fileArray [0];
+		if(){
+			
+		}
+	
+	}
+	
+	function getNewConfigFiles(){
+		
+	}
+	
+	function versionCompare($mine, $theirs) {
+		// break into arrays, start comparing from first entry
+		$mineArray = explode ( '.', $mine );
+		$theirArray = explode ( '.', $theirs );
+		$mVersion = 0;
+		$tVersion = 0;
+		if (count ( $mineArray ) > 0) {
+			$mVersion = ( int ) array_shift ( $mineArray );
+		}
+		if (count ( $theirArray ) > 0) {
+			$tVersion = ( int ) array_shift ( $theirArray );
+		}
+		if ($mVersion == $tVersion) {
+			if (count ( $theirArray ) > 0 || count ( $mineArray ) > 0) {
+				return $this->versionCompare ( implode ( '.', $mineArray ), implode ( '.', $theirArray ) );
+			} else {
+				return 0;
+			}
+		} else if ($mVersion > $tVersion) {
+			return 1;
+		} else {
+			return - 1;
+		}
+	
 	}
 	
 	function getVideoToCreate() {

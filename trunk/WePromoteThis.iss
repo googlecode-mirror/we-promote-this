@@ -269,7 +269,7 @@ begin
         checkedSuccessfully:=false;
         GetVersionNumbersString(expandconstant('{srcexe}'), ourVersion);
 
-        if itd_downloadfile('http://we-promote-this.googlecode.com/files/latestver.txt',expandconstant('{tmp}\latestver.txt'))=ITDERR_SUCCESS then begin
+        if itd_downloadfile('http://we-promote-this.googlecode.com/svn/trunk/google-code-downloads/latestver.txt',expandconstant('{tmp}\latestver.txt'))=ITDERR_SUCCESS then begin
           { Now read the version from that file and see if it is newer.
             The file has a really simple format:
 
