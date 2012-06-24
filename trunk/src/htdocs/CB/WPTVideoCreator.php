@@ -34,11 +34,11 @@ class WPTVideoCreator extends CBAbstract {
 		$row = mysql_fetch_assoc ( $result );
 		$title = $row ['title'];
 		$description = $row ['description'];
-		$staus = "Nothing  Done";
+		$status = "Nothing  Done";
 		if ($title === false || $description === false || empty ( $title ) || empty ( $description )) {
 			$this->getLogger ()->log ( "Title or description is empty for pid: $pid - Or they are not english.", PEAR_LOG_WARNING );
 			echo ("Cant create video for $pid. No Title or no description");
-			$staus = "Cant Create video fro $pid: No Title or no description";
+			$status = "Cant Create video fro $pid: No Title or no description";
 		} else {
 			$link = PROMOLINK . $pid;
 			$mp3 = $this->getRandomAudio ();

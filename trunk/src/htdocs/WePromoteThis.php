@@ -4,56 +4,69 @@ require_once ("CB/WPTVideoCreator.php");
 
 class WePromoteThis extends CBAbstract {
 	
-	function __construct() {
-		$this->checkForUpdates ();
-		parent::__construct ();
-	}
-	
 	function constructClass() {
-		// put in start time
-		
-
-		// Call DB and figure out a video to create
-		$pid = trim ( $this->getVideoToCreate () );
-		echo ("Creating video for $pid at " . date ( "m-d-y h:i:s A" ) . "<br>");
-		$WPTVC = new WPTVideoCreator ( );
-		$status = $WPTVC->createVideoFor ( $pid );
-		//echo("Finished Creating video for $pid at " . date("m-d-y h:i:s A") . "<br>");
-		
-
-		// find end time diff
-		// if longer than an hour kill process wepromotethi.exe and tvcc.exe
-		
-
-		if (stripos ( $status, 'successful' ) !== false) {
-			echo ("Another video will be created in 5 secs.<br>");
-			$this->refreshCurrentWindow ();
+		//Check for updates first
+		$updated = $this->checkForUpdates ();
+		if ($updated) {
+			echo ("Your software has been updated and will need to be restarted.");
 		} else {
-			$this->killP ( "TVCC.exe" );
-			$this->killP ( "WePromoteThis.exe" );
+			// Call DB and figure out a video to create
+			$pid = trim ( $this->getVideoToCreate () );
+			echo ("Creating video for $pid at " . date ( "m-d-y h:i:s A" ) . "<br>");
+			$WPTVC = new WPTVideoCreator ( );
+			$status = $WPTVC->createVideoFor ( $pid );
+			//echo("Finished Creating video for $pid at " . date("m-d-y h:i:s A") . "<br>");
+			
+
+			// find end time diff
+			// if longer than an hour kill process wepromotethi.exe and tvcc.exe
+			
+
+			if (stripos ( $status, 'successful' ) !== false) {
+				echo ("Another video will be created in 5 secs.<br>");
+				$this->refreshCurrentWindow ();
+			} else {
+				$this->killP ( "TVCC.exe" );
+				$this->killP ( "WePromoteThis.exe" );
+			}
 		}
 		exit ( 0 );
 	}
 	
 	function checkForUpdates() {
-		$updateUrl = "http://we-promote-this.googlecode.com/files/latestver.txt";
-		$fileContents = file_get_contents ( $updateUrl );
+		$updated = false;
+		$fileContents = file_get_contents ( ONLINE_LASTEST_VERSION_LOCATION );
 		$fileArray = explode ( ',', $fileContents );
 		$version = $fileArray [0];
-		if(){
-			
+		echo ("Version from online: $version<br>");
+		echo ("My Version : " . VERSION_NUMBER . "<br>");
+		$compareResults = $this->versionCompare ( VERSION_NUMBER, $version );
+		echo ("Compare results: $compareResults<br>");
+		if ($compareResults < 0) {
+			$this->getNewConfigFiles ();
+			$updated = true;
 		}
-	
+		return $updated;
 	}
 	
-	function getNewConfigFiles(){
-		
+	function getNewConfigFiles() {
+		$configFile = dirname ( __FILE__ ) . "/CB/CBUtils/configuration.xml";
+		$newFileContents = file_get_contents ( ONLINE_CONFIG_FILE_LOCATION );
+		file_put_contents ( $configFile, $newFileContents );
 	}
 	
 	function versionCompare($mine, $theirs) {
 		// break into arrays, start comparing from first entry
 		$mineArray = explode ( '.', $mine );
 		$theirArray = explode ( '.', $theirs );
+		// Make both arrays same length
+		while ( count ( $theirArray ) < count ( $mineArray ) ) {
+			$theirArray [] = 0;
+		}
+		while ( count ( $mineArray ) < count ( $theirArray ) ) {
+			$mineArray [] = 0;
+		}
+		
 		$mVersion = 0;
 		$tVersion = 0;
 		if (count ( $mineArray ) > 0) {
