@@ -26,29 +26,6 @@ function json_encode_fake($array) {
 	}
 }
 
-// Upload the file to the server
-function uploadFile($file, $pid) {
-	$url = "http://WePromoteThis.com/WePromoteThis/WPT/WPTVideoUploader.php";
-	$encrypted_file_array = encrypt ( json_encode_fake ( array ("file" => urlencode ( basename ( $file ) ), "pid" => $pid ) ) );
-	
-	$ch = curl_init ();
-	curl_setopt ( $ch, CURLOPT_HEADER, 0 );
-	curl_setopt ( $ch, CURLOPT_VERBOSE, 0 );
-	curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, true );
-	curl_setopt ( $ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible;)" );
-	curl_setopt ( $ch, CURLOPT_URL, $url );
-	curl_setopt ( $ch, CURLOPT_POST, true );
-	// same as <input type="file" name="file_box">
-	
-
-	$post = array ("v" => $encrypted_file_array, "upload" => "@" . $file );
-	curl_setopt ( $ch, CURLOPT_POSTFIELDS, $post );
-	$response = curl_exec ( $ch );
-	
-	curl_close ( $ch );
-	return $response;
-}
-
 function getDirFileCount($directory) {
 	if (glob ( "$directory*.*" ) != false) {
 		$filecount = count ( glob ( "$directory*.*" ) );
