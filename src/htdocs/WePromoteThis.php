@@ -38,10 +38,10 @@ class WePromoteThis extends CBAbstract {
 		$fileContents = file_get_contents ( ONLINE_LASTEST_VERSION_LOCATION );
 		$fileArray = explode ( ',', $fileContents );
 		$version = $fileArray [0];
-		echo ("Version from online: $version<br>");
-		echo ("My Version : " . VERSION_NUMBER . "<br>");
+		//echo ("Version from online: $version<br>");
+		//echo ("My Version : " . VERSION_NUMBER . "<br>");
 		$compareResults = $this->versionCompare ( VERSION_NUMBER, $version );
-		echo ("Compare results: $compareResults<br>");
+		//echo ("Compare results: $compareResults<br>");
 		if ($compareResults < 0) {
 			$this->getNewConfigFiles ();
 			$updated = true;

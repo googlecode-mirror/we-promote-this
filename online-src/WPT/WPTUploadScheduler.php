@@ -4,17 +4,17 @@ require_once 'Video/User.php';
 
 class WPTUploadScheduler extends CBAbstract {
 	
-function constructClass() {
-	
-	
-	die("here");
+	function constructClass() {
+		
 		// Grab videos from local server to remote server that have not been uploaded to all host. (cap at certain file size)
 		
 
 		// Search through the video folder and schedule them to be uploaded by CBVideoUploader.php
 		$videoArray = array ();
-		$videoPath = "../" . RemoteServerVideoLocation;
-		//echo ("Video Path: $videoPath<br>");
+		
+		$videoPath = "./" . RemoteServerVideoLocation;
+		echo ("Video Path: $videoPath<br>");
+		
 		if (($dh = opendir ( $videoPath ))) {
 			while ( false !== ($dat = readdir ( $dh )) ) {
 				if ($dat != "." && $dat != ".." && $dat != ".svn" && $dat != "tmp") {
@@ -23,8 +23,9 @@ function constructClass() {
 			}
 			closedir ( $dh );
 		}
-		
-		die(print_r($videoArray));
+		echo ("Video Array:<br>");
+		print_r ( $videoArray );
+		echo ("<br><br>");
 		
 		// Remove files from tmp folder
 		$tmpFolder = realpath ( $videoPath . "tmp/" );
@@ -54,11 +55,12 @@ function constructClass() {
 		//echo("Delete Query: $deleteQuery<br>");
 		
 
+		echo ("Video Array (After cleaning empty folders:<br>");
+		print_r ( $videoArray );
+		echo ("<br><br>");
+		
 		// Get All user IDs from Wordpress
 		$users = array ();
-		$this->getDBConnection ()->connectToWordpressDB ( wpip, wpdbname, wpdbuser, wpdbpassword );
-		
-		
 		
 		$query = "Select u1.meta_value AS 'user_id', u2.meta_value AS 'user_password' FROM wp_usermeta AS u1
 		JOIN wp_usermeta AS u2 ON (u1.user_id = u2.user_id)
@@ -69,16 +71,14 @@ function constructClass() {
 		AND u2.meta_key=CONCAT(u1.meta_key,'_password') AND u2.meta_value IS NOT NULL
 		AND u3.meta_key='clickbank' AND u3.meta_value IS NOT NULL
 		AND u4.meta_key='clickbank_clerk_api_key' AND u4.meta_value IS NOT NULL";
-		$result = $this->queryWP ( $query );
-		$valueString = "";
+		$result = $this->getDBConnection ()->queryWP ( $query );
 		while ( ($row = mysql_fetch_assoc ( $result )) ) {
 			$user = new User ( );
 			$user->user_id = $row ['user_id'];
 			$user->user_password = $row ['user_password'];
 			$users [] = $user;
+			echo ("Adding user: $user<br>");
 		}
-		
-		die(print_r($users));
 		
 		if (count ( $videoArray ) > 0) {
 			$videoString = "('" . implode ( "'),('", $videoArray ) . "')";
@@ -86,7 +86,7 @@ function constructClass() {
 			// Create table containg all possible videos to upload
 			$createUploadedVideosTableQuery = "DROP TABLE IF EXISTS uploadedVideos;CREATE TEMPORARY TABLE uploadedVideos(id tinytext NOT NULL, PRIMARY KEY(id ( 20 )));INSERT INTO uploadedVideos VALUES $videoString;";
 			// Create table containing all user_ids and passwords
-			$createUserTableQuery .= "DROP TABLE IF EXISTS users;";
+			$createUserTableQuery = "DROP TABLE IF EXISTS users;";
 			//CREATE TABLE `users` (
 			$createUserTableQuery .= "CREATE TABLE `users` (
 			`id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -98,14 +98,14 @@ function constructClass() {
 			ENGINE=MyISAM
 			AUTO_INCREMENT=1;
 			";
-			$userString = "('" . implode ( "'),('", $users ) . "')";
+			$userString = implode ( ',', $users );
 			$createUserTableQuery .= "INSERT INTO users (user_id, user_passowrd) VALUES $userString;";
 			
 			// ADD all possible video combinations without posttimes
 			$insertVideoUploadsQuery = "INSERT IGNORE INTO post (pid, userid, location, proxyid) select uv.id as pid, (select id from users order by rand() limit 1) as userid, uploadsites.location as location , (select id from proxies order by rand() limit 1) as proxyid from uploadedVideos as uv left join keywords as k USING(id), uploadsites where k.id is not null and CHAR_LENGTH(k.words)>4 and k.words!='[\"{BLANK}\"]' and uploadsites.working=1 and uploadsites.type='video';DROP TABLE IF EXISTS uploadedVideos;";
 			//Append all queries						
 			//$query = $deleteQuery . $createUploadedVideosTableQuery . $createUserTableQuery . $insertVideoUploadsQuery;
-			$query = $deleteQuery . "\n\n" . $createUploadedVideosTableQuery . "\n\n" . $createUserTableQuery . "\n\n" . $insertVideoUploadsQuery;
+			$query = $deleteQuery . "<br><br>" . $createUploadedVideosTableQuery . "<br><br>" . $createUserTableQuery . "<br><br>" . $insertVideoUploadsQuery;
 			die ( $query );
 			
 			$this->runBatchQuery ( $query );

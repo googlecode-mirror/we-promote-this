@@ -1,5 +1,5 @@
 <?php
-error_reporting ( E_ALL); // all errors
+error_reporting ( E_ALL ); // all errors
 //error_reporting ( E_ALL ^ E_NOTICE ); // turn on all errors, warnings minus notices
 //error_reporting(E_ERROR); // Errors only
 set_time_limit ( 300 ); // 5 Minutes
@@ -22,7 +22,7 @@ abstract class CBAbstract {
 	private $outputContent;
 	
 	function __construct() {
-	
+		
 		if (! isset ( self::$ConfigParser )) {
 			self::$ConfigParser = new ConfigParser ( );
 		}
@@ -30,43 +30,30 @@ abstract class CBAbstract {
 			$this->reconnectDB ();
 		}
 		
-		die ('before command line');
-		
 		if (! isset ( self::$CommandLineHelper )) {
-		
 			self::$CommandLineHelper = new CommandLineHelper ( );
-			die("after command line");
 		}
-		
-		die("after command outside if");
-		
-		die ('before logger');
 		
 		if (! isset ( self::$Logger )) {
 			self::$Logger = new LogHelper ( );
 		}
-		echo ('before notify');
-		
+
 		if (ONLINEMODE) {
 			$this->notifyDBOfTask ();
 		}
-		echo ('after notify');
-		echo ('before construct');
-		
 		$this->constructClass ();
-		echo ('after construct');
-		if (ONLINEMODE) {
+		if ($this->getCommandLineHelper ()->isOnline ()) {
 			$this->notifyDBOfTaskFinished ();
 		}
 	}
 	function __destruct() {
-		if (ONLINEMODE) {
+		if ($this->getCommandLineHelper ()->isOnline () == true) {
 			$this->notifyDBOfTaskFinished ();
 		}
 		$this->getCommandLineHelper ()->__destruct ();
 		$this->outputContent = ob_get_contents (); // Capture all the output and display it when class is finished
 		ob_end_clean ();
-		//echo ($this->outputContent);
+		echo ($this->outputContent);
 	}
 	
 	function getOutputContent() {
@@ -83,7 +70,7 @@ abstract class CBAbstract {
 		mysql_query ( $query );
 	}
 	function reconnectDB() {
-		self::$DBConnection = new DBConnection ( mysqlServerIP2, dbname, dbuser, dbpassword );
+		self::$DBConnection = new DBConnection ( mysqlServerIP2, dbname, dbuser, dbpassword, wpip, wpdbname, wpdbuser, wpdbpassword );
 	}
 	static function getConfigParser() {
 		return self::$ConfigParser;

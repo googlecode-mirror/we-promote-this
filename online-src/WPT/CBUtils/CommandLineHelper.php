@@ -5,23 +5,29 @@ class CommandLineHelper {
 	public $absRootPath;
 	public $relRootPath;
 	public $onlineMode;
+	
 	function __construct() {
-		$this->onlineMode = (stripos ( __FILE__, '/home/content/50/6934650/html/' ) === 0);
-		if (! defined ( "ONLINEMODE" )) {
-			define ( "ONLINEMODE", $this->onlineMode );
-		}
+		$path = dirname ( __FILE__ );
+		//$path = '/home/content/50/6934650/html/';
+		$onlineMode = false;
 		
+		if (stripos ( $path, '/home/content/50/6934650/html/' ) !== false) {
+			$onlineMode = true;
+		}
+		if (! defined ( 'ONLINEMODE' )) {
+			define ( 'ONLINEMODE', $onlineMode );
+		}
 		$this->processLimit = 10;
 		$this->processTimeLimit = 5;
 		// Find out where we are and search from there
 		$this->absRootPath = realpath ( dirname ( __FILE__ ) . "/../" );
 		$this->relRootPath .= "..";
-		echo ("Current Path (Abs): " . $this->absRootPath . "<br>");
-		echo ("Current Path (Rel): " . $this->relRootPath . "<br>");
-		
+		//echo ("Current Path (Abs): " . $this->absRootPath . "<br>");
+	//echo ("Current Path (Rel): " . $this->relRootPath . "<br>");
 	}
+	
 	function isOnline() {
-		return $this->onlineMode;
+		return ( bool ) (ONLINEMODE === true);
 	}
 	
 	function find($dir, $pattern) {
@@ -30,11 +36,11 @@ class CommandLineHelper {
 		//$dir = escapeshellcmd ( $dir );
 		// get a list of all matching files in the current directory
 		$files = glob ( "$dir/$pattern" );
-		 //echo("File Count: ".count($files)." in $dir/$pattern<br>");
+		//echo("File Count: ".count($files)." in $dir/$pattern<br>");
 		// find a list of all directories in the current directory
 		// directories beginning with a dot are also included
 		foreach ( glob ( "$dir/{.[^.]*,*}", GLOB_BRACE | GLOB_ONLYDIR ) as $sub_dir ) {
-			if(count($files)>0){
+			if (count ( $files ) > 0) {
 				break;
 			}
 			$arr = $this->find ( $sub_dir, $pattern ); // resursive call
@@ -106,7 +112,7 @@ class CommandLineHelper {
 			//pclose ( popen ( sprintf ( $sprintFormat, $commandPlus, $output, $processIDFile ), 'r' ) );
 			//echo (sprintf ( $sprintFormat, $commandPlus, $output ));
 			pclose ( popen ( sprintf ( $sprintFormat, $commandPlus, $output ), 'r' ) );
-			
+		
 		}
 		$sIndex = strrpos ( $output, '/' );
 		if ($sIndex === false) {
@@ -136,7 +142,7 @@ class CommandLineHelper {
 	
 	function __destruct() {
 		//echo ("Destructor Starting<br>\n\r");
-		if ($this->onlineMode) {
+		if ($this->isOnline ()) {
 			$this->runJobsInJobQueue ();
 		}
 	}
