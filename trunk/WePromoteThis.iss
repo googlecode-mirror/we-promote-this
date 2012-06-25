@@ -35,8 +35,8 @@ CreateAppDir=true
 
 ; We compare the setup version information here against
 ; the one on the server to check for a newer version.
-VersionInfoVersion=1.1.1
-VersionInfoTextVersion=1.1.1
+VersionInfoVersion=1.1.2
+VersionInfoTextVersion=1.1.2
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

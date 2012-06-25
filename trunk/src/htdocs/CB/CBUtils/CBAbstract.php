@@ -43,7 +43,7 @@ abstract class CBAbstract {
 		// Capture all the output and display it when class is finished
 		// Dump final output
 		$this->getLogger ()->logInfo ( $this->outputContent );
-		//echo ($this->outputContent);
+		echo ($this->outputContent."<br><br>");
 		ob_end_flush ();
 	}
 	

@@ -1,6 +1,7 @@
 <?php
 echo ("<html><body>");
-$path = realpath ( dirname ( __FILE__ ) . "/../Logs/" );
+$path =  realpath(dirname ( __FILE__ ) . "/../Logs/") ;
+//$path =  "../Logs/" ;
 if (isset ( $_REQUEST ['log'] )) {
 	$userFile = $_REQUEST ['log'];
 	// Strip userFile of any directories.
@@ -24,8 +25,8 @@ if (isset ( $_REQUEST ['log'] )) {
 		echo ("<script type='text/JavaScript'>setTimeout(\"location.href = '" . $url . "';\",5000);</script>");
 	}
 } else {
-	//echo("<br>Path: $path");
-	if ($dh = opendir ( $path . "/" )) {
+	//echo("<br>Path: $path<br>");
+	if ($dh = opendir ( $path  )) {
 		while ( false !== ($dat = readdir ( $dh )) ) {
 			if ($dat != "." && $dat != ".." && $dat != ".svn") {
 				echo ("<a href='ShowLog.php?log=" . $dat . "'>" . $dat . "</a><br>");

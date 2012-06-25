@@ -3,7 +3,7 @@ require_once 'DBConnection.php';
 class UserAccount {
 	public $userID;
 	public $userName;
-	public $accounts;
+	public $password;
 	function __construct($userID, DBConnection $DBConnection) {
 		$query = "Select * FROM users WHERE id=$userID";
 		$results = mysql_query ( $query, $DBConnection->getDBConnection () );
@@ -12,8 +12,8 @@ class UserAccount {
 		} else if (is_resource ( $results )) {
 			$row = mysql_fetch_array ( $results );
 			$this->userID = $row ["id"];
-			$this->userName = $row ["username"];
-			$this->accounts = json_decode ( $row ["accounts"], true );
+			$this->userName = $row ["user_id"];
+			$this->password = $row ["user_password"];
 		} else {
 			trigger_error ( 'No Valid Resource For UserID: ' . $userID );
 		}
@@ -26,39 +26,8 @@ class UserAccount {
 	function getUserName() {
 		return $this->userName;
 	}
-	function getAccountUserName($accountName) {
-		if (isset ( $this->accounts [$accountName] ) && isset ( $this->accounts [$accountName] ['user'] )) {
-			return $this->accounts [$accountName] ['user'];
-		} else {
-			return null;
-		}
-	}
-	function getAccountPassword($accountName) {
-		if (isset ( $this->accounts [$accountName] ) && isset ( $this->accounts [$accountName] ['password'] )) {
-			return $this->accounts [$accountName] ['password'];
-		} else {
-			return null;
-		}
-	
-	}
-	function saveAccounts() {
-		$saved = false;
-		mysql_query("LOCK TABLES users WRITE");
-		$json = json_encode ( $this->accounts );
-		$query = "UPDATE users SET accounts='$json' WHERE id=$this->userID";
-		//echo ($query);
-		mysql_query ( $query );
-		if (mysql_errno ()) {
-			$saved =  false;
-		} else {
-			$saved = true;
-		}
-		mysql_query("UNLOCK TABLES;");
-		return $saved;
-	}
-	
-	function updateAccount($accountName, $userName, $password) {
-		$this->accounts [$accountName] = array ('user' => $userName, 'password' => $password );
+	function getPassword($accountName) {
+		return $this->password;
 	}
 }
 ?>

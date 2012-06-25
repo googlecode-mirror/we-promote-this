@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ConfigurationConstants>
+	<VERSION_NUMBER>1.1.2</VERSION_NUMBER>
+	<PROMOLINK>http://WePromoteThis.com/WPT/</PROMOLINK>
+	<UPLOAD_FILE_LOCATION>http://WePromoteThis.com/WePromoteThis/WPT/WPTVideoUploader.php</UPLOAD_FILE_LOCATION>
+	<ONLINE_CONFIG_FILE_LOCATION>http://we-promote-this.googlecode.com/svn/trunk/src/htdocs/CB/CBUtils/Includes/configuration.xml</ONLINE_CONFIG_FILE_LOCATION>
+	<ONLINE_LASTEST_VERSION_LOCATION>http://we-promote-this.googlecode.com/svn/trunk/google-code-downloads/latestver.txt</ONLINE_LASTEST_VERSION_LOCATION>
+	<VIDEO_TO_CREATE_URL>http://WePromoteThis.com/WePromoteThis/WPT/WPTVideoToCreate.php</VIDEO_TO_CREATE_URL>
+</ConfigurationConstants>

@@ -7,12 +7,12 @@ class Video {
 	public $description;
 	public $keywords;
 	public $link;
-	function __construct($pid, $title, $description, $keywords, $rootPath = null) {
+	function __construct($pid, $title, $description, $keywords, $userWPID = '1', $rootPath = null) {
 		$this->pid = $pid;
 		if (isset ( $rootPath )) {
 			$path = $rootPath . $this->pid . "/";
 		} else {
-			$path = dirname ( __FILE__ ) . "/CBCreatedVideos/" . $this->pid . "/";
+			$path = dirname ( __FILE__ ) . "/WPTCreatedVideos/" . $this->pid . "/";
 		}
 		//echo("Video Root Path: $path\n");
 		$tmpPath = $this->grabRandomVideo ( $path );
@@ -30,7 +30,7 @@ class Video {
 		} else {
 			$this->keywords = explode ( ",", $keywords );
 		}
-		$this->link = "http://www.WePromoteThis.com/WPT/" . $this->pid;
+		$this->link = "http://www.WePromoteThis.com/WPT/" . $this->pid. "/".$userWPID;
 	}
 	function removeForbiddenChars($txt) {
 		$txt = str_replace ( array ('<sup>&reg;</sup>', '<sup>&copy;</sup>', '<sup>TM</sup>', '&reg;', '&#0153;', '&#0169;', '&#0174;' ), '', $txt );

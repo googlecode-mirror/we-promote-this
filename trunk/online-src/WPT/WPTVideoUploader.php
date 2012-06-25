@@ -4,26 +4,8 @@
 define ( 'SALT', 'WePromoteThisAllDayLong313' );
 $acceptedExts = array ("mp4", "html" );
 
-function encrypt($text) {
-	return trim ( base64_encode ( mcrypt_encrypt ( MCRYPT_RIJNDAEL_256, SALT, $text, MCRYPT_MODE_ECB, mcrypt_create_iv ( mcrypt_get_iv_size ( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) ) );
-}
-
 function decrypt($text) {
 	return trim ( mcrypt_decrypt ( MCRYPT_RIJNDAEL_256, SALT, base64_decode ( $text ), MCRYPT_MODE_ECB, mcrypt_create_iv ( mcrypt_get_iv_size ( MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB ), MCRYPT_RAND ) ) );
-}
-
-function json_encode_fake($array) {
-	if (function_exists ( "json_encode" )) {
-		return json_encode ( $array );
-	} else {
-		$json = '{';
-		foreach ( $array as $field => $value ) {
-			$json = $json . '"' . $field . '":"' . $value . '",';
-		}
-		$json = substr ( $json, 0, strlen ( $json ) - 1 );
-		$json = $json . '}';
-		return $json;
-	}
 }
 
 function getDirFileCount($directory) {
@@ -81,6 +63,8 @@ if (isset ( $v )) {
 		}
 	}
 	die ( $status );
+}else{
+	echo ("Nothing to upload.");
 }
 
 ?>
