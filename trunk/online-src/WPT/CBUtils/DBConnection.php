@@ -16,49 +16,42 @@ class DBConnection {
 	public $dbUser; // user name to login to database
 	public $dbPassword; // password to login to database
 	public $dbName; // name of the database to use
-	public $mysqliCon; // The connection handle to the databasse using mysqli
 	public $con;
-	public $db_selected;
+	public $wpCon;
 	public $connected;
-	public $wpConnected;
-	public $mysqli;
 	
 	/*?
 	 * Function: DBConnection
 	 * This is the constructor for DBConnection.
 	 * It uses the config file on the server and stores the database values to local variables
 	 */
-	function __construct($ip, $dbName, $dbUser, $dbPassword, $newLink = false) {
+	function __construct($ip, $dbName, $dbUser, $dbPassword, $wpip = null, $wpdbname = null, $wpdbuser = null, $wpdbpassword = null) {
+		if (isset ( $wpip ) && isset ( $wpdbname ) && isset ( $wpdbuser ) && isset ( $wpdbpassword )) {
+			$this->wpCon = $this->connectToDB ( $wpip, $wpdbuser, $wpdbpassword, $wpdbname );
+		}
 		$this->ip = $ip;
 		$this->dbUser = $dbUser;
 		$this->dbPassword = $dbPassword;
-		if (($this->connect ( $this->ip, $this->dbUser, $this->dbPassword, $newLink ))) {
-			// Select the database name on the database server
-			$this->db_selected = $this->selectDatabase ( $dbName );
-			if ($this->db_selected) {
-				$this->connected = true;
-			} else {
-				trigger_error ( 'Can\'t use ' . $this->dbName . ' : ' . mysql_error (), E_USER_ERROR );
-			}
-		} else {
-			trigger_error ( "Could not connect to " . $this->ip . ": " . mysql_error (), E_USER_ERROR );
-		}
+		$this->con = $this->connectToDB ( $ip, $dbUser, $dbPassword, $dbName );
 	}
 	
-	function connectToWordpressDB($ip,$dbUser, $dbPassword, $dbName) {
-		$this->mysqli = new mysqli ( $ip,$dbUser, $dbPassword, $dbName );
-		
-		/* check connection */
-		if ($this->mysqli->connect_errno) {
-			printf ( "Connect failed: %s\n", $this->mysqli->connect_error );
-			exit ();
+	function connectToDB($ip, $dbUser, $dbPassword, $dbName) {
+		$con = $this->connect ( $ip, $dbUser, $dbPassword );
+		if ($con) {
+			// Select the database name on the database server
+			if ($this->selectDatabase ( $dbName, $con )) {
+				return $con;
+			} else {
+				trigger_error ( 'Can\'t use ' . $dbName . ' : ' . mysql_error ( $con ), E_USER_ERROR );
+			}
+		} else {
+			trigger_error ( "Could not connect to " . $ip . ": " . mysql_error ( $con ), E_USER_ERROR );
 		}
-		
-		$this->wpConnected = true;
+		return false;
 	}
 	
 	function queryWP($query) {
-		return $this->mysqli->query ( $query );
+		return mysql_query ( $query, $this->wpCon );
 	}
 	
 	function __destruct() {
@@ -67,21 +60,16 @@ class DBConnection {
 			$this->mysqli->close ();
 		}
 	}
-	function connect($ip, $user, $password, $newLink = false) {
-		$this->con = mysql_connect ( $ip, $user, $password, $newLink );
-		if (! $this->con) {
-			return false;
-		} else {
-			return true;
-		}
+	function connect($ip, $user, $password) {
+		return mysql_connect ( $ip, $user, $password );
 	}
 	function isConnected() {
-		return ($this->connected === true);
+		return isset ( $this->con );
 	}
 	
-	function selectDatabase($dbName) {
+	function selectDatabase($dbName,$con) {
 		$this->dbName = $dbName;
-		return mysql_select_db ( $this->dbName, $this->con );
+		return mysql_select_db ( $this->dbName, $con );
 	}
 	
 	function getDBConnection() {
@@ -89,15 +77,6 @@ class DBConnection {
 	}
 	function getDBAccessURL() {
 		return "mysql://" . $this->dbUser . ":" . $this->dbPassword . "@" . $this->ip . "/" . $this->dbName;
-	}
-	function getMysqliDBConnection() {
-		if (! isset ( $this->mysqliCon )) {
-			$this->mysqliCon = mysqli_connect ( $this->ip, $this->dbUser, $this->dbPassword, $this->dbName );
-			if (! $this->mysqliCon) {
-				trigger_error ( 'Could not connect to ' . $this->ip . ': ' . mysqli_connect_error (), E_USER_ERROR ); // Stop 
-			}
-		}
-		return $this->mysqliCon;
 	}
 }
 ?>
