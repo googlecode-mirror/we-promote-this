@@ -4,7 +4,6 @@ class CommandLineHelper {
 	public $processTimeLimit;
 	public $absRootPath;
 	public $relRootPath;
-	public $onlineMode;
 	
 	function __construct() {
 		$path = dirname ( __FILE__ );
@@ -50,7 +49,7 @@ class CommandLineHelper {
 		return $files;
 	}
 	function run_in_background($command, $output, $taskID = null) {
-		if ($this->onlineMode) {
+		if ($this->isOnline()) {
 			$this->removeDeadProcessesFromQueue ();
 			if (! isset ( $taskID )) {
 				mysql_query ( "insert ignore into task (cmd, output) values ('" . mysql_escape_string ( $command ) . "','" . mysql_escape_string ( $output ) . "')" );
@@ -97,7 +96,7 @@ class CommandLineHelper {
 			}
 		}
 		$commandAltered = implode ( " ", $commandArray );
-		if ($this->onlineMode) {
+		if ($this->isOnline()) {
 			$commandPlus = "nohup /web/cgi-bin/php5 -q -d register_argc_argv=1 " . $commandAltered;
 			//passthru ( sprintf ( $sprintFormat, $commandPlus, $output, $processIDFile ) );
 			passthru ( sprintf ( $sprintFormat, $commandPlus, $output ) );

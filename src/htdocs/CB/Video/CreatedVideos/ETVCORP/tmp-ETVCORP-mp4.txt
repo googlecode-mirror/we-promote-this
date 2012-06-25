@@ -1,0 +1,15 @@
+
+"TVCC.exe " "-fsv" "C:\Users\cqueen\WORKSP~1\WEPROM~2\src\htdocs\CB/Video/CreatedVideos/ETVCORP/images/images.txt" "-fsa" "C:\Users\cqueen\WORKSP~1\WEPROM~2\src\htdocs\CB/Video/CreatedVideos/ETVCORP/audio/audio.txt" "-o" "C:\Users\cqueen\WORKSP~1\WEPROM~2\src\htdocs\CB/Video/CreatedVideos/ETVCORP/video/ETVCORP.mp4" "-vs" "640x480" "-sw" "640" "-sh" "480" "-spt" "222.093" "-smode" 
+Input #0, dshow, from 'C:\Program Files (x86)\E.M. TVCC\4710.avs':
+  Duration: 00:03:42.0, start: 0.000000, bitrate: N/A
+    Stream #0.0: Video: rawvideo, bgr24, 1024x768 [PAR 0:1 DAR 0:1], 20.00 tb(r)
+    Stream #0.1: Audio: pcm_s16le, 11025 Hz, stereo, 352 kb/s
+PIX_FMT_YUV420P will be used as an intermediate format for rescaling
+Output #0, newmp4, to 'C:\Users\cqueen\WORKSP~1\WEPROM~2\src\htdocs\CB/Video/CreatedVideos/ETVCORP/video/ETVCORP.mp4':
+    Stream #0.0: Video: libxvid, yuv420p, 640x480 [PAR 0:1 DAR 0:1], q=2-31, 3947 kb/s, 20.00 tb(c)
+    Stream #0.1: Audio: libfaac, 44100 Hz, stereo, 64 kb/s
+Stream mapping:
+  Stream #0.0 -> #0.0
+  Stream #0.1 -> #0.1
+Press [q] to stop encoding
+PIX_FMT_YUV420P will be used as an intermediate format for rescaling

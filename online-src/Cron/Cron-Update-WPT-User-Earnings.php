@@ -4,9 +4,8 @@
 require_once 'CronAbstract.php';
 class CronUpdateWPTUserEarnings extends CronAbstract {
 	function runCron() {
-		$this->getDBConnection()->connectToWordpressDB( wpip, wpdbname, wpdbuser, wpdbpassword );
 		$query = "SELECT user_id, meta_value FROM wp_usermeta WHERE meta_key='clickbank_clerk_api_key'";
-		$result = $this->queryWP ( $query );
+		$result = $this->getDBConnection()->queryWP ( $query );
 		$valueString = "";
 		while ( ($row = mysql_fetch_assoc ( $result )) ) {
 			$userId = $row ["user_id"];
@@ -14,10 +13,10 @@ class CronUpdateWPTUserEarnings extends CronAbstract {
 			$total = $this->getTotalSales ( $api );
 			$valueString .= "(" . $userId . ",'cbearnings'," . $total . "),";
 		}
-		$this->queryWP ( "DELETE FROM wp_usermeta WHERE meta_key='cbearnings'" );
+		$this->getDBConnection()->queryWP ( "DELETE FROM wp_usermeta WHERE meta_key='cbearnings'" );
 		$valueString = substr ( $valueString, 0, strlen ( $valueString ) - 1 );
 		$insertQuery = "INSERT INTO wp_usermeta (user_id,meta_key,meta_value) VALUES" . $valueString;
-		$this->queryWP ( $insertQuery );
+		$this->getDBConnection()->queryWP ( $insertQuery );
 		//echo ($insertQuery . "<br><br>");
 		echo ("Users CB Earnings Updated: " . date ( "Y-m-d H:i:s A" ));
 	}
