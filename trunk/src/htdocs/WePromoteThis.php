@@ -4,9 +4,17 @@ require_once ("CB/WPTVideoCreator.php");
 
 class WePromoteThis extends CBAbstract {
 
+	public static $programStartTime;
 	public $startOver;
 
 	function constructClass() {
+		$obj = new DateTime("now");
+		die();
+		
+		
+		if (!isset(self::$programStartTime)) {
+			self::$programStartTime = new DateTime();
+		}
 		$this -> startOver = false;
 		//Check for updates first
 		$updated = $this -> checkForUpdates();
@@ -20,13 +28,18 @@ class WePromoteThis extends CBAbstract {
 			$status = $WPTVC -> createVideoFor($pid);
 			//echo("Finished Creating video for $pid at " . date("m-d-y h:i:s A") . "<br>");
 
-			// find end time diff
-			// if longer than an hour kill process wepromotethi.exe and tvcc.exe
-
 			if (stripos($status, 'successful') !== false) {
-				echo("Another video will be created in 5 secs.<br>");
-				$this -> refreshCurrentWindow();
-				$this -> startOver = true;
+				// if end longer than an hour kill process wepromotethis.exe and tvcc.exe
+				$now = new DateTime();
+				$hourdatedif = (int) date_diff(self::$programStartTime, $now) -> format('%H');
+				$daydatedif = (int) date_diff(self::$programStartTime, $now) -> format('%d');
+				if ($hourdatedif >= 1 || $daydatedif >= 1) {
+					exit(0);
+				} else {
+					echo("Another video will be created in 5 secs.<br>");
+					$this -> refreshCurrentWindow();
+					$this -> startOver = true;
+				}
 			}
 		}
 		exit(0);
@@ -124,8 +137,8 @@ class WePromoteThis extends CBAbstract {
 
 	function __destruct() {
 		parent::__destruct();
-		if ($this -> startOver == FALSE) {
-			sleep(30);
+		if ($this -> startOver == false) {
+			//sleep(30);
 			// Wait 30 seconds so user can read end message
 			//$this -> killP("TVCC.exe");
 			//$this -> killP("WePromoteThis.exe");
