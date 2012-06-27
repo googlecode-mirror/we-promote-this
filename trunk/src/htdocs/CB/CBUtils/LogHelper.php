@@ -8,7 +8,7 @@ class LogHelper {
 
 		// use a lenient permission mask, and format entries accordingly
 		$logconf = array('mode' => 0775, 'timeFormat' => '%X %x');
-		$this -> pearLogger = &Log::singleton("file", dirname(__FILE__) . "../../Log/wpt_log_" . date("Ymdhis") . ".txt", 'wpt', $logconf);
+		$this -> pearLogger = &Log::singleton("file", dirname(__FILE__) . "../../Log/wpt_log_" . date("Ymdhis") . ".html", 'wpt', $logconf);
 		$mask = Log::MIN(PEAR_LOG_ERR);
 		$this -> pearLogger -> setMask($mask);
 		set_error_handler(array($this, 'errorHandler'));
