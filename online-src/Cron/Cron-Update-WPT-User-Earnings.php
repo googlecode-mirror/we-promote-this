@@ -4,12 +4,12 @@
 require_once 'CronAbstract.php';
 class CronUpdateWPTUserEarnings extends CronAbstract {
 	function runCron() {
-		$query = "SELECT user_id, meta_value FROM wp_usermeta WHERE meta_key='clickbank_clerk_api_key'";
+		$query = "SELECT user_id, meta_value AS api FROM wp_usermeta WHERE meta_key='clickbank_clerk_api_key' AND CHAR_LENGTH(meta_value)>0";
 		$result = $this->getDBConnection()->queryWP ( $query );
 		$valueString = "";
 		while ( ($row = mysql_fetch_assoc ( $result )) ) {
 			$userId = $row ["user_id"];
-			$api = $row ["meta_value"];
+			$api = $row ["api"];
 			$total = $this->getTotalSales ( $api );
 			$valueString .= "(" . $userId . ",'cbearnings'," . $total . "),";
 		}
