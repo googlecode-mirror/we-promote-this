@@ -136,6 +136,7 @@ class WPTUploadVideoToHost extends CBAbstract {
 			session_start();
 			//TODO: Determine If Session usage is needed (above)
 			$video = new Video($pid, $title, $description, $keywords, $userWPID);
+            //die($video);
 			if ($video -> isValid()) {
 				switch ($location) {
 					case "youtube" :

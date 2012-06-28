@@ -82,6 +82,10 @@ class DBConnection {
 	function getDBConnection() {
 		return $this -> con;
 	}
+    
+    function getWPDBConnection() {
+        return $this -> wpCon;
+    }
 
 	function getDBAccessURL() {
 		return "mysql://" . $this -> dbUser . ":" . $this -> dbPassword . "@" . $this -> ip . "/" . $this -> dbName;
