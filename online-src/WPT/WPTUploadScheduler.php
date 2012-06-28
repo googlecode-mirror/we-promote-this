@@ -79,12 +79,14 @@ class WPTUploadScheduler extends CBAbstract {
 			$users[] = $user;
 			//echo ("Adding user: $user<br>");
 		}
+		$userString = implode(',', $users);
 
 		if (count($videoArray) > 0) {
 			$videoString = "('" . implode("'),('", $videoArray) . "')";
 			$videoCount = count($videoArray);
 			// Create table containg all possible videos to upload
 			$createUploadedVideosTableQuery = "DROP TABLE IF EXISTS uploadedVideos;CREATE TEMPORARY TABLE uploadedVideos(id tinytext NOT NULL, PRIMARY KEY(id ( 20 )));INSERT INTO uploadedVideos VALUES $videoString;";
+			
 			// Create table containing all user_ids and passwords
 			//$createUserTableQuery = "DROP TABLE IF EXISTS users;";
 			//CREATE TABLE `users` (
@@ -101,14 +103,20 @@ class WPTUploadScheduler extends CBAbstract {
 			 AUTO_INCREMENT=1;
 			 ";
 			 */
-			$userString = implode(',', $users);
-			$createUserTableQuery .= "INSERT IGNORE INTO users (user_id, user_password, user_wp_id) VALUES $userString;";
+			 
+			 // Set all user inactive
+			$createUserTableQuery = "UPDATE users set active=0;";
+			// Insert all users from Wordpress
+			$createUserTableQuery .= "INSERT IGNORE INTO users (user_id, user_password, user_wp_id) VALUES $userString ON DUPLICATE KEY UPDATE active=1 ;";
+			//Delete users who no longer exist in wp
+			$createUserTableQuery .= "Delete from users where active=0;";
 
 			// ADD all possible video combinations without posttimes
-			$insertVideoUploadsQuery = "INSERT IGNORE INTO post (pid, user_id, location, proxyid) select uv.id as pid, (SELECT grow.user_id from ((SELECT id as user_id FROM users) UNION ALL (SELECT user_id FROM post)) as grow GROUP BY grow.user_id  ORDER BY count( grow.user_id ) ASC , rand( ) limit 1) as user_id, uploadsites.location as location , (select id from proxies order by rand() limit 1) as proxyid from uploadedVideos as uv left join keywords as k USING(id), uploadsites where k.id is not null and CHAR_LENGTH(k.words)>4 and k.words!='[\"{BLANK}\"]' and uploadsites.working=1 and uploadsites.type='video';DROP TABLE IF EXISTS uploadedVideos;";
+			$insertVideoUploadsQuery = "INSERT IGNORE INTO post (pid, user_id, location, proxyid) select uv.id as pid, (SELECT grow.user_id from ((SELECT id as user_id FROM users) UNION ALL (SELECT p.user_id FROM post as p JOIN users as us USING (user_id) WHERE us.active=1 )) as grow GROUP BY grow.user_id  ORDER BY count( grow.user_id ) ASC , rand( )  limit 1) as user_id, uploadsites.location as location , (select id from proxies order by rand() limit 1) as proxyid from uploadedVideos as uv left join keywords as k USING(id), uploadsites where k.id is not null and CHAR_LENGTH(k.words)>4 and k.words!='[\"{BLANK}\"]' and uploadsites.working=1 and uploadsites.type='video';DROP TABLE IF EXISTS uploadedVideos;";
+			
 			//Append all queries
 			//$query = $deleteQuery . "<br><br>" . $createUploadedVideosTableQuery . "<br><br>" . $createUserTableQuery . "<br><br>" . $insertVideoUploadsQuery;
-			//echo($query."<br>");
+			//die($query."<br>");
 			
 			$query = $deleteQuery . $createUploadedVideosTableQuery . $createUserTableQuery . $insertVideoUploadsQuery;
 			
