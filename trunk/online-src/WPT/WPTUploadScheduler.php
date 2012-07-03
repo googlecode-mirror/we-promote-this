@@ -26,19 +26,6 @@ class WPTUploadScheduler extends CBAbstract {
 		//print_r($videoArray);
 		//echo("<br><br>");
 
-		// Remove files from tmp folder
-		$tmpFolder = realpath($videoPath . "tmp/");
-		chown($tmpFolder, 666);
-
-		if (($dh = opendir($tmpFolder))) {
-			while (false !== ($dat = readdir($dh))) {
-				if ($dat != "." && $dat != ".." && $dat != ".svn") {
-					$this -> rrmdir($tmpFolder . $dat);
-				}
-			}
-			closedir($dh);
-		}
-
 		// Remove Empty Folders from file system and database
 		$deleteQuery = "Delete from post where posted=0 or attempts>=3;";
 		//$deleteQuery = '';

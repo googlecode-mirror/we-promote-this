@@ -61,9 +61,14 @@ class DBConnection {
 
 	function __destruct() {
 		mysql_query("UNLOCK TABLES;");
-		if ($this -> wpConnected == true) {
-			$this -> mysqli -> close();
+		/*
+		if ($this -> wpCon) {
+		    mysql_close($this->wpCon);
 		}
+        if ($this -> con) {
+            mysql_close($this->con);
+        }
+         */
 	}
 
 	function connect($ip, $user, $password) {

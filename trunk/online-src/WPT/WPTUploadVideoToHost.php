@@ -83,7 +83,7 @@ class WPTUploadVideoToHost extends CBAbstract {
 				// For Test Purposes only
 			}
 		} else {
-			$this -> getLogger() -> logInfo("No More Videos To Upload At This Time");
+			echo("No More Videos To Upload At This Time");
 		}
 	}
 
@@ -166,7 +166,7 @@ class WPTUploadVideoToHost extends CBAbstract {
 				}
 
 				if (isset($uploader)) {
-					$this -> getLogger() -> logInfo("<br>Uploading Video $pid to $location for User($userid): " . $userName);
+					echo("<br>Uploading Video $pid to $location for User($userid): " . $userName);
 					$uploader -> uploadResponse = $uploader -> upload();
 					// Upload the video
 					$posted = $uploader -> wasUploaded();
@@ -174,7 +174,7 @@ class WPTUploadVideoToHost extends CBAbstract {
 						$postURL = $uploader -> uploadLocation();
 						$query = "Update post SET posted=1, posttime=NOW(), postURL='$postURL' WHERE id=$id";
 						mysql_query($query);
-						$this -> getLogger() -> logInfo("Video Successfully Uploaded!!! Here: <a href='$postURL'>$postURL</a> for User($userid): " . $userName);
+						echo("Video Successfully Uploaded!!! Here: <a href='$postURL'>$postURL</a> for User($userid): " . $userName);
 						//$this->getLogger()->logInfo ("DB updated with query: $query<br>");
 						if (mysql_errno()) {
 							$this -> getLogger() -> log('Could not update with query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);

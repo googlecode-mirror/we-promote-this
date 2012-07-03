@@ -126,7 +126,7 @@ class CBKeywordExtractor extends CBAbstract {
         
         sleep ( 60 ); // wait 1 mintue(s)
         $this->clearFile ( $this->updateDBQueryFilename );
-        $this->getLogger ()->logInfo ( "FINISHED Updating Keywords" );
+        echo ( "FINISHED Updating Keywords" );
     }
     function runBatchQuery($batchQuery) {
         //echo ("<br>Running multi_query update on DB");
@@ -147,7 +147,7 @@ class CBKeywordExtractor extends CBAbstract {
         }
     }
     function runUpdate($id) {
-        $this->getLogger ()->logInfo ( "Updating Keywords For Product ID: " . $id );
+        echo ( "Updating Keywords For Product ID: " . $id );
         //echo ("Updating for $id" . $this->lineBreak);
         $hop = "http://" . $this->clickbankID . "." . $id . ".hop.clickbank.net";
         $hop = $this->get_final_url ( $hop );
