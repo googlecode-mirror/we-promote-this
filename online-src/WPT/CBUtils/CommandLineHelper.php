@@ -49,32 +49,28 @@ class CommandLineHelper {
 		return $files;
 	}
 	function run_in_background($command, $output, $taskID = null) {
+	    $results = "Could not run Command";
 		if ($this->isOnline()) {
 			$this->removeDeadProcessesFromQueue ();
 			if (! isset ( $taskID )) {
 				mysql_query ( "insert ignore into task (cmd, output) values ('" . mysql_escape_string ( $command ) . "','" . mysql_escape_string ( $output ) . "')" );
+                $results = basename($output);
 			} else {
 				$runningProcessCount = mysql_num_rows ( mysql_query ( "Select id from task where running=true" ) );
 				if ($runningProcessCount < $this->processLimit) {
 					mysql_query ( "update task set running=true where id=" . $taskID );
-					$this->startProcess ( $command, $output );
+                    $results = $this->startProcess ( $command, $output ); 
+					if($results!==false){
 					mysql_query ( "Delete from task where id=" . $taskID );
+                    }
+				}else{
+				    $results = basename($output);
 				}
 			}
-			$sIndex = strrpos ( $output, '/' );
-			if ($sIndex === false) {
-				$sIndex = strrpos ( $output, '\\' );
-			}
-			if ($sIndex === false) {
-				$sIndex = strrpos ( $output, PATH_SEPARATOR );
-			}
-			if ($sIndex === false) {
-				$sIndex = - 1;
-			}
-			return substr ( $output, $sIndex + 1 );
 		} else {
-			return $this->startProcess ( $command, $output );
+			$results =  $this->startProcess ( $command, $output );
 		}
+        return $results;
 		//sleep ( rand(5,10) ); // Sleep for 5 seconds so other taks don't get ran to quickly
 	}
 	
@@ -90,9 +86,14 @@ class CommandLineHelper {
 			if (stripos ( $c, ".php" ) !== false) {
 				//$foundFilesArray = $this->find ( $this->relRootPath, $c );
 				$foundFilesArray = $this->find ( $this->absRootPath, $c );
+				if(count($foundFilesArray)>0){
 				$useFile = realpath ( array_shift ( $foundFilesArray ) );
 				//$useFile = array_shift($foundFilesArray);
 				$commandArray [$key] = $useFile;
+                }else{
+                    echo("Cant find file $c<br>");
+                    return false;
+                }
 			}
 		}
 		$commandAltered = implode ( " ", $commandArray );
@@ -113,18 +114,10 @@ class CommandLineHelper {
 			pclose ( popen ( sprintf ( $sprintFormat, $commandPlus, $output ), 'r' ) );
 		
 		}
-		$sIndex = strrpos ( $output, '/' );
-		if ($sIndex === false) {
-			$sIndex = strrpos ( $output, '\\' );
-		}
-		if ($sIndex === false) {
-			$sIndex = strrpos ( $output, PATH_SEPARATOR );
-		}
-		if ($sIndex === false) {
-			$sIndex = - 1;
-		}
-		return substr ( $output, $sIndex + 1 );
+         return basename($output);
 	}
+
+
 	
 	/*
 	function isRunning($pid) {

@@ -31,9 +31,10 @@ class WPTVVideoToCreate extends CBAbstract {
 		ORDER BY COUNT(grow.id) ASC, pr.gravity DESC, pr.commission DESC, pr.popularityrank DESC, CHAR_LENGTH(pr.description) DESC, RAND()
 		LIMIT 1
 		";
-		$index = rand(0, 50);
-		if ($index >= 25) {
-			$query = "SELECT p.id as pid from products as p order by rand()";
+		$index = rand(0, 100);
+		if ($index <= 75) {
+			$query = "SELECT p.id as pid from products as p LEFT JOIN post as pt ON pt.pid=p.id
+            WHERE pt.pid is null order by rand()";
 		}
 		$result = mysql_query($query);
 		$row = mysql_fetch_assoc($result);
