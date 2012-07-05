@@ -11,6 +11,10 @@ class CronUpdateWPTUserEarnings extends CronAbstract {
 			$userId = $row ["user_id"];
 			$api = $row ["api"];
 			$total = $this->getTotalSales ( $api );
+            //$totalold = $this->getTotalSales_old ( $api );
+            //echo("Total for $userId :".$total."<br>");
+            //echo("Total for $userId (old):".$totalold."<br><br>");
+            //echo("Total for made up user (old):".$this->getTotalSales ( 'totallymadeup' )."<br><br>");
 			$valueString .= "(" . $userId . ",'cbearnings'," . $total . "),";
 		}
 		$this->getDBConnection()->queryWP ( "DELETE FROM wp_usermeta WHERE meta_key='cbearnings'" );
@@ -20,8 +24,49 @@ class CronUpdateWPTUserEarnings extends CronAbstract {
 		//echo ($insertQuery . "<br><br>");
 		echo ("Users CB Earnings Updated: " . date ( "Y-m-d H:i:s A" ));
 	}
+    
+    function getTotalSales($api) {
+        $ch = curl_init ();
+        $params = array ();
+        $url = "https://api.clickbank.com/rest/1.2/quickstats/count";
+        $currentMonth = date ( "m" );
+        $currentYear = date ( "Y" );
+        $start = new DateTime ( $currentMonth . "/01/" . $currentYear, new DateTimeZone ( "America/New_York" ) );
+        if (isset ( $start )) {
+            $params [] = "startDate=" . $start->format ( "Y-m-d" );
+        }
+        if (count ( $params ) > 0) {
+            $url .= "?" . implode ( "&", $params );
+        }
+        
+        curl_setopt ( $ch, CURLOPT_URL, $url );
+        curl_setopt ( $ch, CURLOPT_HEADER, false );
+        curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, false );
+        $headerArray = array ("Accept: application/json", "Authorization: DEV-4C19764011D669F47A933DCD8C14BFD2214E:" . $api );
+        curl_setopt ( $ch, CURLOPT_HTTPHEADER, $headerArray );
+        curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, 1 );
+        $result = curl_exec ( $ch );
+        curl_setopt ( $ch, CURLOPT_HEADER, TRUE );
+        curl_setopt ( $ch, CURLOPT_NOBODY, TRUE );
+        $returnHeader = curl_getinfo ( $ch );
+        curl_close ( $ch );
+        
+        //echo (var_dump ( $result )."<br><br>");
+        if (stripos ( $result, 'Access is denied' ) !== false) {
+            // Access was denied so return some large total so the user will have reached their limit since they didn't put in a correct api key
+            return 1000000000;
+        }
+        
+        $json = json_decode($result,true);
+        //echo (var_dump ( $json )."<br><br>");
+        $total = $json['accountData']['quickStats']['sale'];
+        if(!isset($total)|| strlen($total)<=0){
+            $total = 0;
+        }
+        return $total;
+    }
 	
-	function getTotalSales($api, $next = 0) {
+	function getTotalSales_old($api, $next = 0) {
 		$ch = curl_init ();
 		$params = array ();
 		$url = "https://api.clickbank.com/rest/1.2/orders/list";
@@ -78,7 +123,7 @@ class CronUpdateWPTUserEarnings extends CronAbstract {
 			//echo ("Date: $date \t Amount: $amount \t Type: $type<br>");
 		}
 		if (stripos ( $returnHeader ['http_code'], '206' ) !== FALSE) {
-			$total += $this->getTotalSales ( $api, ++ $next );
+			$total += $this->getTotalSales_old ( $api, ++ $next );
 		}
 		return $total;
 	}

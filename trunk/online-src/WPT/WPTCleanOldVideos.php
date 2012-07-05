@@ -71,6 +71,6 @@ class WPTCleanOldVideos extends CBAbstract {
         }
 
     }
-
 }
+new WPTCleanOldVideos();
 ?>
