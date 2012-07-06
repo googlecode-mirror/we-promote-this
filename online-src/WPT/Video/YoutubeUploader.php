@@ -22,14 +22,14 @@ class YoutubeUploader extends VideoUploader {
 	public $xPath;
 	function constructClass() {
 		$this->httpClient = NULL;
-		$this->applicationId = "Click-Bank-Traffic-Explosion";
-		$this->clientId = "Click-Bank-Traffic-Explosion upload client - v1";
-		$this->developerKey = "AI39si6qtCOgddYYnYN35ACmMv41IBOiR74f6qYBXWjJ5RUvUz1QJL5-OWSJ5RT-5RM4iV0XqKmp_s-U4fSuarmTYJmLtOQggw";
+		$this->applicationId = "WePromoteThis.com";
+		$this->clientId = "WePromoteThis.com Upload Client - V1";
+		$this->developerKey = "AI39si4YMOXimVNhFRo7aFiCrDMVCvAuyXWChiXMPmf75RuWe-vLLchN0wx_pWigY1A_86dNZWNKaUWQMB7PJT-KcJdRWTyONg";
 		$this->httpClient = $this->getHttpClient ( $this->userName, $this->password, $this->proxyHost, $this->proxyPort );
 		
 		$ytCategoriesURL = 'http://gdata.youtube.com/schemas/2007/categories.cat';
 		$ytCategories = file_get_contents ( $ytCategoriesURL );
-		$doc = new DOMDocument ();
+		$doc = new DOMDocument ( );
 		$doc->loadXML ( $ytCategories );
 		$this->xPath = new DOMXPath ( $doc );
 	}
@@ -39,7 +39,7 @@ class YoutubeUploader extends VideoUploader {
 			$this->yt = new Zend_Gdata_YouTube ( $this->httpClient, $this->applicationId, $this->clientId, $this->developerKey );
 			$this->yt->setMajorProtocolVersion ( 2 );
 			// create a new VideoEntry object
-			$myVideoEntry = new Zend_Gdata_YouTube_VideoEntry ();
+			$myVideoEntry = new Zend_Gdata_YouTube_VideoEntry ( );
 			// create a new Zend_Gdata_App_MediaFileSource object
 			$filesource = $this->yt->newMediaFileSource ( $this->video->path );
 			//echo ("Media Source Path " . $this->video->path . "<br>\n");
@@ -54,8 +54,10 @@ class YoutubeUploader extends VideoUploader {
 			$myVideoEntry->setVideoDescription ( $this->getWebDescription () );
 			//echo ("Description Set<br>\n");
 			
+
 			//TODO: Figure out how to set video response access as allowed
 			
+
 			// The category must be a valid YouTube category!
 			$relevantVideosFeed = $this->getRelevantVideos ( $this->getWebTitle () );
 			$category = "Entertainment";
@@ -136,8 +138,8 @@ catch ( Exception $except ) {
 			//echo ("Found Atom " . $atom->getAttribute ( "label" ) . "<br>");
 			if (strcasecmp ( $atom->lastChild->nodeName, "yt:deprecated" ) === 0) {
 				$valid = false;
-			
-		//echo ("Category $categoryName is deprecated<br>");
+				
+			//echo ("Category $categoryName is deprecated<br>");
 			}
 		}
 		return $valid;
@@ -157,7 +159,7 @@ catch ( Exception $except ) {
 			$maxResults = 50; // No more than 50 results allowed by Youtube.com
 		}
 		try {
-			$yt = new Zend_Gdata_YouTube ();
+			$yt = new Zend_Gdata_YouTube ( );
 			$yt->setMajorProtocolVersion ( 2 );
 			$query = $yt->newVideoQuery ();
 			$query->setOrderBy ( 'relevance' );
@@ -201,7 +203,7 @@ catch ( Exception $except ) {
 		$category = $keysArray [0];
 		return $category;
 	}
-	private function getHttpClient($userEmail, $password, $proxyHost = null, $proxyPort = null) {
+	private function getHttpClient($userEmail, $password, $proxyHost = null, $proxyPort = null, $tries = 3) {
 		$authenticationURL = Zend_Gdata_YouTube::CLIENTLOGIN_URL;
 		$service = Zend_Gdata_YouTube::AUTH_SERVICE_NAME;
 		if (isset ( $userEmail ) && isset ( $password )) {
@@ -215,21 +217,26 @@ catch ( Exception $except ) {
 					$clientp->setCookieJar ();
 					// authenticate
 					//$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, $clientp );
-					$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, $clientp, 'Click-Bank-Traffic-Explosion', null, null, $authenticationURL );
+					$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, $clientp, 'WePromoteThis.com', null, null, $authenticationURL );
 					// set the proxy information back into the client
 					// necessary due to http://framework.zend.com/issues/browse/ZF-1920
 					$httpClient->setConfig ( $httpConfig );
-				
-		//echo("Using Proxy: $proxy->proxy port: $proxy->port");
+					//echo ("Using Proxy: $proxyHost port: $proxyPort<br>");
 				} catch ( Zend_Gdata_App_HttpException $e ) {
 					//var_dump ( $e );
-					//echo("Error Using Proxy: $proxyHost  port: $proxyPort<br>" . $e->getMessage());
-					$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, null, 'Click-Bank-Traffic-Explosion', null, null, $authenticationURL );
+					//echo ("Error Using Proxy: $proxyHost  port: $proxyPort<br>" . $e->getMessage () . "<br>");
+					$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, null, 'WePromoteThis.com', null, null, $authenticationURL );
 				}
 			} else {
-				//echo("Not Using Proxy");
-				$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, null, 'Click-Bank-Traffic-Explosion', null, null, $authenticationURL );
+				//echo ("Not Using Proxy");
+				$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, null, 'WePromoteThis.com', null, null, $authenticationURL );
 			}
+		} else {
+			//echo ("Credentials missing. Username: $userEmail | Password length: " . strlen ( $password ) . " <br>");
+		}
+		if (! isset ( $httpClient ) && $tries > 0) {
+			sleep (30);
+			$httpClient = $this->getHttpClient ( $userEmail, $password, $proxyHost, $proxyPort, -- $tries );
 		}
 		return $httpClient;
 	}
@@ -262,6 +269,7 @@ catch ( Exception $except ) {
 		//echo ("Modified Keywords<br>");
 		//print_r ( $modifiedArray );
 		//die ( " - Bytes Count: " . $totalBytes );
+		
 
 		return implode ( ",", $modifiedArray );
 	}
