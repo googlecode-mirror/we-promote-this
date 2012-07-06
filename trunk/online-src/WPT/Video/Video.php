@@ -7,7 +7,7 @@ class Video {
 	public $description;
 	public $keywords;
 	public $link;
-	function __construct($pid, $title, $description, $keywords, $userWPID = '1', $rootPath = null) {
+	function __construct($pid, $title, $description, $keywords, $userWPID = "1", $rootPath = null) {
 		$this->pid = $pid;
 		if (isset ( $rootPath )) {
 			$path = $rootPath . $this->pid . "/";
@@ -30,7 +30,10 @@ class Video {
 		} else {
 			$this->keywords = explode ( ",", $keywords );
 		}
-		$this->link = "http://www.WePromoteThis.com/WPT/" . $this->pid. "/".$userWPID;
+		if (! isset ( $userWPID ) || strlen ( $userWPID ) == 0) {
+			$userWPID = 1;
+		}
+		$this->link = "http://www.WePromoteThis.com/WPT/" . $this->pid . "/" . $userWPID;
 	}
 	function removeForbiddenChars($txt) {
 		$txt = str_replace ( array ('<sup>&reg;</sup>', '<sup>&copy;</sup>', '<sup>TM</sup>', '&reg;', '&#0153;', '&#0169;', '&#0174;' ), '', $txt );

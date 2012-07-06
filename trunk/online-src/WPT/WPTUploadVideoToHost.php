@@ -53,7 +53,7 @@ class WPTUploadVideoToHost extends CBAbstract {
 	}
 
 	function startScheduleUploads() {
-		$this -> getLogger() -> logInfo("<br><hr/>STARTING Video Uploader. Time: " . date("m-d-y h:i:s A"));
+		echo("<br><hr/>STARTING Video Uploader. Time: " . date("m-d-y h:i:s A")."<br>");
 		$results = mysql_query("Select p.id, p.location from post as p LEFT JOIN uploadsites as us on p.location=us.location where p.posted=0 and us.working=1 and p.attempts<3 group by location, user_id order by p.lastattempt desc, rand()");
 		// TODO: add where clause to exclude error is null if files aren't being deleted
 		$this -> delegateUploadForMysqlResults($results);
@@ -166,7 +166,7 @@ class WPTUploadVideoToHost extends CBAbstract {
 				}
 
 				if (isset($uploader)) {
-					echo("<br>Uploading Video $pid to $location for User($userid): " . $userName);
+					echo("<br>Uploading Video $pid to $location for User($userid): " . $userName."<br>");
 					$uploader -> uploadResponse = $uploader -> upload();
 					// Upload the video
 					$posted = $uploader -> wasUploaded();
@@ -174,7 +174,7 @@ class WPTUploadVideoToHost extends CBAbstract {
 						$postURL = $uploader -> uploadLocation();
 						$query = "Update post SET posted=1, posttime=NOW(), postURL='$postURL' WHERE id=$id";
 						mysql_query($query);
-						echo("Video Successfully Uploaded!!! Here: <a href='$postURL'>$postURL</a> for User($userid): " . $userName);
+						echo("Video Successfully Uploaded!!! Here: <a href='$postURL'>$postURL</a> for User($userid): " . $userName."<br>");
 						//$this->getLogger()->logInfo ("DB updated with query: $query<br>");
 						if (mysql_errno()) {
 							$this -> getLogger() -> log('Could not update with query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);

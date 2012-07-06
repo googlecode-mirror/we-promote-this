@@ -118,7 +118,7 @@ class WPTUploadScheduler extends CBAbstract {
             // one video per user
             //$insertVideoUploadsQuery = "INSERT IGNORE INTO post (pid, user_id, location, proxyid) select uv.id as pid, (SELECT grow.user_id from ((SELECT id as user_id FROM users) UNION ALL (SELECT p.user_id FROM post as p JOIN users as us USING (user_id) WHERE us.active=1 )) as grow GROUP BY grow.user_id  ORDER BY count( grow.user_id ) ASC , rand( )  limit 1) as user_id, uploadsites.location as location , (select id from proxies order by rand() limit 1) as proxyid from uploadedVideos as uv left join keywords as k USING(id), uploadsites where k.id is not null and CHAR_LENGTH(k.words)>4 and k.words!='[\"{BLANK}\"]' and uploadsites.working=1 and uploadsites.type='video';";
             // all videos for every user
-            $insertVideoUploadsQuery = "INSERT IGNORE INTO post (pid, user_id, location, proxyid) select uv.id as pid, us.user_id as user_id, uploadsites.location as location , (select id from proxies order by rand() limit 1) as proxyid from uploadedVideos as uv left join keywords as k USING(id), uploadsites, users as us where k.id is not null and CHAR_LENGTH(k.words)>4 and k.words!='[\"{BLANK}\"]' and uploadsites.working=1 and uploadsites.type='video' and us.active=1;";
+            $insertVideoUploadsQuery = "INSERT IGNORE INTO post (pid, user_id, location, proxyid) select uv.id as pid, us.id as user_id, uploadsites.location as location , (select id from proxies order by rand() limit 1) as proxyid from uploadedVideos as uv left join keywords as k USING(id), uploadsites, users as us where k.id is not null and CHAR_LENGTH(k.words)>4 and k.words!='[\"{BLANK}\"]' and uploadsites.working=1 and uploadsites.type='video' and us.active=1;";
 
             //Append all queries
             if (isset($_REQUEST['debug'])) {
@@ -136,7 +136,7 @@ class WPTUploadScheduler extends CBAbstract {
             $status = "No Videos to schedule uploads for.<br>";
         }
 
-        $this -> getLogger() -> logInfo($status);
+        echo($status);
     }
 
     private function is_empty_folder($dirname) {
