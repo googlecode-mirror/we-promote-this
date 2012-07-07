@@ -40,7 +40,7 @@ class YoutubeAccount extends AccountCreator {
                     $login = $this -> createdAccount -> getLogin();
                     $login -> setPassword($password);
 
-                    $this -> AcceptTOSForUser($this -> createdAccount);
+                    $this -> acceptTOSForUser($this -> createdAccount);
                     $this -> createdAccount = $this -> service -> retrieveUser($username);
                     $login = $this -> createdAccount -> getLogin();
                     echo("After Accepteing TOS for USER:<br>" . $login -> __toString() . "<br><br>");
@@ -71,7 +71,7 @@ class YoutubeAccount extends AccountCreator {
         }
     }
 
-    function AcceptTOSForUser($user) {
+    function acceptTOSForUser($user) {
         $login = $user -> getLogin();
         $userName = $login -> getUsername();
         $password = $login -> getPassword();
@@ -85,7 +85,7 @@ class YoutubeAccount extends AccountCreator {
             //$this -> httpClient -> setUri($loginURL);
             //$this -> httpClient -> setHeaders(array('Accept-Encoding: gzip, deflate', 'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:2.0) Gecko/20100101 Firefox/4.0', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language: en-us,en;q=0.5', 'Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7', 'Keep-Alive: 115', 'Connection: keep-alive', 'Referer: http://www.youtube.com', 'Host: www.youtube.com', 'Cookie: __utma=173272373.199096328.1305393518.1305393518.1305525473.2; __utmz=173272373.1305393518.1.1.utmcsr=mail.google.com|utmccn=(referral)|utmcmd=referral|utmcct=/mail/u/0/; __utmc=173272373; GoogleAccountsLocale_session=en;'));
 
-            $this -> httpClient = $this -> getYoutubeHttpClient($userName, $password);
+            $this -> httpClient = $this -> getYoutubeHttpClient($userName."@wepromotethis.com", $password);
             $clientResponse = $this -> httpClient -> request(Zend_Http_Client::POST);
             $response = $clientResponse -> getBody();
 
@@ -128,12 +128,13 @@ class YoutubeAccount extends AccountCreator {
         return $accepted;
     }
 
-    function getYoutubeHttpClient($userEmail, $password, $tries = 3) {
+    function getYoutubeHttpClient($userEmail, $password, $tries = 2) {
         $authenticationURL = Zend_Gdata_YouTube::CLIENTLOGIN_URL;
         $service = Zend_Gdata_YouTube::AUTH_SERVICE_NAME;
+        $service = "gmail";
         if (isset($userEmail) && isset($password)) {
             try {
-                $httpClient = Zend_Gdata_ClientLogin::getHttpClient($userEmail, $password, $service, null, 'wepromotethis.com', null, null, $authenticationURL);
+                $httpClient = Zend_Gdata_ClientLogin::getHttpClient($userEmail, $password, $service, null, 'wepromotethis.com', null, null, $authenticationURL,'GOOGLE');
             } catch(Exception $e) {
                 echo("Error while getting Youtube httpclient: " . $e -> getMessage() . "<br><br>");
             }
@@ -141,7 +142,7 @@ class YoutubeAccount extends AccountCreator {
             //echo ("Credentials missing. Username: $userEmail | Password length: " . strlen ( $password ) . " <br>");
         }
         if (!isset($httpClient) && $tries > 0) {
-            sleep(30);
+            sleep(10);
             $httpClient = $this -> getYoutubeHttpClient($userEmail, $password, --$tries);
         }
         return $httpClient;

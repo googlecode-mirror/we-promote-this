@@ -1,4 +1,4 @@
-<?php
+ <?php
 require_once ("CB/CBUtils/CBAbstract.php");
 require_once ("CB/WPTVideoCreator.php");
 
