@@ -2,14 +2,13 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "WePromoteThis"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.1.3"
 #define MyAppPublisher "WePromoteThis"
 #define MyAppURL "http://www.WePromoteThis.com"
 #define MyAppExeName "WePromoteThis.exe"
 #define MyAppIconName "wepromotethis.ico"
 #define TVCCAppName "T.V.C.C."
 #define TVCCAppExeName "tvcc.exe"
-#define src "K:\VertrigoServ\www\WePromoteThis\src"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -35,8 +34,8 @@ CreateAppDir=true
 
 ; We compare the setup version information here against
 ; the one on the server to check for a newer version.
-VersionInfoVersion=1.1.2
-VersionInfoTextVersion=1.1.2
+VersionInfoVersion=1.1.3
+VersionInfoTextVersion=1.1.3
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
