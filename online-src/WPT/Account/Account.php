@@ -6,9 +6,14 @@ abstract class Account {
 	public $email;
 	public $firstName;
 	public $lastName;
+	private $valid;
 	
-	abstract function isEmailConfirmNeeded();
+	function isValid() {
+		return $this->valid;
+	}
 	
+	function setValid(bool $b) {
+		$this->valid = $b;
+	}
 }
-
 ?>

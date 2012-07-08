@@ -55,7 +55,7 @@ abstract class VideoUploader {
 	}
 	public function getWebDescription() {
 		// Modify description for SEO advantage
-		$linkFiller = $this->video->link . "\n\n" . "[t]...\n\nFind Out More Now: " . $this->video->link . "\n\n";
+		$linkFiller = $this->video->link . "\n\n" . "[t]...\n\nFind Out More Now: " . $this->video->link . "\n\n This Video was created and uploaded by user of WePromoteThis.com\nGo there now to see how you can make money too.\n".$this->video->hop." \n\n";
 		$textArray = explode ( " ", $this->video->description );
 		$text = '';
 		while ( (strlen ( $linkFiller . $text ) ) < $this->getDescriptionLimit () && count ( $textArray ) > 0 ) {
