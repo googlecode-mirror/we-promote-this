@@ -99,21 +99,13 @@ class YoutubeUploader extends VideoUploader {
 				$newEntry = $this->yt->insertEntry ( $myVideoEntry, $uploadUrl, 'Zend_Gdata_YouTube_VideoEntry' );
 				$response = $this->getVideoState ( $newEntry );
 				$this->uploadLocation = $newEntry->getVideoWatchPageUrl ();
-			} /*
-			catch ( Zend_Gdata_App_HttpException $httpException ) {
-				//echo ("App HttpException Thrown<br>\n");
-				$response = $httpException->getRawResponseBody ();
-			} catch ( Zend_Gdata_App_Exception $e ) {
-				//echo ("App Exception Thrown<br>\n");
-				$response = $e->getMessage ();
-			} 
-			*/
-catch ( Exception $except ) {
+			} catch ( Exception $except ) {
 				//echo ("Exception Thrown<br>\n");
 				$response = $except->getMessage ();
 			}
 		} else {
-			$response = "No Http Client to upload video";
+			$response = "No Http Client to upload video for user: " . $this->userName;
+			echo ($response . "<br>");
 		}
 		return $response;
 	}
@@ -207,35 +199,39 @@ catch ( Exception $except ) {
 		$authenticationURL = Zend_Gdata_YouTube::CLIENTLOGIN_URL;
 		$service = Zend_Gdata_YouTube::AUTH_SERVICE_NAME;
 		if (isset ( $userEmail ) && isset ( $password )) {
-			if (isset ( $proxyHost ) && isset ( $proxyPort )) {
-				$httpConfig = array ('adapter' => 'Zend_Gdata_HttpAdapterStreamingProxy', 'proxy_host' => $proxyHost, 'proxy_port' => $proxyPort, 'maxredirects' => 5, 'timeout' => $this->timeout, 'keepalive' => true );
-				//$httpConfig = array ('adapter' => 'Zend_Http_Client_Adapter_Proxy', 'proxy_host' => $proxy->proxy, 'proxy_port' => $proxy->port,'maxredirects' => 10, 'timeout' => 120, 'keepalive' => true );
-				try {
-					// creates a proxied client to use for authentication
-					$clientp = new Zend_Gdata_HttpClient ( $authenticationURL, $httpConfig );
-					// To turn cookie stickiness on, set a Cookie Jar
-					$clientp->setCookieJar ();
-					// authenticate
-					//$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, $clientp );
-					$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, $clientp, 'WePromoteThis.com', null, null, $authenticationURL );
-					// set the proxy information back into the client
-					// necessary due to http://framework.zend.com/issues/browse/ZF-1920
-					$httpClient->setConfig ( $httpConfig );
-					//echo ("Using Proxy: $proxyHost port: $proxyPort<br>");
-				} catch ( Zend_Gdata_App_HttpException $e ) {
-					//var_dump ( $e );
-					//echo ("Error Using Proxy: $proxyHost  port: $proxyPort<br>" . $e->getMessage () . "<br>");
+			try {
+				if (isset ( $proxyHost ) && isset ( $proxyPort )) {
+					$httpConfig = array ('adapter' => 'Zend_Gdata_HttpAdapterStreamingProxy', 'proxy_host' => $proxyHost, 'proxy_port' => $proxyPort, 'maxredirects' => 5, 'timeout' => $this->timeout, 'keepalive' => true );
+					//$httpConfig = array ('adapter' => 'Zend_Http_Client_Adapter_Proxy', 'proxy_host' => $proxy->proxy, 'proxy_port' => $proxy->port,'maxredirects' => 10, 'timeout' => 120, 'keepalive' => true );
+					try {
+						// creates a proxied client to use for authentication
+						$clientp = new Zend_Gdata_HttpClient ( $authenticationURL, $httpConfig );
+						// To turn cookie stickiness on, set a Cookie Jar
+						$clientp->setCookieJar ();
+						// authenticate
+						//$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, $clientp );
+						$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, $clientp, 'WePromoteThis.com', null, null, $authenticationURL );
+						// set the proxy information back into the client
+						// necessary due to http://framework.zend.com/issues/browse/ZF-1920
+						$httpClient->setConfig ( $httpConfig );
+						//echo ("Using Proxy: $proxyHost port: $proxyPort<br>");
+					} catch ( Zend_Gdata_App_HttpException $e ) {
+						//var_dump ( $e );
+						//echo ("Error Using Proxy: $proxyHost  port: $proxyPort<br>" . $e->getMessage () . "<br>");
+						$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, null, 'WePromoteThis.com', null, null, $authenticationURL );
+					}
+				} else {
+					//echo ("Not Using Proxy");
 					$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, null, 'WePromoteThis.com', null, null, $authenticationURL );
 				}
-			} else {
-				//echo ("Not Using Proxy");
-				$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, null, 'WePromoteThis.com', null, null, $authenticationURL );
+			} catch ( Exception $e ) {
+				echo ("Error getting Youtube HttpClient: " . $e->getMessage () . "<br>");
 			}
 		} else {
 			//echo ("Credentials missing. Username: $userEmail | Password length: " . strlen ( $password ) . " <br>");
 		}
 		if (! isset ( $httpClient ) && $tries > 0) {
-			sleep (30);
+			sleep ( 30 );
 			$httpClient = $this->getHttpClient ( $userEmail, $password, $proxyHost, $proxyPort, -- $tries );
 		}
 		return $httpClient;

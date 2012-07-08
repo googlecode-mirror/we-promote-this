@@ -49,28 +49,35 @@ class CommandLineHelper {
 		return $files;
 	}
 	function run_in_background($command, $output, $taskID = null) {
-	    $results = "Could not run Command";
-		if ($this->isOnline()) {
+		$results = "Could not run Command";
+		if ($this->isOnline ()) {
+			//echo ("<b>Running online mode</b><br>");
 			$this->removeDeadProcessesFromQueue ();
 			if (! isset ( $taskID )) {
-				mysql_query ( "insert ignore into task (cmd, output) values ('" . mysql_escape_string ( $command ) . "','" . mysql_escape_string ( $output ) . "')" );
-                $results = basename($output);
+				$insertQuery = "insert ignore into task (cmd, output) values ('" . mysql_escape_string ( $command ) . "','" . mysql_escape_string ( $output ) . "')";
+				//echo ("Inser Query " . $insertQuery . "<br>");
+				mysql_query ( $insertQuery );
+				$results = basename ( $output );
 			} else {
+				mysql_query ( "LOCK TABLES task READ" );
 				$runningProcessCount = mysql_num_rows ( mysql_query ( "Select id from task where running=true" ) );
+				mysql_query ( "UNLOCK TABLES;" );
+				//echo ("# Running Proccess: $runningProcessCount<br>");
 				if ($runningProcessCount < $this->processLimit) {
-					mysql_query ( "update task set running=true where id=" . $taskID );
-                    $results = $this->startProcess ( $command, $output ); 
-					if($results!==false){
-					mysql_query ( "Delete from task where id=" . $taskID );
-                    }
-				}else{
-				    $results = basename($output);
+					$results = $this->startProcess ( $command, $output );
+					if ($results !== false) {
+						mysql_query ( "Delete from task where id=" . $taskID );
+					}
+				} else {
+					$results = basename ( $output );
 				}
 			}
 		} else {
-			$results =  $this->startProcess ( $command, $output );
+			//echo ("<font color='red'><b>Running online mode</b></font><br>");
+			$results = $this->startProcess ( $command, $output );
+		
 		}
-        return $results;
+		return $results;
 		//sleep ( rand(5,10) ); // Sleep for 5 seconds so other taks don't get ran to quickly
 	}
 	
@@ -86,18 +93,18 @@ class CommandLineHelper {
 			if (stripos ( $c, ".php" ) !== false) {
 				//$foundFilesArray = $this->find ( $this->relRootPath, $c );
 				$foundFilesArray = $this->find ( $this->absRootPath, $c );
-				if(count($foundFilesArray)>0){
-				$useFile = realpath ( array_shift ( $foundFilesArray ) );
-				//$useFile = array_shift($foundFilesArray);
-				$commandArray [$key] = $useFile;
-                }else{
-                    echo("Cant find file $c<br>");
-                    return false;
-                }
+				if (count ( $foundFilesArray ) > 0) {
+					$useFile = realpath ( array_shift ( $foundFilesArray ) );
+					//$useFile = array_shift($foundFilesArray);
+					$commandArray [$key] = $useFile;
+				} else {
+					echo ("Cant find file $c<br>");
+					return false;
+				}
 			}
 		}
 		$commandAltered = implode ( " ", $commandArray );
-		if ($this->isOnline()) {
+		if ($this->isOnline ()) {
 			$commandPlus = "nohup /web/cgi-bin/php5 -q -d register_argc_argv=1 " . $commandAltered;
 			//passthru ( sprintf ( $sprintFormat, $commandPlus, $output, $processIDFile ) );
 			passthru ( sprintf ( $sprintFormat, $commandPlus, $output ) );
@@ -114,10 +121,8 @@ class CommandLineHelper {
 			pclose ( popen ( sprintf ( $sprintFormat, $commandPlus, $output ), 'r' ) );
 		
 		}
-         return basename($output);
+		return basename ( $output );
 	}
-
-
 	
 	/*
 	function isRunning($pid) {
@@ -140,12 +145,15 @@ class CommandLineHelper {
 	}
 	
 	function removeDeadProcessesFromQueue() {
+		mysql_query ( "LOCK TABLES task LOW_PRIORITY WRITE" );
 		mysql_query ( "delete from task where started is not null and (running=false or TIMESTAMPDIFF(MINUTE,started, now())>=" . $this->processTimeLimit . ")" );
+		mysql_query ( "UNLOCK TABLES;" );
 	}
 	
 	function runJobsInJobQueue() {
-		mysql_query ( "LOCK TABLES task WRITE" );
+		mysql_query ( "LOCK TABLES task READ" );
 		$results = mysql_query ( "select id, cmd, output from task where running=false and started is null and cmd is not null and output is not null limit " . $this->processLimit );
+		mysql_query ( "UNLOCK TABLES;" );
 		//echo ("runJobsInJobQueue Starting<br>\n\r");
 		while ( ($row = mysql_fetch_assoc ( $results )) ) {
 			$cmd = $row ['cmd'];
@@ -153,7 +161,6 @@ class CommandLineHelper {
 			$taskID = $row ['id'];
 			$this->run_in_background ( $cmd, $output, $taskID );
 		}
-		mysql_query ( "UNLOCK TABLES;" );
 	}
 }
 ?>

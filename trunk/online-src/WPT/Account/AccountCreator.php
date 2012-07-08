@@ -17,8 +17,8 @@ abstract class AccountCreator extends Account {
 	
 	function __construct() {
 		try {
-			$this->httpClient = $this->getHttpClient ( "admin@wepromotethis.com", "Neeuq011$" );
-			$this->service = $this->getService ( $this->httpClient );
+			$this->httpClient = $this->getNewHttpClient ( "admin@wepromotethis.com", "Neeuq011$" );
+			$this->service = $this->getNewService ( $this->httpClient );
 		} catch ( Exception $e ) {
 			echo ($e->getMessage () . "<br>");
 		}
@@ -36,13 +36,21 @@ abstract class AccountCreator extends Account {
 		return isset ( $this->service );
 	}
 	
-	public function getHttpClient($email, $password) {
+	public function getNewHttpClient($email, $password) {
 		return Zend_Gdata_ClientLogin::getHttpClient ( $email, $password, Zend_Gdata_Gapps::AUTH_SERVICE_NAME );
 	
 	}
 	
-	public function getService(Zend_Gdata_HttpClient $client) {
+	public function getHttpClient() {
+		return $this->getHttpClient ();
+	}
+	
+	public function getNewService(Zend_Gdata_HttpClient $client) {
 		return new Zend_Gdata_Gapps ( $client, 'wepromotethis.com' );
+	}
+	
+	public function getService() {
+		return $this->service;
 	}
 
 }

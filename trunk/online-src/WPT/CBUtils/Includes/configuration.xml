@@ -9,6 +9,11 @@
 	<wpdbname>chr1216808373562</wpdbname>
 	<wpdbuser>chr1216808373562</wpdbuser>
 	<wpdbpassword>Wordpress11</wpdbpassword>
+	<localmysqlServerIP>localhost</localmysqlServerIP>
+	<localmysqlServerIP2>127.0.0.1</localmysqlServerIP2>
+	<localdbname>cbank</localdbname>
+	<localdbuser>frostbyte07</localdbuser>
+	<localdbpassword>neeuq01</localdbpassword>
 	<emailhost>smtp.gmail.com</emailhost>
 	<emailport>25</emailport>
 	<emailauth>1</emailauth>

@@ -15,13 +15,20 @@ Zend_Loader::loadClass ( 'Zend_Gdata_ClientLogin' );
 
 class YoutubeAccount extends AccountCreator {
 	
-	function constructClass() {
-		$person = new Name ( );
-		$this->firstName = $person->firstName;
-		$this->lastName = $person->lastName;
+	private $acceptedTOSClient;
+	
+	function constructClass($dbConnect = null) {
+		if (isset ( $dbConnect )) {
+			$person = new Name ( $this->get );
+			$this->firstName = $person->firstName;
+			$this->lastName = $person->lastName;
+		} else {
+			$this->firstName = "Joe" . rand ( 1000, 40000 );
+			$this->lastName = "Blow" . rand ( 1000, 40000 );
+		}
 	}
 	
-	function create($username, $password) {
+	function create($username, $password, $tries = 0) {
 		$this->userName = $username;
 		$this->email = $username . "@wepromotethis.com";
 		$this->password = $password;
@@ -32,6 +39,11 @@ class YoutubeAccount extends AccountCreator {
 				$this->setValid ( $this->acceptTOSForUser () );
 				if (! $this->isValid ()) {
 					$this->service->deleteUser ( $this->userName );
+					if ($tries < 3) {
+						$this->create ( $username . "t" . $tries . "r" . rand ( 0, 100 ), $password, ++ $tries );
+					}
+				} else {
+					$this->createYTChannel ();
 				}
 			} catch ( CaptchaRequiredException $e ) {
 				$src = $e->getCaptchaUrl ();
@@ -53,6 +65,8 @@ class YoutubeAccount extends AccountCreator {
 			} catch ( Exception $e ) {
 				echo ("Error while creating user: " . $e->getMessage ());
 			}
+		} else {
+			echo ("No valid http client or valid service");
 		}
 	}
 	
@@ -68,6 +82,7 @@ class YoutubeAccount extends AccountCreator {
 			//$p = $p->getRandomProxy ();
 			$p = array ("proxy" => null, "port" => null );
 			$client = $this->getPlainHttpClient ( "http://youtube.com", $p ['proxy'], $p ['port'] );
+			
 			$tries --;
 			if (! isset ( $client )) {
 				sleep ( 20 );
@@ -135,7 +150,8 @@ class YoutubeAccount extends AccountCreator {
 		$solved = false;
 		$tries = 0;
 		$deCaptcha = new DeCaptcha ( 'frostbyte07', 'Neeuq011$' );
-		while ( ! $solved && $tries < 10 ) {
+		do {
+			
 			// Solve Captcha
 			$doc = new DOMDocument ( );
 			$doc->loadHTML ( $response );
@@ -149,6 +165,9 @@ class YoutubeAccount extends AccountCreator {
 				if ($tries > 0) {
 					$deCaptcha->reportLastCatchaIncorrect ();
 				}
+				//echo ("Solving captcha<br>");
+				
+
 				$captchaText = $deCaptcha->getCatchaText ( $src );
 				//echo ("Captcha Image: <img src='$src'><br>Text: $captchaText<br><br>");
 				$parameters = array ("toscaptcha" => $captchaText, "accept" => "I accept. Continue to my account." );
@@ -173,10 +192,74 @@ class YoutubeAccount extends AccountCreator {
 				//echo ("Captcha Solved<br>");
 				$solved = true;
 				$accepted = true;
+				$this->acceptedTOSClient = $client;
 			}
 			$tries ++;
-		}
+		} while ( ! $solved && $tries < 10 );
 		return $accepted;
+	}
+	
+	function createYTChannel() {
+		
+		if ($this->isValid () && isset ( $this->acceptedTOSClient )) {
+			
+			$client = $this->acceptedTOSClient;
+			
+			// Go to create channel url
+			$createChannelURL = "http://www.youtube.com/create_channel";
+			$client->setUri ( $createChannelURL );
+			$clientResponse = $client->request ( Zend_Http_Client::POST );
+			$response = $clientResponse->getBody ();
+			
+			//echo ("Response 1:<br>$response");
+			//echo ("<br><br><br>");
+			
+
+			$doc = new DOMDocument ( );
+			$doc->loadHTML ( $response );
+			$xpath = new DOMXPath ( $doc );
+			
+			$genders = array ("m", "f" );
+			$gender = $genders [array_rand ( $genders )];
+			
+			$userNameAccepted = false;
+			
+			$parameters = array ("username" => $this->userName, "country" => "US", "gender" => $gender, "find_me_via_email" => "agreed" );
+			
+			//get all hidden inputs in form and add to parameters
+			foreach ( $xpath->query ( '//input[contains(@type,"hidden")]' ) as $node ) {
+				$parameters [$node->getAttribute ( "name" )] = $node->getAttribute ( "value" );
+			}
+			
+			// Set user name, country, gender, and aggree to find via email
+			$client->setParameterPost ( $parameters );
+			$clientResponse = $client->request ( Zend_Http_Client::POST );
+			$response = $clientResponse->getBody ();
+			
+			//echo ("Response loop:<br>$response");
+			//echo ("<br><br><br>");
+			
+
+			$doc = new DOMDocument ( );
+			$doc->loadHTML ( $response );
+			$xpath = new DOMXPath ( $doc );
+			
+			//get all  inputs in form and add to parameters
+			foreach ( $xpath->query ( '//input' ) as $node ) {
+				$parameters [$node->getAttribute ( "name" )] = $node->getAttribute ( "value" );
+			}
+			
+			// Accept final selection of yt options
+			$client->setParameterPost ( $parameters );
+			$clientResponse = $client->request ( Zend_Http_Client::POST );
+			$response = $clientResponse->getBody ();
+			//echo ("Response final :<br>$response");
+		//echo ("<br><br><br>");
+		//echo ("YT Channel Created<br>");
+		} else {
+			echo ("No valid user or accepted tos");
+		}
+	
 	}
 	
 	public function getPlainHttpClient($url, $proxyHost = null, $proxyPort = null) {
@@ -208,10 +291,14 @@ class YoutubeAccount extends AccountCreator {
 }
 
 //$yt = new YoutubeAccount ( );
-//$username = "wptAutoAccount" . rand ( 1000, 40000 );
+//$username = "wptAA" . rand ( 1000, 40000 );
 //$password = 'Tpw2012' . rand ( 0, 1000 ) . '$';
 //$yt->create ( $username, $password );
 //if ($yt->isValid ()) {
-//	echo ("Created Users:<br>" . $yt->getJson () . "<br>");
+//	echo ("Created Users:<br>" . $yt->userName . " | Password: " . $yt->password . "<br>");
+//} else {
+//	echo ("Couldnt create valid user");
 //}
+
+
 ?>

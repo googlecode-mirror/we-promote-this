@@ -12,7 +12,7 @@ abstract class Account {
 		return $this->valid;
 	}
 	
-	function setValid(bool $b) {
+	function setValid($b) {
 		$this->valid = $b;
 	}
 }

@@ -1,17 +1,18 @@
 <?php
-require_once 'CBUtils/CBAbstract.php';
-
-error_reporting ( E_ERROR );
-// Errors only
-
-
 require_once ("CBUtils/CBAbstract.php");
 require_once ('Account/YoutubeAccount.php');
 
 class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 	
+	function __construct() {
+		parent::__construct ();
+	}
+	
+	function __destruct() {
+		parent::__destruct ();
+	}
+	
 	function constructClass() {
-		
 		$this->handleARGV ();
 	}
 	
@@ -106,12 +107,20 @@ class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 	
 	function createYTAccountFor($uid) {
 		echo ("Creating YT Account for User ID($uid) at " . date ( "m-d-y h:i:s A" ) . "<br>");
-		$yt = new YoutubeAccount ( );
-		$username = "wptAutoAccount" . rand ( 1000, 40000 );
+		$yt = new YoutubeAccount ( $this->getDBConnection ()->getDBConnection () );
+		// Find name that doesnt already exist
+		$validUserName = false;
+		do {
+			$username = "wptAAcq" . rand ( 1000, 40000 );
+			$userEntry = $yt->getService ()->retrieveUser ( $username );
+			if (! isset ( $userEntry )) {
+				$validUserName = true;
+			}
+		} while ( ! $validUserName );
 		$password = 'Tpw2012' . rand ( 0, 1000 ) . '$';
 		$yt->create ( $username, $password );
 		if ($yt->isValid ()) {
-			echo ("Created YT Account:<br>" . $yt->email. "<br>");
+			echo ("Created YT Account: " . $yt->email . "<br>");
 			// Insert new yt account into wordpress database
 			$aresult = $this->getDBConnection ()->queryWP ( "LOCK TABLES wp_usermeta WRITE" );
 			$accountQuery = "Select meta_key as account FROM wp_usermeta where user_id = $uid AND meta_key like 'youtube%_password' ORDER BY umeta_id DESC limit 1";
@@ -121,12 +130,13 @@ class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 			$account = str_ireplace ( 'youtube', '', $account );
 			$account = str_ireplace ( '_password', '', $account );
 			$numAccount = (( int ) $account) + 1;
-			$insertQuery = "Insert into wp_usermeta (user_id, meta_key,meta_value) VALUES($uid,'youtube" . $numAccount . "','" . $yt->email . "'),($uid,'youtube" . $numAccount . "_password','" . $yt->password . "')";
+			$insertQuery = "Insert into wp_usermeta (user_id, meta_key,meta_value) VALUES($uid,'youtube" . $numAccount . "','" . $yt->userName . "'),($uid,'youtube" . $numAccount . "_password','" . $yt->password . "')";
 			//echo ("Insert Query:$insertQuery<br>");
 			$this->getDBConnection ()->queryWP ( $insertQuery );
 			$aresult = $this->getDBConnection ()->queryWP ( "UNLOCK TABLES" );
 		} else {
 			echo ("Could not create a valid YT account<br>");
+		
 		}
 	}
 }
