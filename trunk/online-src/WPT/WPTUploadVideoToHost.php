@@ -1,6 +1,8 @@
 <?php
-error_reporting(E_ALL);
 // turn on all errors
+//error_reporting(E_ALL);
+// turn off all errors
+error_reporting(0);
 require_once 'CBUtils/CBAbstract.php';
 require_once 'Video/Video.php';
 require_once 'Video/VideoUploader.php';
@@ -54,7 +56,7 @@ class WPTUploadVideoToHost extends CBAbstract {
 
 	function startScheduleUploads() {
 		echo("<br><hr/>STARTING Video Uploader. Time: " . date("m-d-y h:i:s A")."<br>");
-		$results = mysql_query("Select p.id, p.location from post as p LEFT JOIN uploadsites as us on p.location=us.location where p.posted=0 and us.working=1 and p.attempts<3 group by location, user_id order by p.lastattempt desc, rand()");
+		$results = mysql_query("Select p.id, p.location from post as p LEFT JOIN uploadsites as us on p.location=us.location where p.posted=0 and us.working=1 and p.attempts<3 group by p.user_id order by p.lastattempt desc, rand()");
 		// TODO: add where clause to exclude error is null if files aren't being deleted
 		$this -> delegateUploadForMysqlResults($results);
 	}

@@ -1,7 +1,9 @@
 <?php
-error_reporting ( E_ALL ); // all errors
+//error_reporting ( E_ALL ); // all errors
 //error_reporting ( E_ALL ^ E_NOTICE ); // turn on all errors, warnings minus notices
 //error_reporting(E_ERROR); // Errors only
+error_reporting ( 0 ); // no errors
+
 set_time_limit ( 300 ); // 5 Minutes
 ob_start ();
 $prependFile = '/home/content/50/6934650/html/pear/includes/prepend.php';
