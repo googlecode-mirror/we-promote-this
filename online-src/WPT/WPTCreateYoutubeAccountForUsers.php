@@ -120,7 +120,7 @@ class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 		$password = 'Tpw2012' . rand ( 0, 1000 ) . '$';
 		$yt->create ( $username, $password );
 		if ($yt->isValid ()) {
-			echo ("Created YT Account: " . $yt->email . "<br>");
+			echo ("Created YT Account: " . $yt->userName . "<br>");
 			// Insert new yt account into wordpress database
 			$aresult = $this->getDBConnection ()->queryWP ( "LOCK TABLES wp_usermeta WRITE" );
 			$accountQuery = "Select meta_key as account FROM wp_usermeta where user_id = $uid AND meta_key like 'youtube%_password' ORDER BY umeta_id DESC limit 1";
