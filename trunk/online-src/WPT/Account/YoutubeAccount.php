@@ -237,7 +237,7 @@ class YoutubeAccount extends AccountCreator {
 			$client->setUri ( $createChannelURL );
 			$clientResponse = $client->request ( Zend_Http_Client::POST );
 			$response = $clientResponse->getBody ();
-			$this->storeResponse ( $response );
+			//$this->storeResponse ( $response );
 			
 			$doc = new DOMDocument ( );
 			$doc->loadHTML ( $response );
