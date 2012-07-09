@@ -1,8 +1,8 @@
 <?php
-//error_reporting ( E_ALL ); // all errors
-//ror_reporting ( E_ALL ^ E_NOTICE ); // turn on all errors, warnings minus notices
+// error_reporting ( E_ALL ); // all errors
+// ror_reporting ( E_ALL ^ E_NOTICE ); // turn on all errors, warnings minus
+// notices
 error_reporting ( E_ERROR ); // Errors only
-
 
 set_time_limit ( 300 ); // 5 Minutes
 ob_start ();
@@ -22,11 +22,9 @@ abstract class CBAbstract {
 	public static $Logger;
 	private $taskID;
 	private $outputContent;
-	
 	function __construct() {
-		
 		$path = dirname ( __FILE__ );
-		//$path = '/home/content/50/6934650/html/';
+		// $path = '/home/content/50/6934650/html/';
 		$onlineMode = false;
 		
 		if (stripos ( $path, '/home/content/50/6934650/html/' ) !== false) {
@@ -37,7 +35,7 @@ abstract class CBAbstract {
 		}
 		
 		if (! isset ( self::$ConfigParser )) {
-			self::$ConfigParser = new ConfigParser ( );
+			self::$ConfigParser = new ConfigParser ();
 		}
 		
 		if (! isset ( self::$DBConnection )) {
@@ -45,11 +43,11 @@ abstract class CBAbstract {
 		}
 		
 		if (! isset ( self::$CommandLineHelper )) {
-			self::$CommandLineHelper = new CommandLineHelper ( );
+			self::$CommandLineHelper = new CommandLineHelper ();
 		}
 		
 		if (! isset ( self::$Logger )) {
-			self::$Logger = new LogHelper ( );
+			self::$Logger = new LogHelper ();
 		}
 		
 		if (ONLINEMODE) {
@@ -60,19 +58,18 @@ abstract class CBAbstract {
 		if (ONLINEMODE) {
 			$this->notifyDBOfTaskFinished ();
 		}
-		exit ( 0 );
 	}
 	function __destruct() {
 		$this->getCommandLineHelper ()->__destruct ();
-		$this->outputContent = ob_get_contents (); // Capture all the output and display it when class is finished
+		$this->outputContent = ob_get_contents (); // Capture all the output and
+		                                           // display it when class is
+		                                           // finished
 		ob_end_clean ();
 		echo ($this->outputContent);
 	}
-	
 	function getOutputContent() {
 		return $this->outputContent;
 	}
-	
 	function notifyDBOfTask() {
 		$query = "insert into task (class,running,started) values ('" . get_class ( $this ) . "',true,now())";
 		mysql_query ( "LOCK TABLES task LOW_PRIORITY WRITE" );
@@ -81,7 +78,7 @@ abstract class CBAbstract {
 		mysql_query ( "UNLOCK TABLES;" );
 	}
 	function notifyDBOfTaskFinished() {
-		//echo ("Notifying DB Task Finished of id: " . $this->taskID . "<br>");
+		// echo ("Notifying DB Task Finished of id: " . $this->taskID . "<br>");
 		mysql_query ( "LOCK TABLES task LOW_PRIORITY WRITE" );
 		$query = "update task set running=false where id=" . $this->taskID;
 		mysql_query ( "UNLOCK TABLES;" );
@@ -93,7 +90,6 @@ abstract class CBAbstract {
 		} else {
 			self::$DBConnection = new DBConnection ( localmysqlServerIP2, localdbname, localdbuser, localdbpassword, wpip, wpdbname, wpdbuser, wpdbpassword );
 		}
-	
 	}
 	static function getConfigParser() {
 		return self::$ConfigParser;
@@ -119,7 +115,6 @@ abstract class CBAbstract {
 		}
 		return $vars;
 	}
-	
 	abstract function constructClass();
 }
 ?>
