@@ -1,21 +1,30 @@
 <?php
 require_once ("CBUtils/CBAbstract.php");
 require_once ('Account/YoutubeAccount.php');
-
 class WPTCreateYoutubeAccountForUsers extends CBAbstract {
-	
 	function __construct() {
 		parent::__construct ();
 	}
-	
 	function __destruct() {
 		parent::__destruct ();
 	}
-	
 	function constructClass() {
-		$this->handleARGV ();
+		if (isset ( $_REQUEST ['manual'] ) && isset ( $_REQUEST ['count'] ) && isset ( $_REQUEST ['uid'] )) {
+			$className = get_class ( $this );
+			$file = $className . ".txt";
+			$uid = $_REQUEST ['uid'];
+			$count = $_REQUEST ['count'];
+			echo ("<hr>Manual Override - Start Date/Time: " . date ( "m/d/Y h:i:s A" ) . "<br>Creating " . $count . " YT Account(s) for user: " . $uid . "<br>");
+			for($i = 0; $i < $count; $i ++) {
+				$cmd = $className . ".php uid=$uid count=$i"; // Added count so the command would be different and get processed.
+				$this->getCommandLineHelper ()->run_in_background ( $cmd, $file );
+				//echo("Running command: $cmd<br>");
+				// $this->createYTAccountFor ($uid );
+			}
+		} else {
+			$this->handleARGV ();
+		}
 	}
-	
 	function handleARGV() {
 		global $argv;
 		if (! isset ( $argv ) || count ( $argv ) <= 1) {
@@ -37,7 +46,6 @@ class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 			}
 		}
 	}
-	
 	function createYTAccountForUsers() {
 		// For each user create one new YT account
 		echo ("<hr>Start Date/Time: " . date ( "m/d/Y h:i:s A" ) . "<br>");
@@ -48,7 +56,7 @@ class WPTCreateYoutubeAccountForUsers extends CBAbstract {
                 LEFT JOIN wp_usermeta AS um2 ON (um2.meta_key='clickbank_clerk_api_key' AND um2.user_id=mu.user_id)
                 LEFT JOIN wp_usermeta AS um3 ON (um3.meta_key='cbearnings' AND um3.user_id = um.user_id)
 				WHERE CHAR_LENGTH(um.meta_value)>0 and CHAR_LENGTH(um3.meta_value)>0";
-		//echo ("Query: $query<br><br>");
+		// echo ("Query: $query<br><br>");
 		$className = get_class ( $this );
 		$file = $className . ".txt";
 		$result = $this->getDBConnection ()->queryWP ( $query );
@@ -104,7 +112,6 @@ class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 			}
 		}
 	}
-	
 	function createYTAccountFor($uid) {
 		echo ("Creating YT Account for User ID($uid) at " . date ( "m-d-y h:i:s A" ) . "<br>");
 		$yt = new YoutubeAccount ( $this->getDBConnection ()->getDBConnection () );
@@ -131,14 +138,13 @@ class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 			$account = str_ireplace ( '_password', '', $account );
 			$numAccount = (( int ) $account) + 1;
 			$insertQuery = "Insert into wp_usermeta (user_id, meta_key,meta_value) VALUES($uid,'youtube" . $numAccount . "','" . $yt->userName . "'),($uid,'youtube" . $numAccount . "_password','" . $yt->password . "')";
-			//echo ("Insert Query:$insertQuery<br>");
+			// echo ("Insert Query:$insertQuery<br>");
 			$this->getDBConnection ()->queryWP ( $insertQuery );
 			$aresult = $this->getDBConnection ()->queryWP ( "UNLOCK TABLES" );
 		} else {
 			echo ("Could not create a valid YT account<br>");
-		
 		}
 	}
 }
-$wcyafu = new WPTCreateYoutubeAccountForUsers ( );
+$wcyafu = new WPTCreateYoutubeAccountForUsers ();
 ?>
