@@ -10,7 +10,7 @@ class WePromoteThis extends CBAbstract {
 		$this->startOver = false;
 		//Check for updates first
 		$updated = $this->checkForUpdates ();
-		if ($updated) {
+		if ($updated==true) {
 			echo ("Your software has been updated and will need to be restarted.");
 		} else {
 			// Call DB and figure out a video to create
@@ -28,7 +28,7 @@ class WePromoteThis extends CBAbstract {
 				$this->startOver = true;
 			}
 		}
-		
+        
 		exit ( 0 );
 	}
 	
@@ -42,6 +42,7 @@ class WePromoteThis extends CBAbstract {
 		$compareResults = $this->versionCompare ( VERSION_NUMBER, $version );
 		//echo ("Compare results: $compareResults<br>");
 		if ($compareResults < 0) {
+		    //echo("needs to be updated");
 			$this->getNewConfigFiles ();
 			$updated = true;
 		}
@@ -49,7 +50,7 @@ class WePromoteThis extends CBAbstract {
 	}
 	
 	function getNewConfigFiles() {
-		$configFile = dirname ( __FILE__ ) . "/CB/CBUtils/configuration.xml";
+		$configFile = dirname ( __FILE__ ) . "/CB/CBUtils/Includes/configuration.xml";
 		$newFileContents = file_get_contents ( ONLINE_CONFIG_FILE_LOCATION );
 		file_put_contents ( $configFile, $newFileContents );
 	}
