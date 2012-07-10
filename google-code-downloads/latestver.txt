@@ -1,1 +1,1 @@
-1.1.3,"http://we-promote-this.googlecode.com/files/setup.exe"
+1.1.2,"http://we-promote-this.googlecode.com/files/setup.exe"
