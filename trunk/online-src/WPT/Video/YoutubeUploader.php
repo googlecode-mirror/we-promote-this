@@ -20,6 +20,8 @@ class YoutubeUploader extends VideoUploader {
 	public $yt;
 	public $userProfileEntry;
 	public $xPath;
+    public $httpException;
+    
 	function constructClass() {
 		$this->httpClient = NULL;
 		$this->applicationId = "WePromoteThis.com";
@@ -104,8 +106,8 @@ class YoutubeUploader extends VideoUploader {
 				$response = $except->getMessage ();
 			}
 		} else {
-			$response = "No Http Client to upload video for user: " . $this->userName;
-			echo ($response . "<br>");
+			$response = "No Http Client to upload video for user: " . $this->userName."| Youtube HttpClient Response: ".$this->httpException;
+			//echo ($response . "<br>");
 		}
 		return $response;
 	}
@@ -225,7 +227,8 @@ class YoutubeUploader extends VideoUploader {
 					$httpClient = Zend_Gdata_ClientLogin::getHttpClient ( $userEmail, $password, $service, null, 'WePromoteThis.com', null, null, $authenticationURL );
 				}
 			} catch ( Exception $e ) {
-				echo ("Error getting Youtube HttpClient: " . $e->getMessage () . "<br>");
+				//echo ("Error getting Youtube HttpClient: " . $e->getMessage () . "<br>");
+                $this->httpException = $e->getMessage();
 			}
 		} else {
 			//echo ("Credentials missing. Username: $userEmail | Password length: " . strlen ( $password ) . " <br>");

@@ -34,6 +34,11 @@ class YoutubeAccount extends AccountCreator {
 			$this->lastName = "Blow" . rand ( 1000, 40000 );
 		}
 	}
+    function delete($userName){
+        if ($this->hasValidService ()) {
+        $this->service->deleteUser ( $userName );
+        }
+    }
 	function create($username, $password, $tries = 0) {
 		$this->userName = $username;
 		$this->email = $username . "@wepromotethis.com";
@@ -45,7 +50,7 @@ class YoutubeAccount extends AccountCreator {
 				$this->setValid ( $this->acceptTOSForUser () );
 				if (! $this->isValid ()) {
 					//echo ("TOS not valid<br>");
-					$this->service->deleteUser ( $this->userName );
+					$this->delete($this->userName);
 					if ($tries < 3) {
 						$this->create ( $username . "t" . $tries . "r" . rand ( 0, 100 ), $password, ++ $tries );
 					}
