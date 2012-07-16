@@ -50,7 +50,7 @@ class WPTDeleteUserYoutubeAccount extends CBAbstract {
         echo("Deleting YT Account for User ($userName) at " . date("m-d-y h:i:s A") . "<br>");
         $yt = new YoutubeAccount();
         try {
-            $yt -> delete(strtolower($userName) . "@wepromotethis.com");
+            $yt -> delete(strtolower($userName));
         } catch(Exception $e) {
             echo("Error deleting user ($userName): " . $e -> getMessage() . "<br>");
         }

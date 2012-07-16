@@ -28,9 +28,12 @@ class WPTVVideoToCreate extends CBAbstract {
 		WHERE k.id is not null AND k.words!='[\"{BLANK}\"]' AND CHAR_LENGTH(k.words)>4 AND CHAR_LENGTH(pr.description)>5
 		GROUP BY (grow.id)
 		
-		ORDER BY COUNT(grow.id) ASC, pr.gravity DESC, pr.commission DESC, pr.popularityrank DESC, CHAR_LENGTH(pr.description) DESC, RAND()
-		LIMIT 1
 		";
+		
+		//$query.="ORDER BY COUNT(grow.id) ASC, pr.gravity DESC, pr.commission DESC, pr.popularityrank DESC, CHAR_LENGTH(pr.description) DESC, RAND()";
+		$query.="ORDER BY COUNT(grow.id) ASC, pr.initialearningspersale DESC, pr.averageearningspersale DESC, pr.gravity ASC, pr.popularityrank DESC, CHAR_LENGTH(pr.description) DESC, RAND() ";
+		
+		$query.="LIMIT 1";
 
         $query2 = "Select coalesce(
         (SELECT p.id as pid from products as p LEFT JOIN post as pt ON pt.pid=p.id
