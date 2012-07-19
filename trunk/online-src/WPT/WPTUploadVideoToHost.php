@@ -18,18 +18,11 @@ require_once 'CBUtils/Proxy.php';
 class WPTUploadVideoToHost extends CBAbstract {
     public $linearLocation;
     // array of uploaders that must be run linearly
-    function __construct() {
-        parent::__construct();
-    }
 
     function constructClass() {
         //$this->linearLocation = array ("viddler", "metacafe" );
         $this -> linearLocation = array();
         $this -> handleARGV();
-    }
-
-    function __destruct() {
-        parent::__destruct();
     }
 
     function handleARGV() {
@@ -91,7 +84,7 @@ class WPTUploadVideoToHost extends CBAbstract {
     }
 
     function upload($id) {
-        $query = "Select p.attempts, p.pid, p.location, p.user_id AS userId, us.user_id as userName, us.user_password as userPassword, us.user_wp_id as userWPID, px.port, px.proxy, pc.title, pc.description, k.words From post as p LEFT JOIN users as us ON p.user_id = us.id left join products as pc on p.pid=pc.id left join keywords as k on k.id=p.pid left join proxies as px on p.proxyid=px.id Where p.id=$id";
+        $query = "Select p.attempts, p.pid, p.location, p.user_id AS userId, us.user_id as userName, us.user_password as userPassword, us.user_wp_id as userWPID, us.active as active , px.port, px.proxy, pc.title, pc.description, k.words From post as p LEFT JOIN users as us ON p.user_id = us.id left join products as pc on p.pid=pc.id left join keywords as k on k.id=p.pid left join proxies as px on p.proxyid=px.id Where p.id=$id";
         //echo("Query: $query<br>");
         $results = mysql_query($query);
         $row = mysql_fetch_assoc($results);
@@ -100,6 +93,9 @@ class WPTUploadVideoToHost extends CBAbstract {
         //echo "<br>";
 
         $posted = false;
+
+        $active = (bool)$row["active"];
+
         $attempts = $row["attempts"] + 1;
         $location = $row["location"];
         $userWPID = $row["userWPID"];
@@ -118,103 +114,130 @@ class WPTUploadVideoToHost extends CBAbstract {
         //echo "<br>";
         //die();
 
-        /*
-         $obj = new Proxy ();
-         $proxySelected = $obj->getRandomProxy ();
-         if (rand ( 0, 1 ) === 1) {
-         $proxy = $proxySelected ["proxy"];
-         $proxyport = $proxySelected ["port"];
-         }
-         */
-        //TODO: FIX proxy use uploaders
-        $proxy = $row["proxy"] = null;
-        $proxyport = $row["port"] = null;
+        if ($active == true) {
+            /*
+             $obj = new Proxy ();
+             $proxySelected = $obj->getRandomProxy ();
+             if (rand ( 0, 1 ) === 1) {
+             $proxy = $proxySelected ["proxy"];
+             $proxyport = $proxySelected ["port"];
+             }
+             */
+            //TODO: FIX proxy use uploaders
+            $proxy = $row["proxy"] = null;
+            $proxyport = $row["port"] = null;
 
-        if (isset($pid)) {
-            //$this->getLogger()->logInfo ("PID: $pid<br>");
-            //TODO: Determine If Session usage is needed (below)
-            // Name The Session
-            session_name("$id-$pid-$location-$userid");
-            // start a new session
-            session_start();
-            //TODO: Determine If Session usage is needed (above)
-            $video = new Video($pid, $title, $description, $keywords, $userWPID);
-            //die($video);
-            if ($video -> isValid()) {
-                switch ($location) {
-                    case "youtube" :
-                        $uploader = new YoutubeUploader($userName, $password, $video, $proxy, $proxyport);
-                        break;
-                    case "metacafe" :
-                        $uploader = new MetaCafeUploader($userName, $password, $video, $proxy, $proxyport);
-                        break;
-                    case "viddler" :
-                        $uploader = new ViddlerUploader($userName, $password, $video);
-                        break;
-                    case "blip.tv" :
-                        $uploader = new BliptvUploader($userName, $password, $video);
-                        break;
-                    case "dailymotion" :
-                        $uploader = new DailyMotionUploader($userName, $password, $video, $proxy, $proxyport);
-                        break;
-                    case "vimeo" :
-                        $uploader = new VimeoUploader($userName, $password, $video);
-                        break;
-                    case "revver" :
-                        $uploader = new RevverUploader($userName, $password, $video);
-                        break;
-                    default :
-                        $uploader = null;
-                        break;
-                }
+            if (isset($pid)) {
+                //$this->getLogger()->logInfo ("PID: $pid<br>");
+                //TODO: Determine If Session usage is needed (below)
+                // Name The Session
+                session_name("$id-$pid-$location-$userid");
+                // start a new session
+                session_start();
+                //TODO: Determine If Session usage is needed (above)
+                $video = new Video($pid, $title, $description, $keywords, $userWPID);
+                //die($video);
+                if ($video -> isValid()) {
+                    switch ($location) {
+                        case "youtube" :
+                            $uploader = new YoutubeUploader($userName, $password, $video, $proxy, $proxyport);
+                            break;
+                        case "metacafe" :
+                            $uploader = new MetaCafeUploader($userName, $password, $video, $proxy, $proxyport);
+                            break;
+                        case "viddler" :
+                            $uploader = new ViddlerUploader($userName, $password, $video);
+                            break;
+                        case "blip.tv" :
+                            $uploader = new BliptvUploader($userName, $password, $video);
+                            break;
+                        case "dailymotion" :
+                            $uploader = new DailyMotionUploader($userName, $password, $video, $proxy, $proxyport);
+                            break;
+                        case "vimeo" :
+                            $uploader = new VimeoUploader($userName, $password, $video);
+                            break;
+                        case "revver" :
+                            $uploader = new RevverUploader($userName, $password, $video);
+                            break;
+                        default :
+                            $uploader = null;
+                            break;
+                    }
 
-                if (isset($uploader)) {
-                    echo("<br>Uploading Video $pid to $location for User($userid): " . $userName . "<br>");
-                    $uploader -> uploadResponse = $uploader -> upload();
-                    // Upload the video
-                    $posted = $uploader -> wasUploaded();
-                    if ($posted) {
-                        $postURL = $uploader -> uploadLocation();
-                        $query = "Update post SET posted=1, posttime=NOW(), postURL='$postURL' WHERE id=$id";
-                        mysql_query($query);
-                        echo("Video Successfully Uploaded!!! Here: <a href='$postURL'>$postURL</a> for User($userid): " . $userName . "<br>");
-                        //$this->getLogger()->logInfo ("DB updated with query: $query<br>");
-                        if (mysql_errno()) {
-                            $this -> getLogger() -> log('Could not update with query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);
+                    if (isset($uploader)) {
+                        echo("<br>Uploading Video $pid to $location for User($userid): " . $userName . "<br>");
+                        $uploader -> uploadResponse = $uploader -> upload();
+                        // Upload the video
+                        $posted = $uploader -> wasUploaded();
+                        if ($posted) {
+                            $postURL = $uploader -> uploadLocation();
+                            $query = "Update post SET posted=1, posttime=NOW(), postURL='$postURL' WHERE id=$id";
+                            mysql_query($query);
+                            echo("Video Successfully Uploaded!!! Here: <a href='$postURL'>$postURL</a> for User($userid): " . $userName . "<br>");
+                            //$this->getLogger()->logInfo ("DB updated with query: $query<br>");
+                            if (mysql_errno()) {
+                                $this -> getLogger() -> log('Could not update with query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);
+                            }
+                        } else {
+                            $serverResponse = $uploader -> getResponse();
+                            if (is_array($serverResponse)) {
+                                $serverResponse = print_r($serverResponse, true);
+                            }
+                            $this -> getLogger() -> logInfo("<font color='red'>Upload Error Posting to " . ucfirst($location) . " for User($userid):\n<br>Server Response: " . $serverResponse . "\n<br>- Video Vars -\n<br><font color='orange'>" . $video . "</font></font>");
+                            mysql_query("Update post SET error='$error', attempts=$attempts WHERE id=$id");
+                            if (mysql_errno()) {
+                                $this -> getLogger() -> log('Could not update with query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);
+                            }
+                            if (stripos($serverResponse, 'AccountDisabled') !== false) {
+                                $class = "WPTDeleteUserYoutubeAccount";
+                                $file = $class . ".txt";
+                                $cmd = $class . ".php uid=$userid";
+                                $this -> getCommandLineHelper() -> run_in_background($cmd, $file);
+                                echo("User ($userid): $userName YT account has been disabled. Deleting user.<br>");
+                                $this -> removeUsersTraces($userid);
+                            }
                         }
                     } else {
-                        $serverResponse = $uploader -> getResponse();
-                        if (is_array($serverResponse)) {
-                            $serverResponse = print_r($serverResponse, true);
-                        }
-                        $this -> getLogger() -> logInfo("<font color='red'>Upload Error Posting to " . ucfirst($location) . " for User($userid):\n<br>Server Response: " . $serverResponse . "\n<br>- Video Vars -\n<br><font color='orange'>" . $video . "</font></font>");
-                        mysql_query("Update post SET error='$error', attempts=$attempts WHERE id=$id");
-                        if (mysql_errno()) {
-                            $this -> getLogger() -> log('Could not update with query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);
-                        }
-                        if (stripos($serverResponse, 'AccountDisabled') !== false) {
-                            $class = "WPTDeleteUserYoutubeAccount";
-                            $file = $class . ".txt";
-                            $cmd = $class . ".php uid=$userid";
-                            $this -> getCommandLineHelper() -> run_in_background($cmd, $file);
-                            echo("User ($userid): $userName YT account has been disabled. Deleting user.<br>");
-                        }
-                        $query = "Delete from post as p where p.user_id=$userid and posted=0;";
-                        mysql_query($query);
+                        $this -> getLogger() -> logInfo("No $location Uploader for $pid");
+                        mysql_query("DELETE FROM post WHERE id=$id");
                     }
                 } else {
-                    $this -> getLogger() -> logInfo("No $location Uploader for $pid");
+                    $this -> getLogger() -> logInfo("<font color='brown'>No Valid Video for $pid to post to " . ucfirst($location) . "\n<br>- Video Vars -\n<br><font color='orange'>" . $video . "</font></font>");
                     mysql_query("DELETE FROM post WHERE id=$id");
+                    $results = mysql_query("Select p.id, p.location From post as p Where p.location='" . $location . "' AND p.user_id=" . $userid . " AND p.posted=0 AND error is null and p.attempts<3 order by p.lastattempt asc limit 1");
+                    $this -> delegateUploadForMysqlResults($results);
                 }
             } else {
-                $this -> getLogger() -> logInfo("<font color='brown'>No Valid Video for $pid to post to " . ucfirst($location) . "\n<br>- Video Vars -\n<br><font color='orange'>" . $video . "</font></font>");
-                mysql_query("DELETE FROM post WHERE id=$id");
-                $results = mysql_query("Select p.id, p.location From post as p Where p.location='" . $location . "' AND p.user_id=" . $userid . " AND p.posted=0 AND error is null and p.attempts<3 order by p.lastattempt asc limit 1");
-                $this -> delegateUploadForMysqlResults($results);
+                $this -> getLogger() -> logInfo("No Product ID Found for $pid");
+                mysql_query("Update post SET attempts=$attempts WHERE id=$id");
             }
         } else {
-            $this -> getLogger() -> logInfo("No Product ID Found for $pid");
-            mysql_query("Update post SET attempts=$attempts WHERE id=$id");
+            $this -> getLogger() -> logInfo("User($userid): " . $userName . " is no longer active.<br>");
+            mysql_query("Delete from post as p where p.user_id=$userid and posted=0");
+        }
+    }
+
+    function removeUsersTraces($uid) {
+        echo("Removing all the users posted videos except the one uploaded within the last 5 hours it was working");
+        //mysql_query("Drop table if exists post_bak");
+        $this->runQuery("CREATE Temporary table IF NOT EXISTS post_bak LIKE post;");
+        $this->runQuery("INSERT IGNORE INTO post_bak SELECT * FROM post");
+        // Delete all the users uploaded videos except the ones that were uploaded within the last 5 hours of when the account stoped working
+        $this->runQuery("Delete from post where id IN (
+        Select DISTINCT grow.id from
+        (SELECT TIMESTAMPDIFF(HOUR, p.posttime ,MAX(p2.posttime)) as last_time,p.id FROM post_bak as p, post_bak as p2 where p.user_id=$uid and p.user_id=p2.user_id and p.posted=1 and p2.posted=1 group by p.user_id, p.pid, p.location having last_time>5) as grow );
+        ");
+        $this->runQuery("Delete from post as p where p.user_id=$uid and posted=0");
+        // Set user inactive
+        $this->runQuery("Update users set active=false where id=$uid");
+
+    }
+
+    function runQuery($query) {
+        mysql_query($query);
+        if (mysql_errno()) {
+            $this -> getLogger() -> log('Could execute query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);
         }
     }
 
