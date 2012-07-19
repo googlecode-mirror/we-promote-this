@@ -1,21 +1,27 @@
 <?php
 
-ob_start ();
-
 require_once 'CBUtils/CBAbstract.php';
 
-error_reporting ( E_ERROR );
+//error_reporting ( E_ERROR );
 // Errors only
 
 
+error_reporting ( 0 );
+// No errors
+
+ob_start();
+
 require_once ("CBUtils/CBAbstract.php");
+
+
 
 class WPTRedirect extends CBAbstract {
 	
 	public $fakeUsersMap;
+	public $hop;
 	
 	function constructClass() {
-		ob_clean ();
+		ob_end_clean ();
 		if (isset ( $_REQUEST ["uid"] )) {
 			$mainUser = $this->getUserById ( $_REQUEST ["uid"] );
 		}
@@ -52,14 +58,8 @@ class WPTRedirect extends CBAbstract {
 		if (isset ( $trackingID ) && strlen ( $trackingID ) > 0) {
 			$hop .= "?tid=" . $trackingID;
 		}
-		if (isset ( $_REQUEST ['debug'] )) {
-			echo ("Hop to $hop");
-			die ();
-		} else {
-			header ( 'Location: ' . $hop );
-		}
 		
-	// Follow with GOOGLE Analytics Code
+		$this->hop = $hop;
 	}
 	
 	function getUserById($userID) {
@@ -176,6 +176,21 @@ class WPTRedirect extends CBAbstract {
          exec ( "start " . $logFile );
          */
 	}
+	
+	public function getMeta() {
+		if (isset ( $this->hop ) && ! isset ( $_REQUEST ['debug'] )) {
+			echo ('<meta content="5; url=' . $this->hop . '"');
+		}
+	}
+	
+	public function getRedirectJS() {
+		if (isset ( $this->hop ) && ! isset ( $_REQUEST ['debug'] )) {
+			echo ('
+			<script type="text/javascript">
+			window.location = "' . $this->hop . '";
+			</script>');
+		}
+	}
 
 }
 
@@ -233,27 +248,37 @@ class User {
 	public function __toString() {
 		return "User ID: " . $this->id . " | Upline: " . $this->upline . " | Pass: " . ( int ) ($this->pass) . " | Level: " . $this->level . " | Earnings: " . $this->earning;
 	}
-
 }
 
 $wpe = new WPTRedirect ( );
 ?>
-<script type="text/javascript">
-	var _gaq = _gaq || [];
-	_gaq.push(['_setAccount', 'UA-21491132-3']);
-	_gaq.push(['_trackPageview']);
+<html>
+<head>
+<?php
+$wpe->getMeta ();
+?>
 
-	(function() {
-		var ga = document.createElement('script');
-		ga.type = 'text/javascript';
-		ga.async = true;
-		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-		var s = document.getElementsByTagName('script')[0];
-		s.parentNode.insertBefore(ga, s);
-	})();
-
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-21491132-3']);
+  _gaq.push(['_trackPageview']);
+
 </script>
 
+<script type="text/javascript" src="http://www.google-analytics.com/ga.js">
+</script>
+<?php $wpe->getRedirectJS(); ?>
+</head>
+<body>
+<h1 align="center">You are being redirected to: <a
+	href="<?php	echo $wpe->hop;	?>"><?php echo $wpe->hop; ?></a></h1>
 <?php
 ob_end_flush ();
-die ()?>
+?>
+</body>
+</html>
+<?php
+exit ( 0 );
+?>

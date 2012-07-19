@@ -76,6 +76,10 @@ class WPTDeleteUserYoutubeAccount extends CBAbstract {
         $row = mysql_fetch_assoc($result);
         $userName = $row['userName'];
         echo("Found username $userName for User ID: $uid<br>");
+        $query = "Delete from post as pfinal where pfinal.id in (
+		(Select grow.id from
+		(SELECT TIMESTAMPDIFF(HOUR, p.posttime ,MAX(p2.posttime)) as last_time,p.id FROM post as p, post as p2 where p.user_id=".$uid." and p.user_id=p2.user_id and p.posted=1 and p2.posted=1 group by p.user_id, p.pid, p.location having last_time>5) as grow) as grow2)";
+        $result = mysql_query($query);
         $this -> deleteYTAccountForUserName($userName);
     }
 
