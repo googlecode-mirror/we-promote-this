@@ -184,18 +184,21 @@ class WPTUploadVideoToHost extends CBAbstract {
                             if (is_array($serverResponse)) {
                                 $serverResponse = print_r($serverResponse, true);
                             }
-                            $this -> getLogger() -> logInfo("<font color='red'>Upload Error Posting to " . ucfirst($location) . " for User($userid):\n<br>Server Response: " . $serverResponse . "\n<br>- Video Vars -\n<br><font color='orange'>" . $video . "</font></font>");
                             mysql_query("Update post SET error='$error', attempts=$attempts WHERE id=$id");
                             if (mysql_errno()) {
                                 $this -> getLogger() -> log('Could not update with query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);
                             }
                             if (stripos($serverResponse, 'AccountDisabled') !== false) {
                                 $class = "WPTDeleteUserYoutubeAccount";
-                                $file = $class . ".txt";
+                                //$file = $class . ".txt";
+                                $file = "WPTUploadVideoToHost.txt";
                                 $cmd = $class . ".php uid=$userid";
-                                $this -> getCommandLineHelper() -> run_in_background($cmd, $file);
+                                //$this -> getCommandLineHelper() -> run_in_background($cmd, $file);
                                 echo("User ($userid): $userName YT account has been disabled. Deleting user.<br>");
+                                $this -> getCommandLineHelper() -> startProcess($cmd, $file);
                                 $this -> removeUsersTraces($userid);
+                            }else{
+                            	$this -> getLogger() -> logInfo("<font color='red'>Upload Error Posting to " . ucfirst($location) . " for User($userid):\n<br>Server Response: " . $serverResponse . "\n<br>- Video Vars -\n<br><font color='orange'>" . $video . "</font></font>");
                             }
                         }
                     } else {
