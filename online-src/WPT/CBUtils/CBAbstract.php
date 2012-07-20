@@ -20,7 +20,7 @@ abstract class CBAbstract {
 	public static $DBConnection;
 	public static $CommandLineHelper;
 	public static $Logger;
-	private $taskID;
+	public $taskID;
 	private $outputContent;
 	function __construct() {
 		$path = dirname ( __FILE__ );
