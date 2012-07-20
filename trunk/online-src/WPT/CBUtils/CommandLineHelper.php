@@ -48,6 +48,17 @@ class CommandLineHelper {
 		// return all found files
 		return $files;
 	}
+	
+    function threadSafeQuery($query, $mode = "READ") {
+        mysql_query("LOCK TABLES task $mode;");
+        $results = mysql_query($query);
+        if($mode!="READ"){
+            mysql_query("COMMIT;");
+        }
+        mysql_query("UNLOCK TABLES;");
+        return $results;
+    }
+    
 	function run_in_background($command, $output, $taskID = null) {
 		$results = "Could not run Command";
 		if ($this->isOnline ()) {
@@ -57,16 +68,22 @@ class CommandLineHelper {
 				$insertQuery = "insert ignore into task (cmd, output) values ('" . mysql_escape_string ( $command ) . "','" . mysql_escape_string ( $output ) . "')";
 				//echo ("Inser Query " . $insertQuery . "<br>");
 				mysql_query ( $insertQuery );
+				//$this->threadSafeQuery($insertQuery,"LOW_PRIORITY WRITE");
 				$results = basename ( $output );
 			} else {
-				mysql_query ( "LOCK TABLES task READ" );
-				$runningProcessCount = mysql_num_rows ( mysql_query ( "Select id from task where running=true" ) );
-				mysql_query ( "UNLOCK TABLES;" );
+				//mysql_query ( "LOCK TABLES task READ" );
+                $runningTaskQuery = "Select id from task where running=true FOR UPDATE";
+                $results = mysql_query ( $runningTaskQuery );
+                //$results = $this->threadSafeQuery($runningTaskQuery);
+				$runningProcessCount = mysql_num_rows ( $results );
+				//mysql_query ( "UNLOCK TABLES;" );
 				//echo ("# Running Proccess: $runningProcessCount<br>");
 				if ($runningProcessCount < $this->processLimit) {
 					$results = $this->startProcess ( $command, $output );
 					if ($results !== false) {
-						mysql_query ( "Delete from task where id=" . $taskID );
+					    $deleteQuery = "Delete from task where id=" . $taskID;
+						mysql_query ( $deleteQuery);
+                        //$this->threadSafeQuery($deleteQuery,"WRITE");
 					}
 				} else {
 					$results = basename ( $output );
@@ -145,15 +162,18 @@ class CommandLineHelper {
 	}
 	
 	function removeDeadProcessesFromQueue() {
-		mysql_query ( "LOCK TABLES task LOW_PRIORITY WRITE" );
-		mysql_query ( "delete from task where started is not null and (running=false or TIMESTAMPDIFF(MINUTE,started, now())>=" . $this->processTimeLimit . ")" );
-		mysql_query ( "UNLOCK TABLES;" );
+		$removeQuery = "delete from task where started is not null and (running=false or TIMESTAMPDIFF(MINUTE,started, now())>=" . $this->processTimeLimit . ")";
+		mysql_query ( $removeQuery );
+		//mysql_query("COMMIT;");
+        //$this->threadSafeQuery($removeQuery,"WRITE");
 	}
 	
 	function runJobsInJobQueue() {
-		mysql_query ( "LOCK TABLES task READ" );
-		$results = mysql_query ( "select id, cmd, output from task where running=false and started is null and cmd is not null and output is not null limit " . $this->processLimit );
-		mysql_query ( "UNLOCK TABLES;" );
+	    mysql_query("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+	    mysql_query("SET autocommit=0");
+		$runJobsQuery = "select id, cmd, output from task where running=false and started is null and cmd is not null and output is not null limit " . $this->processLimit. " FOR UPDATE" ;
+		$results = mysql_query ( $runJobsQuery);
+        //$results = $this->threadSafeQuery($runJobsQuery);
 		//echo ("runJobsInJobQueue Starting<br>\n\r");
 		while ( ($row = mysql_fetch_assoc ( $results )) ) {
 			$cmd = $row ['cmd'];
@@ -161,6 +181,8 @@ class CommandLineHelper {
 			$taskID = $row ['id'];
 			$this->run_in_background ( $cmd, $output, $taskID );
 		}
+        mysql_query("COMMIT;");
+        //mysql_query("SET autocommit=1");
 	}
 }
 ?>

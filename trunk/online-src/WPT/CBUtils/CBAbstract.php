@@ -71,18 +71,27 @@ abstract class CBAbstract {
 		return $this->outputContent;
 	}
 	function notifyDBOfTask() {
+	    // SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+        //mysql_query("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+        //mysql_query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
+        // Turn auto commit off
+        //mysql_query("SET autocommit=0");
+        
 		$query = "insert into task (class,running,started) values ('" . get_class ( $this ) . "',true,now())";
-		mysql_query ( "LOCK TABLES task LOW_PRIORITY WRITE" );
-		mysql_query ( $query );
+        //$this->getDBConnection()->threadSafeQuery($query,"WRITE");
+        mysql_query($query);
+        //mysql_query("COMMIT;");
 		$this->taskID = mysql_insert_id ();
-		mysql_query ( "UNLOCK TABLES;" );
 	}
 	function notifyDBOfTaskFinished() {
 		// echo ("Notifying DB Task Finished of id: " . $this->taskID . "<br>");
-		mysql_query ( "LOCK TABLES task LOW_PRIORITY WRITE" );
 		$query = "update task set running=false where id=" . $this->taskID;
-		mysql_query ( "UNLOCK TABLES;" );
-		mysql_query ( $query );
+        //$this->getDBConnection()->threadSafeQuery($query,"WRITE");
+        mysql_query($query);
+        //mysql_query("COMMIT;");
+        // Turn auto commit on
+        //mysql_query("SET autocommit=1");
+        //mysql_query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
 	}
 	function reconnectDB() {
 		if (ONLINEMODE) {
