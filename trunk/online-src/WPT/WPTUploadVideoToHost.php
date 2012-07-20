@@ -84,6 +84,10 @@ class WPTUploadVideoToHost extends CBAbstract {
     }
 
     function upload($id) {
+    	// Update task id so I know whats being executed
+    	$query = "update task set cmd='id=".$id."' where id=" . $this->taskID;
+    	mysql_query($query);
+    	
         $query = "Select p.attempts, p.pid, p.location, p.user_id AS userId, us.user_id as userName, us.user_password as userPassword, us.user_wp_id as userWPID, us.active as active , px.port, px.proxy, pc.title, pc.description, k.words From post as p LEFT JOIN users as us ON p.user_id = us.id left join products as pc on p.pid=pc.id left join keywords as k on k.id=p.pid left join proxies as px on p.proxyid=px.id Where p.id=$id";
         //echo("Query: $query<br>");
         $results = mysql_query($query);
