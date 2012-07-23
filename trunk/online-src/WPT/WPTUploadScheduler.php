@@ -28,7 +28,7 @@ class WPTUploadScheduler extends CBAbstract {
 
         // Remove Empty Folders from file system and database
         //$deleteQuery = "Delete from post where posted=0 or attempts>=3;";
-        $deleteQuery = '';
+        $deleteQuery = "Delete from post where posted=0 or attempts>=3;";
         foreach ($videoArray as $index => $videoPID) {
             $folder = $videoPath . $videoPID;
             if ($this -> is_empty_folder($folder)) {
@@ -87,6 +87,10 @@ class WPTUploadScheduler extends CBAbstract {
         if (count($videoArray) > 0) {
             $videoString = "('" . implode("'),('", $videoArray) . "')";
             $videoCount = count($videoArray);
+            
+            
+            $deleteQuery = 'DELETE FROM post WHERE posted=0 AND (attempts>=3 OR pid NOT IN '.$videoString.';)';
+            
             // Create table containg all possible videos to upload
             $createUploadedVideosTableQuery = "DROP TABLE IF EXISTS uploadedVideos;CREATE TEMPORARY TABLE uploadedVideos(id tinytext NOT NULL, PRIMARY KEY(id ( 20 )));INSERT INTO uploadedVideos VALUES $videoString;";
 
