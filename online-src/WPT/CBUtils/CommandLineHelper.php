@@ -169,7 +169,8 @@ class CommandLineHelper {
 	}
 	
 	function runJobsInJobQueue() {
-	    mysql_query("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+	    //mysql_query("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+        mysql_query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
 	    mysql_query("SET autocommit=0");
 		$runJobsQuery = "select id, cmd, output from task where running=false and started is null and cmd is not null and output is not null limit " . $this->processLimit. " FOR UPDATE" ;
 		$results = mysql_query ( $runJobsQuery);
