@@ -46,7 +46,7 @@ abstract class CBAbstract {
             $this -> getLogger() -> logInfo($this -> outputContent);
             echo($this -> outputContent . "<br><br>");
         }
-        //ob_end_flush ();
+        ob_end_clean();
     }
 
     function getOutputContent() {
