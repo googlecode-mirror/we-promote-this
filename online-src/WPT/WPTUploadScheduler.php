@@ -150,7 +150,7 @@ class WPTUploadScheduler extends CBAbstract {
             //die($query);
 
             $this -> runBatchQuery($query);
-            $status = "Product Upload Scheduler: All $videoCount Video(s) Scheduled For Upload. $badVideosCreated bad videos (no keywords) were deleted. Ran On " . date("m-d-y h:i:s A")."<br>";
+            $status = "Product Upload Scheduler: All $videoCount Video(s) Scheduled For Upload. | $badVideosCreated bad videos (no keywords) were deleted. | Ran On " . date("m-d-y h:i:s A")."<br>";
         } else {
             $status = "No Videos to schedule uploads for.<br>";
         }
