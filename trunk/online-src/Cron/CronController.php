@@ -35,8 +35,8 @@ class CronController extends CronAbstract {
 	function runCron() {
 		if (isset ( $this->cronClassName )) {
 			$file = $this->cronClassName;
-			$output = $this->getCommandLineHelper ()->run_in_background ( $file . ".php", $file . ".txt" );
-            //$output = $this->getCommandLineHelper ()->startProcess ( $file . ".php", $file . ".txt" );
+			//$output = $this->getCommandLineHelper ()->run_in_background ( $file . ".php", $file . ".txt" );
+            $output = $this->getCommandLineHelper ()->startProcess ( $file . ".php", $file . ".txt" );
 			$url = "../WPT/CBUtils/ShowLog.php?log=$output";
 			echo ("View <a href='$url'>$file </a> Log");
 		}
