@@ -89,7 +89,6 @@ class WPTUploadScheduler extends CBAbstract {
             $videoCount = count($videoArray);
             
             
-            $deleteQuery = 'DELETE FROM post WHERE posted=0 AND (attempts>=3 OR pid NOT IN '.$videoString.';)';
             
             // Create table containg all possible videos to upload
             $createUploadedVideosTableQuery = "DROP TABLE IF EXISTS uploadedVideos;CREATE TEMPORARY TABLE uploadedVideos(id tinytext NOT NULL, PRIMARY KEY(id ( 20 )));INSERT INTO uploadedVideos VALUES $videoString;";
@@ -110,6 +109,9 @@ class WPTUploadScheduler extends CBAbstract {
              AUTO_INCREMENT=1;
              ";
              */
+             
+             $deleteQuery = 'DELETE FROM post WHERE posted=0 AND (attempts>=3 OR pid NOT IN (SELECT id FROM uploadedVideos));';
+            
 
             // Set all user inactive
             $createUserTableQuery = "UPDATE users set active=0;";
@@ -141,11 +143,11 @@ class WPTUploadScheduler extends CBAbstract {
 
             //Append all queries
             if (isset($_REQUEST['debug'])) {
-                $debugQuery = $deleteQuery . "<br><br>" . $createUploadedVideosTableQuery . "<br><br>" . $createUserTableQuery . "<br><br>" . $insertVideoUploadsQuery;
+                $debugQuery = $createUploadedVideosTableQuery . "<br><br>" . $deleteQuery . "<br><br>" . $createUserTableQuery . "<br><br>" . $insertVideoUploadsQuery;
                 die($debugQuery . "<br>Bad Videos Deleted: $badVideosCreated<br>");
             }
 
-            $query = $deleteQuery . $createUploadedVideosTableQuery . $createUserTableQuery . $insertVideoUploadsQuery;
+            $query = $createUploadedVideosTableQuery.$deleteQuery . $createUserTableQuery . $insertVideoUploadsQuery;
 
             //die($query);
 
