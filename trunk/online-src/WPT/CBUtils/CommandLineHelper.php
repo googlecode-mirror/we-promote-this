@@ -1,7 +1,5 @@
 <?php
 class CommandLineHelper {
-	public $processLimit;
-	public $processTimeLimit;
 	public $absRootPath;
 	public $relRootPath;
 	
@@ -16,8 +14,6 @@ class CommandLineHelper {
 		if (! defined ( 'ONLINEMODE' )) {
 			define ( 'ONLINEMODE', $onlineMode );
 		}
-		$this->processLimit = 10;
-		$this->processTimeLimit = 5;
 		// Find out where we are and search from there
 		$this->absRootPath = realpath ( dirname ( __FILE__ ) . "/../" );
 		$this->relRootPath .= "..";
@@ -49,50 +45,27 @@ class CommandLineHelper {
 		return $files;
 	}
 	
-    function threadSafeQuery($query, $mode = "READ") {
-        mysql_query("LOCK TABLES task $mode;");
-        $results = mysql_query($query);
-        if($mode!="READ"){
-            mysql_query("COMMIT;");
-        }
-        mysql_query("UNLOCK TABLES;");
-        return $results;
-    }
-    
-	function run_in_background($command, $output, $taskID = null) {
+	function threadSafeQuery($query, $mode = "READ") {
+		mysql_query ( "LOCK TABLES task $mode;" );
+		$results = mysql_query ( $query );
+		if ($mode != "READ") {
+			mysql_query ( "COMMIT;" );
+		}
+		mysql_query ( "UNLOCK TABLES;" );
+		return $results;
+	}
+	
+	function run_in_background($command, $output) {
 		$results = "Could not run Command";
 		if ($this->isOnline ()) {
-			//echo ("<b>Running online mode</b><br>");
-			$this->removeDeadProcessesFromQueue ();
-			if (! isset ( $taskID )) {
-				$insertQuery = "insert ignore into task (cmd, output) values ('" . mysql_escape_string ( $command ) . "','" . mysql_escape_string ( $output ) . "')";
-				//echo ("Inser Query " . $insertQuery . "<br>");
-				mysql_query ( $insertQuery );
-				//$this->threadSafeQuery($insertQuery,"LOW_PRIORITY WRITE");
-				$results = basename ( $output );
-			} else {
-				//mysql_query ( "LOCK TABLES task READ" );
-                $runningTaskQuery = "Select id from task where running=true FOR UPDATE";
-                $results = mysql_query ( $runningTaskQuery );
-                //$results = $this->threadSafeQuery($runningTaskQuery);
-				$runningProcessCount = mysql_num_rows ( $results );
-				//mysql_query ( "UNLOCK TABLES;" );
-				//echo ("# Running Proccess: $runningProcessCount<br>");
-				if ($runningProcessCount < $this->processLimit) {
-					$results = $this->startProcess ( $command, $output );
-					if ($results !== false) {
-					    $deleteQuery = "Delete from task where id=" . $taskID;
-						mysql_query ( $deleteQuery);
-                        //$this->threadSafeQuery($deleteQuery,"WRITE");
-					}
-				} else {
-					$results = basename ( $output );
-				}
-			}
+			$insertQuery = "insert ignore into task (cmd, output) values ('" . mysql_escape_string ( $command ) . "','" . mysql_escape_string ( $output ) . "')";
+			//echo ("Insert Query " . $insertQuery . "<br>");
+			mysql_query ( $insertQuery );
+			//$this->threadSafeQuery($insertQuery,"LOW_PRIORITY WRITE");
+			$results = basename ( $output );
 		} else {
 			//echo ("<font color='red'><b>Running online mode</b></font><br>");
 			$results = $this->startProcess ( $command, $output );
-		
 		}
 		return $results;
 		//sleep ( rand(5,10) ); // Sleep for 5 seconds so other taks don't get ran to quickly
@@ -156,34 +129,6 @@ class CommandLineHelper {
 	
 	function __destruct() {
 		//echo ("Destructor Starting<br>\n\r");
-		if ($this->isOnline ()) {
-			$this->runJobsInJobQueue ();
-		}
-	}
-	
-	function removeDeadProcessesFromQueue() {
-		$removeQuery = "delete from task where started is not null and (running=false or TIMESTAMPDIFF(MINUTE,started, now())>=" . $this->processTimeLimit . ")";
-		mysql_query ( $removeQuery );
-		//mysql_query("COMMIT;");
-        //$this->threadSafeQuery($removeQuery,"WRITE");
-	}
-	
-	function runJobsInJobQueue() {
-	    //mysql_query("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
-        mysql_query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
-	    mysql_query("SET autocommit=0");
-		$runJobsQuery = "select id, cmd, output from task where running=false and started is null and cmd is not null and output is not null limit " . $this->processLimit. " FOR UPDATE" ;
-		$results = mysql_query ( $runJobsQuery);
-        //$results = $this->threadSafeQuery($runJobsQuery);
-		//echo ("runJobsInJobQueue Starting<br>\n\r");
-		while ( ($row = mysql_fetch_assoc ( $results )) ) {
-			$cmd = $row ['cmd'];
-			$output = $row ['output'];
-			$taskID = $row ['id'];
-			$this->run_in_background ( $cmd, $output, $taskID );
-		}
-        mysql_query("COMMIT;");
-        //mysql_query("SET autocommit=1");
 	}
 }
 ?>
