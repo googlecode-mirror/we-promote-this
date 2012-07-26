@@ -9,12 +9,6 @@ require_once 'CBUtils/CBAbstract.php';
 error_reporting ( 0 );
 // No errors
 
-ob_start();
-
-require_once ("CBUtils/CBAbstract.php");
-
-
-
 class WPTRedirect extends CBAbstract {
 	
 	public $fakeUsersMap;
