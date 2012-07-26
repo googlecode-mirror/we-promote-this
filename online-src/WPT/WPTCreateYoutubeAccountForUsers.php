@@ -71,9 +71,9 @@ class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 			$numAccount = $arow ["accounts"];
 			
 			// Override level for user id 1 (cq2smooth)
-			if ($uid == 1) {
-				$level = 6;
-			}
+			//if ($uid == 1) {
+				//$level = 6;
+			//}
 			
 			// Define max limits
 			$maxEarning = 0;

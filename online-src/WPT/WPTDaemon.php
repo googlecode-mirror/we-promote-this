@@ -15,7 +15,7 @@ class WPTDaemon extends CBAbstract {
     }
 
     function constructClass() {
-        echo("<hr>Daemon Started at ".date("m-d-y h:i:s A") . "\n<br>");
+        //echo("<hr>Daemon Started at ".date("m-d-y h:i:s A") . "\n<br>");
         $this -> processLimit = 10;
         $this -> processTimeLimit = 5;
         $this -> removeDeadProcessesFromQueue();
@@ -53,7 +53,7 @@ class WPTDaemon extends CBAbstract {
             $newProcessCount = 0;
         }
 
-        echo(sprintf('Starting: %s new processes', $newProcessCount));
+        //echo(sprintf('Starting: %s new processes', $newProcessCount));
 
         $runJobsQuery = "select id, cmd, output from task where running=false and started is null and cmd is not null and output is not null limit " . $newProcessCount;
         $results = mysql_query($runJobsQuery);
