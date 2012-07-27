@@ -53,7 +53,7 @@ class WPTYTBoost extends CBAbstract {
     }
 
     function startBoostingYT() {
-        echo("<br><hr/>STARTING Yt Booster. Time: " . date("m-d-y h:i:s A") . "<br>");
+        echo("<br><hr/>STARTING YT Booster. Time: " . date("m-d-y h:i:s A") . "<br>");
         $class = get_class($this);
         $file = $class . ".txt";
         $query = "Select id from users where active=1;";
@@ -75,6 +75,7 @@ class WPTYTBoost extends CBAbstract {
         while (($row = mysql_fetch_assoc($result))) {
             $this -> ytAccounts[$row['user_id']] = $row['user_password'];
         }
+        $accountTotal = count($this -> ytAccounts);
         $this -> boostYtAccount($uid);
 
     }
@@ -96,63 +97,168 @@ class WPTYTBoost extends CBAbstract {
         // For all other users
         foreach ($this -> ytAccounts as $otherUserName => $password) {
 
-            echo("<font color='orange'>Parsing video feed for user $userName</font><br>");
-            $videoFeed = $yt -> getuserUploads($otherUserName);
-            do {
-                foreach ($videoFeed as $videoEntry) {
-                    echo("<font color='purple'><b>Boosting video ".$videoEntry -> getVideoTitle()."</b><br>");
-                    // Add a 5 star rating to videos
-                    echo("Adding 5 stars to video.<br>");
-                    $this -> add5StarRating($yt, $videoEntry);
-                    // Add a comment to other users videos
-                    echo("Adding comments to video.<br>");
-                    $this -> addCommentToVideo($yt, $videoEntry, $cc -> getComment());
+            echo("<font color='orange'>Parsing video feed for user $otherUserName</font><br>");
 
-                    // Add one of your videos to a response
-                    // TODO: Maybe in the future if the respones video can be approaved automatically
-                    //$this->addVideoResponse($yt, $videoEntry, $videoResponseEntry);
-                    echo("</font>");
+            $videoFeed = $yt -> getuserUploads($otherUserName);
+            $feedCount = 0;
+            do {
+                $feedCount++;
+                foreach ($videoFeed as $videoEntry) {
+                    $videoURL = $videoEntry -> getVideoWatchPageUrl();
+                    $videoID = $videoEntry -> getVideoId();
+                    //$query = "Select id, boosted from post where postURL='".$videoURL."'";
+                    $query = "Select id from boosted where video_id='" . $videoID . "' AND user_id=$uid";
+                    //echo($query . "<br>");
+                    $result = mysql_query($query);
+                    $resultCount = mysql_num_rows($result);
+                    $boosted = true;
+                    if ($resultCount == 0) {
+                        $boosted = false;
+                    }
+                    // If videoEntry has not already been boosted
+                    if (!$boosted) {
+                        echo("<font color='purple'><b>Boosting video " . $videoEntry -> getVideoTitle() . "</b><br>");
+                        // Add a 5 star rating to videos
+                        if ($this -> add5StarRating($yt, $videoEntry)) {
+                            echo("Adding 5 stars to video.<br>");
+                        } else {
+                            exit(0);
+                        }
+                        // Add a comment to other users videos
+
+                        if ($this -> addCommentToVideo($yt, $videoEntry, $cc -> getComment())) {
+                            echo("Adding comments to video.<br>");
+                        } else {
+                            exit(0);
+                        }
+
+                        // Add one of your videos to a response
+                        // TODO: Maybe in the future if the respones video can be approaved automatically
+                        //if($this->addVideoResponse($yt, $videoEntry, $videoResponseEntry)){
+                        //  echo("Adding video response to video.<br>");
+                        //}else{
+                        //exit(0);
+                        //}
+                        echo("</font>");
+                        $query = "Insert Ignore INTO boosted (user_id, video_id) Values ($uid,'$videoID')";
+                        mysql_query($query);
+                        echo("<b><a href='$videoURL'>$videoURL</a> NOW boosted!!!</b><br>");
+                        sleep(rand(10, 30));
+                    } else {
+                        echo("<u><a href='$videoURL'>$videoURL</a> already boosted.</u><br>");
+                    }
                 }
                 try {
                     $videoFeed = $videoFeed -> getNextFeed();
+                    //var_dump($videoFeed);
+                    //echo("<br><br><br>");
                 } catch(Exception $e) {
+                    //echo("NextFeedError: " . $e -> getMessage() . "<br>");
                     $videoFeed = null;
+                    echo("<font color='blue'>User $otherUserName feed count: $feedCount</font><br>");
                 }
             } while(isset($videoFeed));
 
             // Subscribe to other users yt accounts
-            $this -> subscribeToUserChannel($yt, $userName);
+            if ($this -> subscribeToUserChannel($yt, $otherUserName)) {
+                echo("<font color='red'>Subscribbing to users channel.</font><br>");
+            } else {
+                continue;
+            }
         }
-
     }
 
     function addVideoResponse($yt, $videoEntry, $videoResponseEntry) {
+        $successful = true;
         $responsesFeedUrl = $videoEntry -> getVideoResponsesLink() -> getHref();
-        $yt -> insertEntry($videoResponseEntry, $responsesFeedUrl);
+        try {
+            $yt -> insertEntry($videoResponseEntry, $responsesFeedUrl);
+        } catch (Exception $e) {
+            if (stripos($e -> getMessage(), 'too_many_recent_calls') !== false) {
+                $successful = false;
+            } else if (stripos($e -> getMessage(), 'Posting too fast') !== false) {
+                sleep(rand(10, 30));
+                $successful = $this -> addVideoResponse($yt, $videoEntry, $videoResponseEntry);
+            } else {
+                $successful = false;
+                echo "Error adding video response to video: " . $e -> getMessage() . "\n<br>";
+            }
+        }
+        if ($successful) {
+            sleep(rand(5, 25));
+        }
+        return $successful;
     }
 
     function addCommentToVideo($yt, $videoEntry, $comment) {
+        $successful = true;
         $newComment = $yt -> newCommentEntry();
         $newComment -> content = $yt -> newContent() -> setText($comment);
         $commentFeedPostUrl = $videoEntry -> getVideoCommentFeedUrl();
-        $updatedVideoEntry = $yt -> insertEntry($newComment, $commentFeedPostUrl, 'Zend_Gdata_YouTube_CommentEntry');
+        try {
+            $updatedVideoEntry = $yt -> insertEntry($newComment, $commentFeedPostUrl, 'Zend_Gdata_YouTube_CommentEntry');
+        } catch (Exception $e) {
+            if (stripos($e -> getMessage(), 'too_many_recent_calls') !== false) {
+                $successful = false;
+            } else if (stripos($e -> getMessage(), 'Posting too fast') !== false) {
+                sleep(rand(10, 30));
+                $successful = $this -> addCommentToVideo($yt, $videoEntry, $comment);
+            } else {
+                $successful = false;
+                echo "Error adding comment to video: " . $e -> getMessage() . "\n<br>";
+            }
+        }
+        if ($successful) {
+            sleep(rand(5, 25));
+        }
+        return $successful;
     }
 
     function subscribeToUserChannel($yt, $channel) {
+        $successful = true;
         $subscriptionsFeedUrl = "http://gdata.youtube.com/feeds/api/users/default/subscriptions";
         $newSubscription = $yt -> newSubscriptionEntry();
         $newSubscription -> setUsername(new Zend_Gdata_YouTube_Extension_Username($channel));
-        $yt -> insertEntry($newSubscription, $subscriptionsFeedUrl);
+        try {
+            $yt -> insertEntry($newSubscription, $subscriptionsFeedUrl);
+        } catch (Exception $e) {
+            if (stripos($e -> getMessage(), 'too_many_recent_calls') !== false) {
+                $successful = false;
+            } else if (stripos($e -> getMessage(), 'Posting too fast') !== false) {
+                sleep(rand(10, 30));
+                $successful = $this -> subscribeToUserChannel($yt, $channel);
+            } else {
+                $successful = false;
+                echo "Error subscribing to channel $channel: " . $e -> getMessage() . "\n<br>";
+            }
+        }
+        if ($successful) {
+            sleep(rand(5, 25));
+        }
+        return $successful;
     }
 
     function add5StarRating($yt, $videoEntryToRate) {
+        $successful = true;
         $videoEntryToRate -> setVideoRating(5);
         $ratingUrl = $videoEntryToRate -> getVideoRatingsLink() -> getHref();
         try {
             $ratedVideoEntry = $yt -> insertEntry($videoEntryToRate, $ratingUrl, 'Zend_Gdata_YouTube_VideoEntry');
-        } catch (Zend_Gdata_App_HttpException $httpException) {
-            echo $httpException -> getRawResponseBody() . "\n<br>";
+        } catch (Exception $e) {
+            if (stripos($e -> getMessage(), 'too_many_recent_calls') !== false) {
+                $successful = false;
+            } else if (stripos($e -> getMessage(), 'Posting too fast') !== false) {
+                sleep(rand(10, 30));
+                $successful = $this -> add5StarRating($yt, $videoEntryToRate);
+            } else {
+                $successful = false;
+                echo "Error adding 5 star rating: " . $e -> getMessage() . "\n<br>";
+            }
         }
+        if ($successful) {
+            sleep(rand(5, 25));
+        }
+        return $successful;
     }
 
     private function getHttpClient($userEmail, $password, $proxyHost = null, $proxyPort = null, $tries = 3) {

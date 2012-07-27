@@ -60,7 +60,7 @@ class WPTCleanOldVideos extends CBAbstract {
             $daysDiff = floor(abs($this -> today - $fileCreationTime) / 60 / 60 / 24);
             //printf("There has been %d day(s) since $path was created.<br>", $daysDiff);
             $this -> totalVideos++;
-            if ($daysDiff >= 3) {
+            if ($daysDiff >= 1) {
                 //echo("<b>$path is too old. Needs to be deleted</b><br><br>");
                 $this -> deleteVideos[basename($path)] = $path;
             }

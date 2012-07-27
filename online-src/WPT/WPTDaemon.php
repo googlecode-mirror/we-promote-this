@@ -1,6 +1,6 @@
 <?php
 
-error_reporting(E_ALL);
+//error_reporting(E_ALL);
 
 require_once ("CBUtils/CBAbstract.php");
 
@@ -19,16 +19,40 @@ class WPTDaemon extends CBAbstract {
         $this -> processLimit = 10;
         $this -> processTimeLimit = 5;
         $this -> removeDeadProcessesFromQueue();
-        $this -> runJobsInJobQueue();
-        sleep(10);
+
+        // Is this the only Daemon Running
+        if ($this -> amITheOnlyOne()) {
+            $this -> runJobsInJobQueue();
+            sleep(10);
+        }
+    }
+
+    function amITheOnlyOne() {
+        $query = "Select id from task where class='" . get_class($this) . "' Order by id asc";
+        $result = mysql_query($query);
+        $count = mysql_num_rows($result);
+        $row = mysql_fetch_assoc($result);
+        $oldestTaskID = $row['id'];
+        $original = false;
+        // If not only run if I'm the oldest one
+        if ($count > 1) {
+            if ($this -> taskID == $oldestTaskID) {
+                $original = true;
+            }
+        } else {
+            $original = true;
+        }
+        return $original;
     }
 
     // this causes infinite loop
     function __destruct() {
-        $class = get_class($this);
-        $file = $class . ".txt";
-        $cmd = $class . ".php";
-        $this -> getCommandLineHelper() -> startProcess($cmd, $file);
+        if ($this -> amITheOnlyOne()) {
+            $class = get_class($this);
+            $file = $class . ".txt";
+            $cmd = $class . ".php";
+            $this -> getCommandLineHelper() -> startProcess($cmd, $file);
+        }
         parent::__destruct();
     }
 
@@ -42,7 +66,7 @@ class WPTDaemon extends CBAbstract {
     function runJobsInJobQueue() {
         //mysql_query("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
         //mysql_query ( "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ" );
-        mysql_query ( "SET autocommit=1" );
+        mysql_query("SET autocommit=1");
         $runningTaskQuery = "Select id from task where running=true";
         $results = mysql_query($runningTaskQuery);
         //$results = $this->threadSafeQuery($runningTaskQuery);
