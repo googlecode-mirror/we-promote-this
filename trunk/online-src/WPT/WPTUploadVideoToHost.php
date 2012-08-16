@@ -84,11 +84,11 @@ class WPTUploadVideoToHost extends CBAbstract {
     }
 
     function upload($id) {
-    	// Update task id so I know whats being executed
-    	$query = "update task set cmd='".$id."' where id=" . $this->taskID;
-    	//mysql_query($query);
-    	$this->getDBConnection()->threadSafeQuery($query,"LOW_PRIORITY WRITE");
-    	
+        // Update task id so I know whats being executed
+        $query = "update task set cmd='" . $id . "' where id=" . $this -> taskID;
+        //mysql_query($query);
+        $this -> getDBConnection() -> threadSafeQuery($query, "LOW_PRIORITY WRITE");
+
         $query = "Select p.attempts, p.pid, p.location, p.user_id AS userId, us.user_id as userName, us.user_password as userPassword, us.user_wp_id as userWPID, us.active as active , px.port, px.proxy, pc.title, pc.description, k.words From post as p LEFT JOIN users as us ON p.user_id = us.id left join products as pc on p.pid=pc.id left join keywords as k on k.id=p.pid left join proxies as px on p.proxyid=px.id Where p.id=$id";
         //echo("Query: $query<br>");
         $results = mysql_query($query);
@@ -202,8 +202,8 @@ class WPTUploadVideoToHost extends CBAbstract {
                                 echo("User ($userid): $userName YT account has been disabled. Deleting user.<br>");
                                 $this -> getCommandLineHelper() -> startProcess($cmd, $file);
                                 $this -> removeUsersTraces($userid);
-                            }else{
-                            	$this -> getLogger() -> logInfo("<font color='red'>Upload Error Posting to " . ucfirst($location) . " for User($userid):\n<br>Server Response: " . $serverResponse . "\n<br>- Video Vars -\n<br><font color='orange'>" . $video . "</font></font>");
+                            } else {
+                                $this -> getLogger() -> logInfo("<font color='red'>Upload Error Posting to " . ucfirst($location) . " for User($userid):\n<br>Server Response: " . $serverResponse . "\n<br>- Video Vars -\n<br><font color='orange'>" . $video . "</font></font>");
                             }
                         }
                     } else {
@@ -223,29 +223,56 @@ class WPTUploadVideoToHost extends CBAbstract {
         } else {
             $this -> getLogger() -> logInfo("User($userid): " . $userName . " is no longer active.<br>");
             mysql_query("Delete from post as p where p.user_id=$userid and posted=0");
+            $this -> removeUser($userid);
         }
     }
 
     function removeUsersTraces($uid) {
         echo("Removing all the users posted videos except the one uploaded within the last 5 hours it was working");
         //mysql_query("Drop table if exists post_bak");
-        $this->runQuery("CREATE Temporary table IF NOT EXISTS post_bak LIKE post;");
-        $this->runQuery("INSERT IGNORE INTO post_bak SELECT * FROM post");
+        $this -> runQuery("CREATE Temporary table IF NOT EXISTS post_bak LIKE post;");
+        $this -> runQuery("INSERT IGNORE INTO post_bak SELECT * FROM post");
         // Delete all the users uploaded videos except the ones that were uploaded within the last 5 hours of when the account stoped working
-        $this->runQuery("Delete from post where id IN (
+        $this -> runQuery("Delete from post where id IN (
         Select DISTINCT grow.id from
         (SELECT TIMESTAMPDIFF(HOUR, p.posttime ,MAX(p2.posttime)) as last_time,p.id FROM post_bak as p, post_bak as p2 where p.user_id=$uid and p.user_id=p2.user_id and p.posted=1 and p2.posted=1 group by p.user_id, p.pid, p.location having last_time>5) as grow );
         ");
-        $this->runQuery("Delete from post as p where p.user_id=$uid and posted=0");
-        // Set user inactive
-        $this->runQuery("Update users set active=false where id=$uid");
+        $this -> runQuery("Delete from post as p where p.user_id=$uid and posted=0");
 
+        $this -> removeUser($uid);
+
+    }
+
+    function removeUser($uid) {
+        // Set user inactive
+        $this -> runQuery("Update users set active=0 where id=$uid");
+
+        // Get username
+        $query = "Select us.user_id as userName from users as us where us.id=" . $uid;
+        $result = $this -> runQuery($query);
+        $row = mysql_fetch_assoc($result);
+        $userName = $row['userName'];
+
+        // Delete from Wordpress
+        $query = "DELETE from wp_usermeta where umeta_id in
+                (Select * from 
+                (
+                (Select um.umeta_id from wp_usermeta as um where um.meta_value='" . $userName . "') 
+                UNION 
+                (Select um2.umeta_id from wp_usermeta as um 
+                LEFT JOIN wp_usermeta as um2 on (um2.meta_key = CONCAT(um.meta_key,'_password') and um2.user_id=um.user_id)
+                where um.meta_value='" . $userName . "'
+                )
+                ) as grow 
+                )";
+        //echo("Query: $query<br>");
+        $this -> getDBConnection() -> queryWP($query);
     }
 
     function runQuery($query) {
         mysql_query($query);
         if (mysql_errno()) {
-            $this -> getLogger() -> log('Could execute query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);
+            $this -> getLogger() -> log('Couldnt execute query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);
         }
     }
 

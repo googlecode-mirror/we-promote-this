@@ -54,20 +54,6 @@ class WPTDeleteUserYoutubeAccount extends CBAbstract {
         } catch(Exception $e) {
             echo("Error deleting user ($userName): " . $e -> getMessage() . "<br>");
         }
-        // Delete from Wordpress
-        $query = "DELETE from wp_usermeta where umeta_id in
-                (Select * from 
-                (
-                (Select um.umeta_id from wp_usermeta as um where um.meta_value='" . $userName . "') 
-                UNION 
-                (Select um2.umeta_id from wp_usermeta as um 
-                LEFT JOIN wp_usermeta as um2 on (um2.meta_key = CONCAT(um.meta_key,'_password') and um2.user_id=um.user_id)
-                where um.meta_value='" . $userName . "'
-                )
-                ) as grow 
-                )";
-        //echo("Query: $query<br>");
-        $this -> getDBConnection() -> queryWP($query);
     }
 
     function deleteYTAccountForUID($uid) {
