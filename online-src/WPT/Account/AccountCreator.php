@@ -17,7 +17,8 @@ abstract class AccountCreator extends Account {
 	
 	function __construct() {
 		try {
-			$this->httpClient = $this->getNewHttpClient ( "admin@wepromotethis.com", "Neeuq011$" );
+			//$this->httpClient = $this->getNewHttpClient ( "admin@wepromotethis.com", "Neeuq011$" );
+            $this->httpClient = $this->getNewHttpClient ( "admin@chrisqueen.com", "Neeuq011$" );
 			$this->service = $this->getNewService ( $this->httpClient );
 		} catch ( Exception $e ) {
 			echo ($e->getMessage () . "<br>");
