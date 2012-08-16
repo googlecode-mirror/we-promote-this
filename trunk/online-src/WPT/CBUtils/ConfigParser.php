@@ -8,8 +8,8 @@
 //require_once 'LogHelper.php';
 /*!
  * Class: ConfigParser
- * This class parses the config file on the running server and creates an AimConstants object
- * that holds the values of the fields defined in the datasearch_config.xml file
+ * This class parses the config file on the running server and creates an ConfigParser object
+ * that holds the values of the fields defined in the Includes/configuration.xml file
  */
 class ConfigParser
 {
