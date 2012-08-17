@@ -15,7 +15,7 @@ class WPTRedirect extends CBAbstract {
 	public $hop;
 	
 	function constructClass() {
-		ob_end_clean ();
+	    ob_clean();
 		if (isset ( $_REQUEST ["uid"] )) {
 			$mainUser = $this->getUserById ( $_REQUEST ["uid"] );
 		}

@@ -58,7 +58,9 @@ class DBConnection {
     function threadSafeWPQuery($query, $mode = "READ") {
         mysql_query("LOCK TABLES task $mode;");
         $results = mysql_query($query, $this -> wpCon);
-        mysql_query("COMMIT;");
+        if ($mode != "READ") {
+            mysql_query("COMMIT;");
+        }
         mysql_query("UNLOCK TABLES;");
         return $results;
     }
@@ -78,13 +80,12 @@ class DBConnection {
          }
          */
     }
-    
-    
+
     function threadSafeQuery($query, $mode = "READ") {
         mysql_query("LOCK TABLES task $mode;");
         $results = mysql_query($query);
-        if($mode!="READ"){
-        mysql_query("COMMIT;");
+        if ($mode != "READ") {
+            mysql_query("COMMIT;");
         }
         mysql_query("UNLOCK TABLES;");
         return $results;

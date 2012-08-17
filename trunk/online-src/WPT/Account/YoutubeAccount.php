@@ -41,7 +41,7 @@ class YoutubeAccount extends AccountCreator {
             try {
                 $this -> service -> deleteUser($userName);
             } catch(Exception $e) {
-                echo("Error while trying to delete user($userName): " . $e -> getMessage());
+                echo("Error while trying to delete user($userName): " . $e -> getMessage()."<br>");
             }
         }
     }
