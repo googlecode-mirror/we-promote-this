@@ -228,30 +228,38 @@ class WPTUploadVideoToHost extends CBAbstract {
     }
 
     function removeUsersTraces($uid) {
-        echo("Removing all the users posted videos except the one uploaded within the last 5 hours it was working");
+        echo("Removing all the users posted videos except the one uploaded within the last 5 hours it was working<br>");
         //mysql_query("Drop table if exists post_bak");
         $this -> runQuery("CREATE Temporary table IF NOT EXISTS post_bak LIKE post;");
-        $this -> runQuery("INSERT IGNORE INTO post_bak SELECT * FROM post");
+        $this -> runQuery("INSERT IGNORE INTO post_bak SELECT * FROM post;");
         // Delete all the users uploaded videos except the ones that were uploaded within the last 5 hours of when the account stoped working
-        $this -> runQuery("Delete from post where id IN (
+        $this -> getDBConnection()->threadSafeQuery("Delete from post where id IN (
         Select DISTINCT grow.id from
         (SELECT TIMESTAMPDIFF(HOUR, p.posttime ,MAX(p2.posttime)) as last_time,p.id FROM post_bak as p, post_bak as p2 where p.user_id=$uid and p.user_id=p2.user_id and p.posted=1 and p2.posted=1 group by p.user_id, p.pid, p.location having last_time>5) as grow );
         ");
-        $this -> runQuery("Delete from post as p where p.user_id=$uid and posted=0");
+        $this -> getDBConnection()->threadSafeQuery("Delete from post as p where p.user_id=$uid and p.posted=0;");
 
         $this -> removeUser($uid);
 
     }
 
     function removeUser($uid) {
-        // Set user inactive
-        $this -> runQuery("Update users set active=0 where id=$uid");
-
         // Get username
-        $query = "Select us.user_id as userName from users as us where us.id=" . $uid;
-        $result = $this -> runQuery($query);
+        $query = "Select us.user_id as `userName` from users as us where us.id=" . $uid;
+        $result = mysql_query($query);
         $row = mysql_fetch_assoc($result);
+        
+        echo("Row from username query<br>");
+        var_dump($row);
+        echo("<br>");
         $userName = $row['userName'];
+        
+        
+        // Delete user from users table
+        $this -> getDBConnection()->threadSafeQuery("Delete from users where id=".$uid, "WRITE");
+        
+        echo("Deleting Users($uid): $userName<br>");
+        
 
         // Delete from Wordpress
         $query = "DELETE from wp_usermeta where umeta_id in
@@ -265,15 +273,16 @@ class WPTUploadVideoToHost extends CBAbstract {
                 )
                 ) as grow 
                 )";
-        //echo("Query: $query<br>");
-        $this -> getDBConnection() -> queryWP($query);
+        echo("Remove user from WP Query: $query<br>");
+        $this -> getDBConnection() -> threadSafeWPQuery($query, "WRITE");
     }
 
     function runQuery($query) {
-        mysql_query($query);
+        $result = mysql_query($query);
         if (mysql_errno()) {
             $this -> getLogger() -> log('Couldnt execute query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);
         }
+        return $result;
     }
 
 }
