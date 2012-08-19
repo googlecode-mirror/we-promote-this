@@ -245,19 +245,15 @@ class WPTUploadVideoToHost extends CBAbstract {
 
     function removeUser($uid) {
         // Get username
-        $query = "Select us.user_id as `userName` from users as us where us.id=" . $uid;
+        $query = "Select user_id from users where id=" . $uid;
         $result = mysql_query($query);
         $row = mysql_fetch_assoc($result);
-        
-        echo("Row from username query<br>");
-        var_dump($row);
-        echo("<br>");
-        $userName = $row['userName'];
+        $userName = $row['user_id'];
         
         
         // Delete user from users table
-        $this -> getDBConnection()->threadSafeQuery("Delete from users where id=".$uid, "WRITE");
-        
+        $deleteUserQuery = "Delete from users where id=".$uid;
+        $this->runQuery($deleteUserQuery);
         echo("Deleting Users($uid): $userName<br>");
         
 
@@ -273,8 +269,8 @@ class WPTUploadVideoToHost extends CBAbstract {
                 )
                 ) as grow 
                 )";
-        echo("Remove user from WP Query: $query<br>");
-        $this -> getDBConnection() -> threadSafeWPQuery($query, "WRITE");
+        echo("Remove user from WP<br>");
+        $this -> getDBConnection() -> queryWP($query);
     }
 
     function runQuery($query) {

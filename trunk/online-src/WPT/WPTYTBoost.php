@@ -75,7 +75,6 @@ class WPTYTBoost extends CBAbstract {
         while (($row = mysql_fetch_assoc($result))) {
             $this -> ytAccounts[$row['user_id']] = $row['user_password'];
         }
-        $accountTotal = count($this -> ytAccounts);
         $this -> boostYtAccount($uid);
 
     }
@@ -155,7 +154,7 @@ class WPTYTBoost extends CBAbstract {
                 } catch(Exception $e) {
                     //echo("NextFeedError: " . $e -> getMessage() . "<br>");
                     $videoFeed = null;
-                    echo("<font color='blue'>User $otherUserName feed count: $feedCount</font><br>");
+                    //echo("<font color='blue'>User $otherUserName feed count: $feedCount</font><br>");
                 }
             } while(isset($videoFeed));
 
