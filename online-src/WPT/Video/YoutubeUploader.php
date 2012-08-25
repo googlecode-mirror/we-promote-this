@@ -20,8 +20,8 @@ class YoutubeUploader extends VideoUploader {
 	public $yt;
 	public $userProfileEntry;
 	public $xPath;
-    public $httpException;
-    
+	public $httpException;
+	
 	function constructClass() {
 		$this->httpClient = NULL;
 		$this->applicationId = "WePromoteThis.com";
@@ -106,7 +106,7 @@ class YoutubeUploader extends VideoUploader {
 				$response = $except->getMessage ();
 			}
 		} else {
-			$response = "No Http Client to upload video for user: " . $this->userName."| Youtube HttpClient Response: ".$this->httpException;
+			$response = "No Http Client to upload video for user: " . $this->userName . "| Youtube HttpClient Response: " . $this->httpException;
 			//echo ($response . "<br>");
 		}
 		return $response;
@@ -228,7 +228,7 @@ class YoutubeUploader extends VideoUploader {
 				}
 			} catch ( Exception $e ) {
 				//echo ("Error getting Youtube HttpClient: " . $e->getMessage () . "<br>");
-                $this->httpException = $e->getMessage();
+				$this->httpException = $e->getMessage ();
 			}
 		} else {
 			//echo ("Credentials missing. Username: $userEmail | Password length: " . strlen ( $password ) . " <br>");
@@ -244,15 +244,21 @@ class YoutubeUploader extends VideoUploader {
 		$modifiedArray = array ();
 		while ( $this->arrayBytes ( $modifiedArray ) < $this->getKeywordsTotalByteLimit () && count ( $keywordsArray ) > 0 ) {
 			$word = array_shift ( $keywordsArray );
+			if(strlen($word)==1){
+				continue;
+			}
+			
 			$wordByteCount = $this->arrayBytes ( array ($word ) );
 			if ($this->getKeywordByteMin () <= $wordByteCount && $wordByteCount <= $this->getKeywordByteMax ()) {
 				$modifiedArray [] = $word;
-			} else {
-				foreach ( explode ( " ", $word ) as $wordPart ) {
-					$wordByteCount = $this->arrayBytes ( array ($wordPart ) );
-					if ($this->getKeywordByteMin () <= $wordByteCount && $wordByteCount <= $this->getKeywordByteMax ()) {
-						$modifiedArray [] = $wordPart;
-					}
+			} else if ($wordByteCount > $this->getKeywordByteMax ()) {
+				$newordArray = explode ( " ", $word );
+				do {
+					array_pop ( $newordArray );
+					$wordByteCount = $this->arrayBytes ( $newordArray );
+				} while ( $wordByteCount > $this->getKeywordByteMax () && count ( $newordArray ) > 0 );
+				if (count ( $newordArray ) > 0 && $this->getKeywordByteMin () <= $wordByteCount) {
+					$modifiedArray [] = implode ( " ", $newordArray );
 				}
 			}
 		}
@@ -280,7 +286,7 @@ class YoutubeUploader extends VideoUploader {
 			if (stripos ( $word, " " ) !== false) {
 				$multiWordArray [] = '"' . $word . '"';
 			} else {
-				$oneWordArray [] = $word;
+				$oneWordArray [] = '"' . $word . '"';
 			}
 		}
 		if (count ( $oneWordArray ) > 0) {
@@ -360,7 +366,7 @@ class YoutubeUploader extends VideoUploader {
 		return 2000;
 	}
 	public function getKeywordCharLimit() {
-		return 1000;
+		return 500;
 	}
 	public function getTitleLimit() {
 		return 100;

@@ -19,7 +19,7 @@ class CBKeywordExtractor extends CBAbstract {
     }
     function handleARGV() {
         global $argv;
-        $keywordLimit = 20;
+        $keywordLimit = 200;
         if (! isset ( $argv ) || count ( $argv ) <= 1) {
             //echo ("Runnng Default <br>");
             $query = "SELECT id FROM products ORDER BY RAND()";
@@ -174,7 +174,7 @@ class CBKeywordExtractor extends CBAbstract {
         // Remove Numbers
         foreach ( $words as $word ) {
             $word = trim ( $word );
-            if (! is_numeric ( $word ) && strlen ( $word ) > 0) {
+            if (! is_numeric ( $word ) && strlen ( $word ) > 2) {
                 $finalWords [] = $word;
             }
         }
