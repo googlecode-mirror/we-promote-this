@@ -250,6 +250,11 @@ class WPTUploadVideoToHost extends CBAbstract {
         $row = mysql_fetch_assoc($result);
         $userName = $row['user_id'];
         
+        //echo("Row from username query: $query<br>");
+        //var_dump($row);
+        //echo("<br>");
+        $userName = $row['userName'];
+        
         
         // Delete user from users table
         $deleteUserQuery = "Delete from users where id=".$uid;
