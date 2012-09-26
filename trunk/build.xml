@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="WePromoteThis" default="build"
+	basedir="." xmlns:ac="antlib:net.sf.antcontrib">
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement
+				location="K:\CruiseControl\apache-ant-1.7.0\lib\ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+	<target name="phpunit-tmp" depends="checkout,phpunit" />
+	<target name="build" depends="bootstrap,phpunit" />
+	<target name="fullbuild"
+		depends="bootstrap,php-documentor,php-codesniffer,phpunit,pdepend,phpmd,phpcb" />
+	<target name="bootstrap" depends="clean,checkout" />
+	</target>
+	<target name="clean">
+		<exec executable="phpuc.bat" failonerror="off">
+			<arg line="clean -j ${ant.project.name} -d 30 K:\CruiseControl" />
+		</exec>
+		<delete dir="build" quiet="true" failonerror="off" />
+		<mkdir dir="build/api" />
+		<mkdir dir="build/coverage" />
+		<mkdir dir="build/logs" />
+		<mkdir dir="build/php-code-browser" />
+	</target>
+	<target name="checkout">
+		<exec executable="svn" dir="${basedir}/" failonerror="on">
+			<arg line="update" />
+		</exec>
+	</target>
+	<target name="php-documentor">
+		<exec executable="phpdoc.bat" dir="${basedir}/src" logerror="on"
+			failonerror="off">
+			<arg
+				line="--title '${ant.project.name}' 
+				-ct type 
+				-ue on 
+				-s on 
+				-is on 
+				-i CB/CBUtils/Includes, CB/Video/Includes 
+				-t ${basedir}/build/api 
+				-tb 'K:\VertrigoServ\Php\data\phpUnderControl\data\phpdoc' 
+				-o HTML:Phpuc:phpuc 
+				-d ." />
+		</exec>
+	</target>
+	<target name="php-codesniffer">
+		<exec executable="phpcs.bat" dir="${basedir}/src" failonerror="off"
+			output="${basedir}/build/logs/checkstyle.xml" error="${basedir}/errors/checkstyle.error.log">
+			<arg line="--report=checkstyle 
+			--standard=PHPCS 
+			." />
+		</exec>
+	</target>
+	<target name="phpunit">
+		<exec executable="phpunit.bat" dir="${basedir}/test" failonerror="on">
+			<arg
+				line=" 
+				--log-junit ${basedir}/build/logs/phpunit.xml 
+				--coverage-clover ${basedir}/build/logs/phpunit.coverage.xml
+				--coverage-html ${basedir}/build/coverage
+				-c ${basedir}/phpunit-config.xml
+				--verbose
+				AllTestSuite.php" />
+		</exec>
+	</target>
+	<target name="pdepend">
+		<exec executable="pdepend.bat" dir="${basedir}/src" failonerror="off">
+			<arg line="--phpunit-xml=${basedir}/build/logs/phpunit.metrics.xml ." />
+		</exec>
+	</target>
+	<target name="phpmd">
+		<exec executable="phpmd.bat" dir="${basedir}/src">
+			<arg
+				line=". xml codesize,unusedcode,naming,design 
+				--reportfile ${basedir}/build/logs/phpunit.pmd.xml  
+				--excludes ^.*\/Includes\/.*$" />
+		</exec>
+	</target>
+	<target name="phpcb">
+		<exec executable="phpcb.bat" dir="${basedir}/src" failonerror="off">
+			<arg
+				line="--log ${basedir}/build/logs 
+				-o ${basedir}/build/php-code-browser" />
+		</exec>
+	</target>
+</project>
