@@ -1,4 +1,4 @@
-<?php
+00<?php
 
 // Get File to upload from args
 define ( 'SALT', 'WePromoteThisAllDayLong313' );
