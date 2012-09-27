@@ -23,6 +23,11 @@ class CronUpdateWPTUserEarnings extends CronAbstract {
 		$this->getDBConnection()->queryWP ( $insertQuery );
 		//echo ($insertQuery . "<br><br>");
 		echo ("Users CB Earnings Updated: " . date ( "Y-m-d H:i:s A" ));
+        
+        if(isset($_REQUEST['debug'])){
+            echo("<br>".str_replace('),', ')<br>', $valueString)."<br>");
+        }
+        
 	}
     
     function getTotalSales($api) {
@@ -30,7 +35,13 @@ class CronUpdateWPTUserEarnings extends CronAbstract {
         $params = array ();
         $url = "https://api.clickbank.com/rest/1.2/quickstats/count";
         $currentMonth = date ( "m" );
+        if(isset($_REQUEST['m'])){
+            $currentMonth = $_REQUEST['m'];
+        }
         $currentYear = date ( "Y" );
+        if(isset($_REQUEST['y'])){
+            $currentYear = $_REQUEST['y'];
+        }
         $start = new DateTime ( $currentMonth . "/01/" . $currentYear, new DateTimeZone ( "America/New_York" ) );
         if (isset ( $start )) {
             $params [] = "startDate=" . $start->format ( "Y-m-d" );
