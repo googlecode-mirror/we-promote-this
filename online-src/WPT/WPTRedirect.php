@@ -9,13 +9,14 @@ require_once 'CBUtils/CBAbstract.php';
 error_reporting ( 0 );
 // No errors
 
+
 class WPTRedirect extends CBAbstract {
 	
 	public $fakeUsersMap;
 	public $hop;
 	
 	function constructClass() {
-	    ob_clean();
+		ob_clean ();
 		if (isset ( $_REQUEST ["uid"] )) {
 			$mainUser = $this->getUserById ( $_REQUEST ["uid"] );
 		}
@@ -30,8 +31,7 @@ class WPTRedirect extends CBAbstract {
 			}
 		}
 		if (! isset ( $clickbankID )) {
-			//$clickbankID = "cq2smooth";
-			$clickbankID = "cq2smooth_test";
+			$clickbankID = "cq2smooth";
 		}
 		if (isset ( $_REQUEST ['debug'] )) {
 			echo ("ClickBank ID: $clickbankID<br>");
@@ -53,7 +53,20 @@ class WPTRedirect extends CBAbstract {
 			$hop .= "?tid=" . $trackingID;
 		}
 		
-		$this->hop = $hop;
+		if (isset ( $_REQUEST ["final"] )) {
+			// If final is set then get the hop location from the cookie
+			if (isset ( $_COOKIE ['hop'] )) {
+				$this->hop = $_COOKIE ['hop'];
+			} else {
+				$this->hop = $hop;
+			}
+		} else if (isset ( $_REQUEST ["download"] )) {
+			// Set cookie then change hop to share and get it url
+			setcookie ( 'hop', $hop );
+			$this->hop = "http://www.shareandgetit.com/process/process.php?data=YTo4OntzOjEwOiJmYW5wYWdldXJsIjtzOjYzOiJodHRwczovL3d3dy5mYWNlYm9vay5jb20vcGFnZXMvV2VQcm9tb3RlVGhpc2NvbS8zNjc1MTk1NTY2NDgyMjIiO3M6NDoicG9zdCI7czoxMjE6Ikp1c3QgZG93bmxvYWRlZCB0aGlzIGF3ZXNvbWUgcHJvZHVjdCBmb3IgZnJlZSBmcm9tIGh0dHA6Ly9XZVByb21vdGVUaGlzLmNvbSBAd2Vwcm9tb3RldGhpcyAuIENoZWNrIGl0IG91dCEgI3dlcHJvbW90ZXRoaXMiO3M6NDoiZmlsZSI7czo0MzoiaHR0cDovL3d3dy53ZXByb21vdGV0aGlzLmNvbS9zaGFyZS9wcm9kdWN0ICI7czo3OiJibG9nZ2VyIjtzOjEzOiJ3ZXByb21vdGV0aGlzIjtzOjY6ImRvbWFpbiI7czoxNDoiY2hyaXNxdWVlbi5jb20iO3M6NzoiYnRuUGFnZSI7czoyOToiL3dlLXByb21vdGUtdGhpcy8/cmVwZWF0PXczdGMiO3M6NzoiYnRubmFtZSI7czoyMToiR2V0IFlvdXIgRG93bmxvYWQgTm93IjtzOjg6Imxhbmd1YWdlIjtzOjU6ImVuLVVTIjt9";
+		} else {
+			$this->hop = $hop;
+		}
 	}
 	
 	function getUserById($userID) {
@@ -261,13 +274,20 @@ $wpe->getMeta ();
 
 </script>
 
-<script type="text/javascript" src="http://www.google-analytics.com/ga.js">
+<script type="text/javascript"
+	src="http://www.google-analytics.com/ga.js">
 </script>
-<?php $wpe->getRedirectJS(); ?>
+<?php
+$wpe->getRedirectJS ();
+?>
 </head>
 <body>
 <h1 align="center">You are being redirected to: <a
-	href="<?php	echo $wpe->hop;	?>"><?php echo $wpe->hop; ?></a></h1>
+	href="<?php
+	echo $wpe->hop;
+	?>"><?php
+	echo $wpe->hop;
+	?></a></h1>
 <?php
 ob_end_flush ();
 ?>

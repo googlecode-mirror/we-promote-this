@@ -6,8 +6,8 @@ class CronKeywordUpdateUndone extends CronAbstract
     {
         $file = "CBKeywordExtractor.txt";
         $this->getCommandLineHelper()->run_in_background("CBKeywordExtractor.php update-undone", $file);
-        $url = "http://" . RemoteHost . RemoteHostRootFolder . "CB/CBUtils/ShowLog.php?log=$file";
-        echo ("View Results <a href='$url'>$url</a>");
+        $url = "../WPT/CBUtils/ShowLog.php?log=$file";
+		echo ("View <a href='$url'>$file </a> Log");
     }
 }
 new CronKeywordUpdateUndone();
