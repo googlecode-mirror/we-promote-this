@@ -28,7 +28,7 @@
 	<RemoteHostRSSFeed>http://www.WePromoteThis.com/feeds/</RemoteHostRSSFeed>
 	<RemoteHost>wepromotethis.com/</RemoteHost>
 	<RemoteServer>ftp://chrisqueen11:Neeuq011!@chrisqueen.com/</RemoteServer>
-	<RemoteHostRootFolder>ClickBank-Traffic-Explosion/</RemoteHostRootFolder>
+	<RemoteHostRootFolder>WePromoteThis/</RemoteHostRootFolder>
 	<RemoteServerVideoLocation>Video/WPTCreatedVideos/</RemoteServerVideoLocation>
 	<LocalServer>localhost</LocalServer>
 	<LocalServerVideoLocation>F:/WePromoteThis/src/WPT/Video/CBCreatedVideos/</LocalServerVideoLocation>
