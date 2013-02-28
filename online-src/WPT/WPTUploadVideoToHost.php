@@ -204,14 +204,14 @@ class WPTUploadVideoToHost extends CBAbstract {
                                 $this -> getLogger() -> log('Could not update with query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);
                             }
                             if (stripos($serverResponse, 'AccountDisabled') !== false) {
-                                $class = "WPTDeleteUserYoutubeAccount";
+                                //$class = "WPTDeleteUserYoutubeAccount";
                                 //$file = $class . ".txt";
-                                $file = "WPTUploadVideoToHost.txt";
-                                $cmd = $class . ".php uid=$userid";
+                                //$file = "WPTUploadVideoToHost.txt";
+                                //$cmd = $class . ".php uid=$userid";
                                 //$this -> getCommandLineHelper() -> run_in_background($cmd, $file);
                                 echo("User ($userid): $userName YT account has been disabled. Deleting user.<br>");
-                                $this -> getCommandLineHelper() -> startProcess($cmd, $file);
-                                $this -> removeUsersTraces($userid);
+                                //$this -> getCommandLineHelper() -> startProcess($cmd, $file);
+                                $this -> removeUsersTraces($userid,$userName);
                             } else {
                                 $this -> getLogger() -> logInfo("<font color='red'>Upload Error Posting to " . ucfirst($location) . " for User($userid):\n<br>Server Response: " . $serverResponse . "\n<br>- Video Vars -\n<br><font color='orange'>" . $video . "</font></font>");
                             }
@@ -233,12 +233,12 @@ class WPTUploadVideoToHost extends CBAbstract {
         } else {
             $this -> getLogger() -> logInfo("User($userid): " . $userName . " is no longer active.<br>");
             $this->getDBConnection()->queryDB("Delete from post as p where p.user_id=$userid and posted=0");
-            $this -> removeUser($userid);
+            $this -> removeUser($userid,$userName);
         }
     }
 
-    function removeUsersTraces($uid) {
-        echo("Removing all the users posted videos except the one uploaded within the last 5 hours it was working<br>");
+    function removeUsersTraces($uid,$userName) {
+        echo("Removing all of users ($uid) posted videos except the one uploaded within the last 5 hours it was working<br>");
         //$this->getDBConnection()->queryDB("Drop table if exists post_bak");
         $this -> runQuery("CREATE Temporary table IF NOT EXISTS post_bak LIKE post;",$this->getDBConnection()->getDBConnection());
         $this -> runQuery("INSERT IGNORE INTO post_bak SELECT * FROM post;",$this->getDBConnection()->getDBConnection());
@@ -248,19 +248,11 @@ class WPTUploadVideoToHost extends CBAbstract {
         (SELECT TIMESTAMPDIFF(HOUR, p.posttime ,MAX(p2.posttime)) as last_time,p.id FROM post_bak as p, post_bak as p2 where p.user_id=$uid and p.user_id=p2.user_id and p.posted=1 and p2.posted=1 group by p.user_id, p.pid, p.location having last_time>5) as grow );
         ");
         $this -> getDBConnection()->threadSafeQuery("Delete from post as p where p.user_id=$uid and p.posted=0;");
-
-        $this -> removeUser($uid);
+        $this -> removeUser($uid,$userName);
 
     }
 
-    function removeUser($uid) {
-        // Get username
-        $query = "Select user_id from users where id=" . $uid;
-        $result = $this->getDBConnection()->queryDB($query);
-        $row = mysql_fetch_assoc($result);
-        $userName = $row['user_id'];
-        
-        
+    function removeUser($uid,$userName) {
         // Set User to inactive
         $deleteUserQuery = "Update users set active=0 where id=".$uid;
         $this->runQuery($deleteUserQuery,$this->getDBConnection()->getDBConnection());
@@ -279,7 +271,7 @@ class WPTUploadVideoToHost extends CBAbstract {
                 )
                 ) as grow 
                 )";
-        echo("Remove user from WP<br>");
+        echo("Removed Users($uid): $userName from WP<br>");
         $this -> getDBConnection() -> queryWP($query);
     }
 
