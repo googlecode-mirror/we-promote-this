@@ -56,23 +56,28 @@ class DBConnection {
     }
 
     function threadSafeWPQuery($query, $mode = "READ") {
-        mysql_query("LOCK TABLES task $mode;");
-        $results = mysql_query($query, $this -> wpCon);
+        $this->queryWP("LOCK TABLES task $mode;");
+        $results = $this->queryWP($query);
         if ($mode != "READ") {
-            mysql_query("COMMIT;");
+            $this->queryWP("COMMIT;");
         }
-        mysql_query("UNLOCK TABLES;");
+        $this->queryWP("UNLOCK TABLES;");
         return $results;
     }
 
     function queryWP($query) {
         return mysql_query($query, $this -> wpCon);
     }
+    
+ 	function queryDB($query) {
+        return mysql_query($query, $this -> con);
+    }
 
     function __destruct() {
-        mysql_query("UNLOCK TABLES;");
+        $this->queryDB("UNLOCK TABLES;");
         /*
          if ($this -> wpCon) {
+		$this->queryWP("UNLOCK TABLES;");
          mysql_close($this->wpCon);
          }
          if ($this -> con) {
@@ -82,12 +87,12 @@ class DBConnection {
     }
 
     function threadSafeQuery($query, $mode = "READ") {
-        mysql_query("LOCK TABLES task $mode;");
-        $results = mysql_query($query);
+        $this->queryDB("LOCK TABLES task $mode;");
+        $results = $this->queryDB($query);
         if ($mode != "READ") {
-            mysql_query("COMMIT;");
+            $this->queryDB("COMMIT;");
         }
-        mysql_query("UNLOCK TABLES;");
+        $this->queryDB("UNLOCK TABLES;");
         return $results;
     }
 
@@ -107,7 +112,7 @@ class DBConnection {
     function getDBConnection() {
         return $this -> con;
     }
-
+    
     function getWPDBConnection() {
         return $this -> wpCon;
     }

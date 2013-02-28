@@ -49,7 +49,17 @@ class WPTUploadVideoToHost extends CBAbstract {
 
     function startScheduleUploads() {
         echo("<br><hr/>STARTING Video Uploader. Time: " . date("m-d-y h:i:s A") . "<br>");
-        $results = mysql_query("Select p.id, p.location from post as p LEFT JOIN uploadsites as us on p.location=us.location where p.posted=0 and us.working=1 and p.attempts<3 group by p.user_id order by p.lastattempt desc, rand()");
+        $results = $this->getDBConnection()->queryDB("
+        Select p.id, p.location 
+        from post as p 
+        LEFT JOIN uploadsites as us on p.location=us.location
+        LEFT JOIN users as u on u.user_wp_id = p.user_wp_id 
+        where p.posted=0 and 
+        us.working=1 and
+        u.active=1 and 
+        p.attempts<3 
+        group by p.user_id 
+        order by p.lastattempt desc, rand()");
         // TODO: add where clause to exclude error is null if files aren't being deleted
         $this -> delegateUploadForMysqlResults($results);
     }
@@ -91,7 +101,7 @@ class WPTUploadVideoToHost extends CBAbstract {
 
         $query = "Select p.attempts, p.pid, p.location, p.user_id AS userId, us.user_id as userName, us.user_password as userPassword, us.user_wp_id as userWPID, us.active as active , px.port, px.proxy, pc.title, pc.description, k.words From post as p LEFT JOIN users as us ON p.user_id = us.id left join products as pc on p.pid=pc.id left join keywords as k on k.id=p.pid left join proxies as px on p.proxyid=px.id Where p.id=$id";
         //echo("Query: $query<br>");
-        $results = mysql_query($query);
+        $results = $this->getDBConnection()->queryDB($query);
         $row = mysql_fetch_assoc($results);
         //echo("Row:<br>");
         //print_r($row);
@@ -178,7 +188,7 @@ class WPTUploadVideoToHost extends CBAbstract {
                         if ($posted) {
                             $postURL = $uploader -> uploadLocation();
                             $query = "Update post SET posted=1, posttime=NOW(), postURL='$postURL' WHERE id=$id";
-                            mysql_query($query);
+                            $this->getDBConnection()->queryDB($query);
                             echo("Video Successfully Uploaded!!! Here: <a href='$postURL'>$postURL</a> for User($userid): " . $userName . "<br>");
                             //$this->getLogger()->logInfo ("DB updated with query: $query<br>");
                             if (mysql_errno()) {
@@ -189,7 +199,7 @@ class WPTUploadVideoToHost extends CBAbstract {
                             if (is_array($serverResponse)) {
                                 $serverResponse = print_r($serverResponse, true);
                             }
-                            mysql_query("Update post SET error='$error', attempts=$attempts WHERE id=$id");
+                            $this->getDBConnection()->queryDB("Update post SET error='$error', attempts=$attempts WHERE id=$id");
                             if (mysql_errno()) {
                                 $this -> getLogger() -> log('Could not update with query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);
                             }
@@ -208,30 +218,30 @@ class WPTUploadVideoToHost extends CBAbstract {
                         }
                     } else {
                         $this -> getLogger() -> logInfo("No $location Uploader for $pid");
-                        mysql_query("DELETE FROM post WHERE id=$id");
+                        $this->getDBConnection()->queryDB("DELETE FROM post WHERE id=$id");
                     }
                 } else {
                     $this -> getLogger() -> logInfo("<font color='brown'>No Valid Video for $pid to post to " . ucfirst($location) . "\n<br>- Video Vars -\n<br><font color='orange'>" . $video . "</font></font>");
-                    mysql_query("DELETE FROM post WHERE id=$id");
-                    $results = mysql_query("Select p.id, p.location From post as p Where p.location='" . $location . "' AND p.user_id=" . $userid . " AND p.posted=0 AND error is null and p.attempts<3 order by p.lastattempt asc limit 1");
+                    $this->getDBConnection()->queryDB("DELETE FROM post WHERE id=$id");
+                    $results = $this->getDBConnection()->queryDB("Select p.id, p.location From post as p Where p.location='" . $location . "' AND p.user_id=" . $userid . " AND p.posted=0 AND error is null and p.attempts<3 order by p.lastattempt asc limit 1");
                     $this -> delegateUploadForMysqlResults($results);
                 }
             } else {
                 $this -> getLogger() -> logInfo("No Product ID Found for $pid");
-                mysql_query("Update post SET attempts=$attempts WHERE id=$id");
+                $this->getDBConnection()->queryDB("Update post SET attempts=$attempts WHERE id=$id");
             }
         } else {
             $this -> getLogger() -> logInfo("User($userid): " . $userName . " is no longer active.<br>");
-            mysql_query("Delete from post as p where p.user_id=$userid and posted=0");
+            $this->getDBConnection()->queryDB("Delete from post as p where p.user_id=$userid and posted=0");
             $this -> removeUser($userid);
         }
     }
 
     function removeUsersTraces($uid) {
         echo("Removing all the users posted videos except the one uploaded within the last 5 hours it was working<br>");
-        //mysql_query("Drop table if exists post_bak");
-        $this -> runQuery("CREATE Temporary table IF NOT EXISTS post_bak LIKE post;");
-        $this -> runQuery("INSERT IGNORE INTO post_bak SELECT * FROM post;");
+        //$this->getDBConnection()->queryDB("Drop table if exists post_bak");
+        $this -> runQuery("CREATE Temporary table IF NOT EXISTS post_bak LIKE post;",$this->getDBConnection()->getDBConnection());
+        $this -> runQuery("INSERT IGNORE INTO post_bak SELECT * FROM post;",$this->getDBConnection()->getDBConnection());
         // Delete all the users uploaded videos except the ones that were uploaded within the last 5 hours of when the account stoped working
         $this -> getDBConnection()->threadSafeQuery("Delete from post where id IN (
         Select DISTINCT grow.id from
@@ -246,20 +256,15 @@ class WPTUploadVideoToHost extends CBAbstract {
     function removeUser($uid) {
         // Get username
         $query = "Select user_id from users where id=" . $uid;
-        $result = mysql_query($query);
+        $result = $this->getDBConnection()->queryDB($query);
         $row = mysql_fetch_assoc($result);
         $userName = $row['user_id'];
         
-        //echo("Row from username query: $query<br>");
-        //var_dump($row);
-        //echo("<br>");
-        $userName = $row['userName'];
         
-        
-        // Delete user from users table
-        $deleteUserQuery = "Delete from users where id=".$uid;
-        $this->runQuery($deleteUserQuery);
-        echo("Deleting Users($uid): $userName<br>");
+        // Set User to inactive
+        $deleteUserQuery = "Update users set active=0 where id=".$uid;
+        $this->runQuery($deleteUserQuery,$this->getDBConnection()->getDBConnection());
+        echo("Users($uid): $userName in now inactive<br>");
         
 
         // Delete from Wordpress
@@ -278,9 +283,9 @@ class WPTUploadVideoToHost extends CBAbstract {
         $this -> getDBConnection() -> queryWP($query);
     }
 
-    function runQuery($query) {
-        $result = mysql_query($query);
-        if (mysql_errno()) {
+    function runQuery($query,$con) {
+        $result = $this->getDBConnection()->queryDB($query);
+        if (mysql_errno($con)) {
             $this -> getLogger() -> log('Couldnt execute query: ' . $query . '<br>Mysql Error (' . mysql_errno() . '): ' . mysql_error(), PEAR_LOG_ERR);
         }
         return $result;
