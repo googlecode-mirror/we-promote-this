@@ -72,6 +72,10 @@ class DBConnection {
  	function queryDB($query) {
         return mysql_query($query, $this -> con);
     }
+    
+    function queryCon($query, $con){
+    	return mysql_query($query, $con);
+    }
 
     function __destruct() {
         $this->queryDB("UNLOCK TABLES;");
