@@ -98,8 +98,10 @@ class WPTUploadVideoToHost extends CBAbstract {
 		// Update task id so I know whats being executed
 		$query = "update task set cmd='" . $id . "' where id=" . $this->taskID;
 		//mysql_query($query);
-		$this->getDBConnection ()->threadSafeQuery ( $query, "LOW_PRIORITY WRITE" );
+		$this->getDBConnection ()->queryDB ( $query );
+		//$this->getDBConnection ()->threadSafeQuery ( $query, "LOW_PRIORITY WRITE" );
 		
+
 		$query = "Select p.attempts, p.pid, p.location, p.user_id AS userId, us.user_id as userName, us.user_password as userPassword, us.user_wp_id as userWPID, us.active as active , px.port, px.proxy, pc.title, pc.description, k.words From post as p LEFT JOIN users as us ON p.user_id = us.id left join products as pc on p.pid=pc.id left join keywords as k on k.id=p.pid left join proxies as px on p.proxyid=px.id Where p.id=$id";
 		//echo("Query: $query<br>");
 		$results = $this->getDBConnection ()->queryDB ( $query );
@@ -107,12 +109,8 @@ class WPTUploadVideoToHost extends CBAbstract {
 		//echo("Row:<br>");
 		//print_r($row);
 		//echo "<br>";
-		
-
 		$posted = false;
-		
 		$active = ( bool ) $row ["active"];
-		
 		$attempts = $row ["attempts"] + 1;
 		$location = $row ["location"];
 		$userWPID = $row ["userWPID"];
@@ -122,16 +120,8 @@ class WPTUploadVideoToHost extends CBAbstract {
 		$pid = $row ["pid"];
 		$title = $row ["title"];
 		$description = $row ["description"];
-		//echo("Words: ");
-		//print_r($row ["words"]);
-		//echo "<br>";
 		$keywords = json_decode ( $row ["words"], true );
-		//echo("Keywords: ");
-		//print_r($keywords);
-		//echo "<br>";
-		//die();
 		
-
 		if ($active == true) {
 			/*
              $obj = new Proxy ();
@@ -191,20 +181,21 @@ class WPTUploadVideoToHost extends CBAbstract {
 						if ($posted) {
 							$postURL = $uploader->uploadLocation ();
 							$query = "Update post SET posted=1, posttime=NOW(), postURL='$postURL' WHERE id=$id";
-							$this->getDBConnection ()->queryDB ( $query );
-							echo ("Video Successfully Uploaded!!! Here: <a href='$postURL'>$postURL</a> for User($userid): " . $userName . "<br>");
-							//$this->getLogger()->logInfo ("DB updated with query: $query<br>");
-							if (mysql_errno ()) {
-								$this->getLogger ()->log ( 'Could not update with query: ' . $query . '<br>Mysql Error (' . mysql_errno () . '): ' . mysql_error (), PEAR_LOG_ERR );
+							$rowsAffected = $this->runQuery ( $query, $this->getDBConnection ()->getDBConnection (), true );
+							if ($rowsAffected > 0) {
+								echo ("Video Successfully Uploaded!!! Here: <a href='$postURL'>$postURL</a> for User($userid): " . $userName . "<br>");
+							} else {
+								$this->getLogger ()->logInfo ( "Error: Video Uploaded but could not update database. Video URL: <a href='$postURL'>$postURL</a> for User($userid): " . $userName . "<br>", PEAR_LOG_ERR );
 							}
 						} else {
 							$serverResponse = $uploader->getResponse ();
 							if (is_array ( $serverResponse )) {
 								$serverResponse = print_r ( $serverResponse, true );
 							}
-							$this->getDBConnection ()->queryDB ( "Update post SET error='$error', attempts=$attempts WHERE id=$id" );
-							if (mysql_errno ()) {
-								$this->getLogger ()->log ( 'Could not update with query: ' . $query . '<br>Mysql Error (' . mysql_errno () . '): ' . mysql_error (), PEAR_LOG_ERR );
+							$updateQuery = "Update post SET error='".addslashes($serverResponse)."', attempts=$attempts WHERE id=$id";
+							$rowsAffected = $this->runQuery ( $updateQuery, $this->getDBConnection ()->getDBConnection (), true );
+							if ($rowsAffected == 0) {
+								$this->getLogger ()->logInfo ( "Could not update post id=$id with error status<br>" );
 							}
 							if (stripos ( $serverResponse, 'AccountDisabled' ) !== false) {
 								//$class = "WPTDeleteUserYoutubeAccount";
@@ -229,21 +220,35 @@ class WPTUploadVideoToHost extends CBAbstract {
 						}
 					} else {
 						$this->getLogger ()->logInfo ( "No $location Uploader for $pid" );
-						$this->getDBConnection ()->queryDB ( "DELETE FROM post WHERE id=$id" );
+						$deletePostQuery = "DELETE FROM post WHERE id=$id";
+						$rowsAffected = $this->runQuery ( $deletePostQuery, $this->getDBConnection ()->getDBConnection (), true );
+						if ($rowsAffected == 0) {
+							$this->getLogger ()->logInfo ( "Could not delete post id=$id<br>", PEAR_LOG_ERR );
+						}
 					}
 				} else {
 					$this->getLogger ()->logInfo ( "<font color='brown'>No Valid Video for $pid to post to " . ucfirst ( $location ) . "\n<br>- Video Vars -\n<br><font color='orange'>" . $video . "</font></font>" );
-					$this->getDBConnection ()->queryDB ( "DELETE FROM post WHERE id=$id" );
-					$results = $this->getDBConnection ()->queryDB ( "Select p.id, p.location From post as p Where p.location='" . $location . "' AND p.user_id=" . $userid . " AND p.posted=0 AND error is null and p.attempts<3 order by p.lastattempt asc limit 1" );
-					$this->delegateUploadForMysqlResults ( $results );
+					$deletePostQuery = "DELETE FROM post WHERE id=$id";
+					$rowsAffected = $this->runQuery ( $deletePostQuery, $this->getDBConnection ()->getDBConnection (), true );
+					if ($rowsAffected == 0) {
+						$this->getLogger ()->logInfo ( "Could not delete post id=$id<br>", PEAR_LOG_ERR );
+					} else {
+						$results = $this->getDBConnection ()->queryDB ( "Select p.id, p.location From post as p Where p.location='" . $location . "' AND p.user_id=" . $userid . " AND p.posted=0 AND error is null and p.attempts<3 order by p.lastattempt asc limit 1" );
+						$this->delegateUploadForMysqlResults ( $results );
+					}
 				}
 			} else {
 				$this->getLogger ()->logInfo ( "No Product ID Found for $pid" );
-				$this->getDBConnection ()->queryDB ( "Update post SET attempts=$attempts WHERE id=$id" );
+				$updateAttempts = "Update post SET attempts=$attempts WHERE id=$id";
+				$rowsAffected = $this->runQuery ( $updateAttempts, $this->getDBConnection ()->getDBConnection (), true );
+				if ($rowsAffected == 0) {
+					$this->getLogger ()->logInfo ( "Could not update attempts count for post id=$id<br>", PEAR_LOG_ERR );
+				}
 			}
 		} else {
 			$this->getLogger ()->logInfo ( "User($userid): " . $userName . " is no longer active.<br>" );
-			$this->getDBConnection ()->queryDB ( "Delete from post as p where p.user_id=$userid and posted=0" );
+			$deletePostQuery = "Delete from post as p where p.user_id=$userid and posted=0";
+			$this->runQuery ( $deletePostQuery, $this->getDBConnection ()->getDBConnection () );
 			$this->removeUser ( $userid, $userName );
 		}
 	}
@@ -252,22 +257,29 @@ class WPTUploadVideoToHost extends CBAbstract {
 		echo ("Removing all of users ($uid) posted videos except the one uploaded within the last 5 hours it was working<br>");
 		//$this->getDBConnection()->queryDB("Drop table if exists post_bak");
 		$this->runQuery ( "CREATE Temporary table IF NOT EXISTS post_bak LIKE post;", $this->getDBConnection ()->getDBConnection () );
-		$this->runQuery ( "INSERT IGNORE INTO post_bak SELECT * FROM post;", $this->getDBConnection ()->getDBConnection () );
+		$this->runQuery ( "INSERT IGNORE INTO post_bak SELECT * FROM post WHERE user_id=$uid;", $this->getDBConnection ()->getDBConnection () );
 		// Delete all the users uploaded videos except the ones that were uploaded within the last 5 hours of when the account stoped working
-		$this->getDBConnection ()->threadSafeQuery ( "Delete from post where id IN (
+		$deleteQuery1 = "Delete from post where id IN (
         Select DISTINCT grow.id from
         (SELECT TIMESTAMPDIFF(HOUR, p.posttime ,MAX(p2.posttime)) as last_time,p.id FROM post_bak as p, post_bak as p2 where p.user_id=$uid and p.user_id=p2.user_id and p.posted=1 and p2.posted=1 group by p.user_id, p.pid, p.location having last_time>5) as grow );
-        " );
-		$this->getDBConnection ()->threadSafeQuery ( "Delete from post as p where p.user_id=$uid and p.posted=0;" );
+        ";
+		$this->runQuery ( $deleteQuery1, $this->getDBConnection ()->getDBConnection () );
+		//$this->getDBConnection ()->threadSafeQuery ( $deleteQuery1);
+		$deleteQuery2 = "Delete from post as p where p.user_id=$uid and p.posted=0;";
+		$this->runQuery ( $deleteQuery2, $this->getDBConnection ()->getDBConnection () );
+		//$this->getDBConnection ()->threadSafeQuery ( $deleteQuery2 );
 		$this->removeUser ( $uid, $userName );
-	
 	}
 	
 	function removeUser($uid, $userName) {
 		// Set User to inactive
 		$deleteUserQuery = "Update users set active=0 where id=" . $uid;
-		$this->runQuery ( $deleteUserQuery, $this->getDBConnection ()->getDBConnection () );
-		echo ("Users($uid): $userName in now inactive<br>");
+		$affectedRows = $this->runQuery ( $deleteUserQuery, $this->getDBConnection ()->getDBConnection (), true );
+		if ($affectedRows > 0) {
+			echo ("Users($uid): $userName in now inactive<br>");
+		} else {
+			echo ("Error changing Users($uid): $userName. Status is till active<br>");
+		}
 		
 		if (strlen ( $userName ) > 0) {
 			// Delete from Wordpress
@@ -282,19 +294,32 @@ class WPTUploadVideoToHost extends CBAbstract {
                 )
                 ) as grow 
                 )";
-			echo ("Removed Users($uid): $userName from WP<br>");
-			$this->getDBConnection ()->queryWP ( $query );
+			$affectedRows = $this->runQuery ( $query, $this->getDBConnection ()->getWPDBConnection (), true );
+			if ($affectedRows > 0) {
+				echo ("Removed User($uid): $userName from WP<br>");
+			} else {
+				echo ("Could not remove User($uid): $userName from WP<br>");
+			}
+		} else {
+			echo ("Could not remove User($uid): from WP because no username was found<br>");
 		}
 	}
 	
-	function runQuery($query, $con) {
-		$result = $this->getDBConnection ()->queryDB ( $query );
+	function runQuery($query, $con, $returnAffectedRows = false) {
+		$affectedRowCount = 0;
+		$result = $this->getDBConnection ()->queryCon ( $query, $con );
 		if (mysql_errno ( $con )) {
-			$this->getLogger ()->log ( 'Couldnt execute query: ' . $query . '<br>Mysql Error (' . mysql_errno () . '): ' . mysql_error (), PEAR_LOG_ERR );
+			$this->getLogger ()->log ( 'Couldnt execute query: ' . $query . '<br>Mysql Error (' . mysql_errno ( $con ) . '): ' . mysql_error ( $con ), PEAR_LOG_ERR );
+		} else {
+			$affectedRowCount = mysql_affected_rows ( $con );
+			$this->getDBConnection ()->queryCon ( "COMMIT", $con );
 		}
-		return $result;
+		if ($returnAffectedRows) {
+			return $affectedRowCount;
+		} else {
+			return $result;
+		}
 	}
-
 }
 
 $videoUploader = new WPTUploadVideoToHost ( );
