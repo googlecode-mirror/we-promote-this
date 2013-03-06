@@ -110,7 +110,7 @@ class WPTUploadScheduler extends CBAbstract {
              ";
              */
              
-             $deleteQuery = 'DELETE FROM post WHERE posted=0 AND (attempts>=3 OR pid NOT IN (SELECT id FROM uploadedVideos));';
+             $deleteQuery = 'DELETE FROM post WHERE posted=0 AND (attempts>=3 OR pid NOT IN (SELECT id FROM uploadedVideos) OR user_id NOT IN (SELECT id from users WHERE active=1));';
             
 
             // Set all user inactive
