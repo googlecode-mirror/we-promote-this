@@ -31,6 +31,7 @@ class DBConnection {
     function __construct($ip, $dbName, $dbUser, $dbPassword, $wpip = null, $wpdbname = null, $wpdbuser = null, $wpdbpassword = null) {
         if (isset($wpip) && isset($wpdbname) && isset($wpdbuser) && isset($wpdbpassword)) {
             $this -> wpCon = $this -> connectToDB($wpip, $wpdbuser, $wpdbpassword, $wpdbname);
+            echo("WordPRess Connection made<br><br><br>");
         }
         $this -> ip = $ip;
         $this -> dbUser = $dbUser;

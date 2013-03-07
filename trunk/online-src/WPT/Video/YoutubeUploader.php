@@ -3,7 +3,7 @@ require_once 'VideoUploader.php';
 require_once 'Zend/Loader.php'; // the Zend dir must be in your include_path
 Zend_Loader::loadClass ( 'Zend_Gdata_YouTube' );
 Zend_Loader::loadClass ( 'Zend_Gdata_ClientLogin' );
-Zend_Loader::loadClass('Zend_Gdata_App_MediaFileSource');
+Zend_Loader::loadClass ( 'Zend_Gdata_App_MediaFileSource');
 Zend_Loader::loadClass ( 'Zend_Gdata_App_HttpException' );
 Zend_Loader::loadClass ( 'Zend_Gdata_App_Exception' );
 Zend_Loader::loadClass ( 'Zend_Exception' );

@@ -76,9 +76,9 @@ abstract class CBAbstract {
         // Turn auto commit off
         //$this->getDBConnection()->queryDB("SET autocommit=0");
         
-		$this->getDBConnection()->queryDB("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
+		//$this->getDBConnection()->queryDB("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
         // Turn auto commit on
-        $this->getDBConnection()->queryDB("SET autocommit=1");
+        //$this->getDBConnection()->queryDB("SET autocommit=1");
         
 		$query = "insert into task (class,running,started) values ('" . get_class ( $this ) . "',true,now())";
         //$this->getDBConnection()->threadSafeQuery($query,"WRITE");
