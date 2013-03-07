@@ -80,7 +80,7 @@ abstract class CBAbstract {
         // Turn auto commit on
         //$this->getDBConnection()->queryDB("SET autocommit=1");
         
-		$query = "insert into task (class,running,started) values ('" . get_class ( $this ) . "',true,now())";
+		$query = "insert DELAYED into task (class,running,started) values ('" . get_class ( $this ) . "',true,now())";
         //$this->getDBConnection()->threadSafeQuery($query,"WRITE");
         $this->getDBConnection()->queryDB($query);
         //$this->getDBConnection()->queryDB("COMMIT;");
@@ -88,7 +88,7 @@ abstract class CBAbstract {
 	}
 	function notifyDBOfTaskFinished() {
 		// echo ("Notifying DB Task Finished of id: " . $this->taskID . "<br>");
-		$query = "update task set running=false where id=" . $this->taskID;
+		$query = "update LOW_PRIORITY task set running=false where id=" . $this->taskID;
         //$this->getDBConnection()->threadSafeQuery($query,"WRITE");
         $this->getDBConnection()->queryDB($query);
         //$this->getDBConnection()->queryDB("COMMIT;");
@@ -97,11 +97,14 @@ abstract class CBAbstract {
         //$this->getDBConnection()->queryDB("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
 	}
 	function reconnectDB() {
+	    /*
 		if (ONLINEMODE) {
 			self::$DBConnection = new DBConnection ( mysqlServerIP2, dbname, dbuser, dbpassword, wpip, wpdbname, wpdbuser, wpdbpassword );
 		} else {
 			self::$DBConnection = new DBConnection ( localmysqlServerIP2, localdbname, localdbuser, localdbpassword, wpip, wpdbname, wpdbuser, wpdbpassword );
 		}
+         */
+         $this->getDBConnection()->reconnect();
 	}
 	static function getConfigParser() {
 		return self::$ConfigParser;
