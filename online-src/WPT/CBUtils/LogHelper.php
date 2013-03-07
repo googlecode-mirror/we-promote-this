@@ -14,8 +14,11 @@ class LogHelper {
 		$this->log ( $message, PEAR_LOG_INFO );
 		echo ($message . "<br>\n\r");
 	}
-	function log($message, $level) {
-		$this->pearLogger->setIdent ( __FILE__ );
+	function log($message, $level, $file = null) {
+		    if(!isset($file)){
+		        $file = __FILE__;
+		    }
+		$this->pearLogger->setIdent ( $file  );
 		$this->pearLogger->log ( $message, $level );
 	}
 	function errorHandler($code, $message, $file, $line) {
@@ -36,10 +39,9 @@ class LogHelper {
 			default :
 				$priority = PEAR_LOG_EMERG;
 		}
-		$this->log ( $message . ' in ' . $file . ' at line ' . $line, $priority );
 	}
 	function exceptionHandler($exception) {
-		$this->log ( $exception->getMessage (), PEAR_LOG_ALERT );
+		$this->log ( $exception->getMessage (), PEAR_LOG_ALERT, $exception->getFile() );
 	}
 }
 //$logger = new LogHelper ( );

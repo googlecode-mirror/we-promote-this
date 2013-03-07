@@ -45,7 +45,7 @@ class WPTUploadScheduler extends CBAbstract {
         //echo("Video Array (After cleaning empty folders:<br>");
         //print_r($videoArray);
         //echo("<br><br>");
-
+        
         // Get All user IDs from Wordpress
         $users = array();
 
@@ -59,14 +59,15 @@ class WPTUploadScheduler extends CBAbstract {
 		AND u3.meta_key='clickbank' AND u3.meta_value IS NOT NULL
 		AND u4.meta_key='clickbank_clerk_api_key' AND u4.meta_value IS NOT NULL";
         $result = $this -> getDBConnection() -> queryWP($query);
-        while (($row = $result-> fetch_assoc())) {
+        while (($row = $result -> fetch_assoc())) {
             $user = new User();
             $user -> user_id = $row['user_id'];
             $user -> user_password = $row['user_password'];
             $user -> user_wp_id = $row['user_wp_id'];
             $users[] = $user;
-            //echo ("Adding user: $user<br>");
+            //echo("Adding user: $user<br>");
         }
+
         $userString = implode(',', $users);
 
         $badVideosCreated = 0;
@@ -74,8 +75,8 @@ class WPTUploadScheduler extends CBAbstract {
             $videoString = "('" . implode("','", $videoArray) . "')";
             // Find videos that have no keywords and delete them
             $badVideosQuery = "SELECT p.id FROM products as p left join keywords AS k using(id) WHERE p.id in $videoString AND (k.id is null OR k.words='[\"{BLANK}\"]' OR CHAR_LENGTH(k.words)<=4)";
-            $result = $this->getDBConnection()->queryDB($badVideosQuery);
-            while (($row = $result-> fetch_assoc())) {
+            $result = $this -> getDBConnection() -> queryDB($badVideosQuery);
+            while (($row = $result -> fetch_assoc())) {
                 $videoPID = $row['id'];
                 $folder = $videoPath . $videoPID;
                 $this -> rrmdir($folder);
@@ -87,9 +88,7 @@ class WPTUploadScheduler extends CBAbstract {
         if (count($videoArray) > 0) {
             $videoString = "('" . implode("'),('", $videoArray) . "')";
             $videoCount = count($videoArray);
-            
-            
-            
+
             // Create table containg all possible videos to upload
             $createUploadedVideosTableQuery = "DROP TABLE IF EXISTS uploadedVideos;CREATE TEMPORARY TABLE uploadedVideos(id tinytext NOT NULL, PRIMARY KEY(id ( 20 )));INSERT INTO uploadedVideos VALUES $videoString;";
 
@@ -109,9 +108,8 @@ class WPTUploadScheduler extends CBAbstract {
              AUTO_INCREMENT=1;
              ";
              */
-             
-             $deleteQuery = 'DELETE FROM post WHERE posted=0 AND (attempts>=3 OR pid NOT IN (SELECT id FROM uploadedVideos) OR user_id NOT IN (SELECT id from users WHERE active=1));';
-            
+
+            $deleteQuery = 'DELETE FROM post WHERE posted=0 AND (attempts>=3 OR pid NOT IN (SELECT id FROM uploadedVideos) OR user_id NOT IN (SELECT id from users WHERE active=1));';
 
             // Set all user inactive
             $createUserTableQuery = "UPDATE users set active=0;";
@@ -147,12 +145,12 @@ class WPTUploadScheduler extends CBAbstract {
                 die($debugQuery . "<br>Bad Videos Deleted: $badVideosCreated<br>");
             }
 
-            $query = $createUploadedVideosTableQuery.$deleteQuery . $createUserTableQuery . $insertVideoUploadsQuery;
+            $query = $createUploadedVideosTableQuery . $deleteQuery . $createUserTableQuery . $insertVideoUploadsQuery;
 
             //die($query);
 
             $this -> runBatchQuery($query);
-            $status = "Product Upload Scheduler: All $videoCount Video(s) Scheduled For Upload. | $badVideosCreated bad videos (no keywords) were deleted. | Ran On " . date("m-d-y h:i:s A")."<br>";
+            $status = "Product Upload Scheduler: All $videoCount Video(s) Scheduled For Upload. | $badVideosCreated bad videos (no keywords) were deleted. | Ran On " . date("m-d-y h:i:s A") . "<br>";
         } else {
             $status = "No Videos to schedule uploads for.<br>";
         }
@@ -195,7 +193,7 @@ class WPTUploadScheduler extends CBAbstract {
          }
          */
 
-        $con = $this -> getDBConnection() -> getMysqliDBConnection();
+        $con = $this -> getDBConnection() -> getDBConnection();
         $con -> multi_query($batchQuery);
         do {
             //$con->use_result ()->close ();

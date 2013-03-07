@@ -178,39 +178,31 @@ class WPTUploadVideoToHost extends CBAbstract {
 						$posted = $uploader->wasUploaded ();
 						if ($posted) {
 							$postURL = $uploader->uploadLocation ();
-							$query = "Update post SET posted=1, posttime=NOW(), postURL='$postURL' WHERE id=$id";
+							$query = "Update post SET posted=1, posttime=NOW(), postURL='".$this->getDBConnection()->getDBConnection()->real_escape_string($postURL)."' WHERE id=$id";
 							$rowsAffected = $this->runQuery ( $query, $this->getDBConnection ()->getDBConnection (), true );
 							if ($rowsAffected > 0) {
 								echo ("Video Successfully Uploaded!!! Here: <a href='$postURL'>$postURL</a> for User($userid): " . $userName . "<br>");
 							} else {
-								$this->getLogger ()->logInfo ( "Error: Video Uploaded but could not update database. Video URL: <a href='$postURL'>$postURL</a> for User($userid): " . $userName . "<br>", PEAR_LOG_ERR );
+								$this->getLogger ()->logInfo ( "Error: Video Uploaded but could not update database. Post ID: $id | Video URL: <a href='$postURL'>$postURL</a> for User($userid): " . $userName . "<br>", PEAR_LOG_ERR );
 							}
 						} else {
 							$serverResponse = $uploader->getResponse ();
 							if (is_array ( $serverResponse )) {
 								$serverResponse = print_r ( $serverResponse, true );
 							}
-							$updateQuery = "Update post SET error='" . addslashes ( $serverResponse ) . "', attempts=$attempts WHERE id=$id";
+							$updateQuery = "Update post SET error='" . $this->getDBConnection()->getDBConnection()->real_escape_string ( $serverResponse ) . "', attempts=$attempts WHERE id=$id";
 							$rowsAffected = $this->runQuery ( $updateQuery, $this->getDBConnection ()->getDBConnection (), true );
 							if ($rowsAffected == 0) {
-								$this->getLogger ()->logInfo ( "Could not update post id=$id with error status<br>" );
+								$this->getLogger ()->logInfo ( "Could not update post id=$id with error status: $serverResponse<br>" );
 							}
 							if (stripos ( $serverResponse, 'AccountDisabled' ) !== false) {
-								//$class = "WPTDeleteUserYoutubeAccount";
-								//$file = $class . ".txt";
-								//$file = "WPTUploadVideoToHost.txt";
-								//$cmd = $class . ".php uid=$userid";
-								//$this -> getCommandLineHelper() -> run_in_background($cmd, $file);
 								echo ("User ($userid): $userName YT account has been disabled. Deleting user.<br>");
-								//$this -> getCommandLineHelper() -> startProcess($cmd, $file);
 								$this->removeUsersTraces ( $userid, $userName );
 							} else if (stripos ( $serverResponse, 'BadAuthentication' ) !== false) {
 								echo ("User ($userid): $userName YT account has bad auhtentication. Deleting user.<br>");
-								//$this -> getCommandLineHelper() -> startProcess($cmd, $file);
 								$this->removeUser ( $userid, $userName );
 							} else if (stripos ( $serverResponse, 'NoLinkedYouTubeAccount' ) !== false) {
 								echo ("User ($userid): $userName YT account is not linked to this account. Deleting user.<br>");
-								//$this -> getCommandLineHelper() -> startProcess($cmd, $file);
 								$this->removeUser ( $userid, $userName );
 							} else {
 								$this->getLogger ()->logInfo ( "<font color='red'>Upload Error Posting to " . ucfirst ( $location ) . " for User($userid):\n<br>Server Response: " . $serverResponse . "\n<br>- Video Vars -\n<br><font color='orange'>" . $video . "</font></font>" );
@@ -271,12 +263,12 @@ class WPTUploadVideoToHost extends CBAbstract {
 	
 	function removeUser($uid, $userName) {
 		// Set User to inactive
-		$deleteUserQuery = "Update users set active=0 where id=" . $uid;
+		$deleteUserQuery = "Update users set active=false where id=" . $uid;
 		$affectedRows = $this->runQuery ( $deleteUserQuery, $this->getDBConnection ()->getDBConnection (), true );
 		if ($affectedRows > 0) {
 			echo ("Users($uid): $userName in now inactive<br>");
 		} else {
-			echo ("Error changing Users($uid): $userName. Status is till active<br>");
+			echo ("Error changing Users($uid): $userName. Status is till active. | Query used: $deleteUserQuery<br>");
 		}
 		
 		if (strlen ( $userName ) > 0) {
@@ -296,24 +288,25 @@ class WPTUploadVideoToHost extends CBAbstract {
 			if ($affectedRows > 0) {
 				echo ("Removed User($uid): $userName from WP<br>");
 			} else {
-				echo ("Could not remove User($uid): $userName from WP<br>");
+				echo ("Could not remove User($uid): $userName from WP.| Query used: $query <br>");
 			}
 		} else {
 			echo ("Could not remove User($uid): from WP because no username was found<br>");
 		}
 	}
 	
-	function runQuery($query, $con, $returnAffectedRows = false, $retry = 1) {
+	function runQuery($query, $con, $returnAffectedRows = false, $retry = 3) {
 		$affectedRowCount = 0;
 		$result = $this->getDBConnection ()->queryCon ( $query, $con );
-		if ($this->getDBConnection()->getDBConnection()->errno) {
-			if ($retry > 0 && $this->getDBConnection()->getDBConnection()->errno == 2006) {
+		if ($con->errno) {
+			if ($retry > 0 && $con->errno == 2006) {
+			    $this->reconnectDB();
 				return $this->runQuery ( $query, $con, $returnAffectedRows, -- $retry );
 			} else {
-				$this->getLogger ()->log ( 'Couldnt execute query: ' . $query . '<br>Mysql Error (' . $this->getDBConnection()->getDBConnection()->errno . '): ' . $this->getDBConnection()->getDBConnection()->error, PEAR_LOG_ERR );
+				$this->getLogger ()->log ( 'Couldnt execute query: ' . $query . '<br>Mysql Error (' . $con->errno . '): ' . $con->error, PEAR_LOG_ERR );
 			}
 		} else {
-			$this->getDBConnection ()->queryCon ( "COMMIT", $con );
+			//$this->getDBConnection ()->queryCon ( "COMMIT", $con );
 			$affectedRowCount = $con->affected_rows;
 		
 		}

@@ -129,7 +129,7 @@ class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 		if ($yt->isValid ()) {
 			echo ("Created YT Account: " . $yt->userName . "<br>");
 			// Insert new yt account into wordpress database
-			$this->getDBConnection ()->queryWP ( "LOCK TABLES wp_usermeta WRITE" );
+			//$this->getDBConnection ()->queryWP ( "LOCK TABLES wp_usermeta WRITE" );
 			$accountQuery = "Select meta_key as account FROM wp_usermeta where user_id = $uid AND meta_key like 'youtube%_password' ORDER BY umeta_id DESC limit 1";
 			$aresult = $this->getDBConnection ()->queryWP ( $accountQuery );
 			$arow = $aresult->fetch_assoc();
@@ -140,7 +140,7 @@ class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 			$insertQuery = "Insert into wp_usermeta (user_id, meta_key,meta_value) VALUES($uid,'youtube" . $numAccount . "','" . $yt->userName . "'),($uid,'youtube" . $numAccount . "_password','" . $yt->password . "')";
 			// echo ("Insert Query:$insertQuery<br>");
 			$this->getDBConnection ()->queryWP ( $insertQuery );
-			$this->getDBConnection ()->queryWP ( "UNLOCK TABLES" );
+			//$this->getDBConnection ()->queryWP ( "UNLOCK TABLES" );
 		} else {
 			echo ("Could not create a valid YT account<br>");
 		}
