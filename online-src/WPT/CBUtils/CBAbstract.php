@@ -73,9 +73,12 @@ abstract class CBAbstract {
 	function notifyDBOfTask() {
 	    // SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
         //mysql_query("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
-        //mysql_query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
         // Turn auto commit off
         //mysql_query("SET autocommit=0");
+        
+		mysql_query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
+        // Turn auto commit on
+        mysql_query("SET autocommit=1");
         
 		$query = "insert into task (class,running,started) values ('" . get_class ( $this ) . "',true,now())";
         //$this->getDBConnection()->threadSafeQuery($query,"WRITE");
