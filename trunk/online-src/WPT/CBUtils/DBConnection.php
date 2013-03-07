@@ -11,6 +11,9 @@
  * those values to local variables $ip,$port,$user,$password,$dbName
  * It gives access to performing queries to a database
  */
+
+ini_set('mysqli.reconnect', 'on');
+
 class DBConnection {
     public $ip;
     // IP address of the database
@@ -31,7 +34,6 @@ class DBConnection {
     function __construct($ip, $dbName, $dbUser, $dbPassword, $wpip = null, $wpdbname = null, $wpdbuser = null, $wpdbpassword = null) {
         if (isset($wpip) && isset($wpdbname) && isset($wpdbuser) && isset($wpdbpassword)) {
             $this -> wpCon = $this -> connectToDB($wpip, $wpdbuser, $wpdbpassword, $wpdbname);
-            echo("WordPRess Connection made<br><br><br>");
         }
         $this -> ip = $ip;
         $this -> dbUser = $dbUser;
@@ -62,11 +64,35 @@ class DBConnection {
     }
 
     function __destruct() {
-        if ($this -> wpCon) {
+        if (isset($this -> wpCon)) {
             $this -> wpCon -> close();
         }
-        if ($this -> con) {
+        if (isset($this -> con)) {
             $this -> con -> close();
+        }
+    }
+
+    function reconnect($tries = 3, $placeofFailure = '') {
+        $pass = true;
+        if ($tries > 0) {
+            if (isset($this -> wpCon)) {
+                if (!$this -> wpCon -> ping()) {
+                    $pass = false;
+                    $placeofFailure .= "WP";
+                }
+            }
+            if (isset($this -> con)) {
+                if (!$this -> con -> ping()) {
+                    $pass = false;
+                    $placeofFailure .= " AND DB";
+                }
+            }
+            if (!$pass) {
+                sleep(10 + rand(0, 15));
+                $this -> reconnect(--$tries, $placeofFailure);
+            }
+        } else {
+            trigger_error('Connection failed to ' . $placeofFailure, E_CORE_ERROR);
         }
     }
 
