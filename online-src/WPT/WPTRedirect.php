@@ -85,7 +85,7 @@ class WPTRedirect extends CBAbstract {
 				LIMIT 1";
 		$result = $this->getDBConnection ()->queryWP ( $query );
 		if (count ( $result ) > 0) {
-			$row = mysql_fetch_assoc ( $result );
+			$row = $result-> fetch_assoc();
 			$userLink = $row ['userLink'];
 			$upline = $row ["upline"];
 			$level = $row ["level"];
@@ -115,7 +115,7 @@ class WPTRedirect extends CBAbstract {
 				LIMIT 1";
 		$result = $this->getDBConnection ()->queryWP ( $query );
 		if (count ( $result ) > 0) {
-			$row = mysql_fetch_assoc ( $result );
+			$row = $result-> fetch_assoc();
 			$userID = $row ['userID'];
 			$upline = $row ["upline"];
 			$level = $row ["level"];
@@ -155,7 +155,7 @@ class WPTRedirect extends CBAbstract {
 				echo ("Update Query: $updateQuery<br>");
 			}
 			$this->getDBConnection ()->queryWP ( $updateQuery );
-			$affected = mysql_affected_rows ( $this->getDBConnection ()->getWPDBConnection () );
+			$affected = $this->getDBConnection()->getWPDBConnection()->affected_rows;
 			if (isset ( $_REQUEST ['debug'] )) {
 				echo ("Affected : $affected<br>");
 			}

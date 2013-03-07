@@ -39,14 +39,14 @@ class FiverrAccountCreator extends CBAbstract {
 	function addCredits($tid, $credits, $useremail) {
 		// check if $tid has already been processed
 		$query = "select tid from paypal where tid='$tid'";
-		$results = mysql_query ( $query );
-		$count = mysql_num_rows ( $results );
+		$results = $this->getDBConnection()->queryDB ( $query );
+		$count = $results->num_rows;
 		if ($count > 0) {
 			// TID already handled
 		} else {
 			$totalCredits = $this->getUserCreditsByEmail ( $useremail ) + $credits;
 			$updateQuery = "Update members set credits=$totalCredits where email='$useremail'";
-			mysql_query ( $updateQuery );
+			$this->getDBConnection()->queryDB ( $updateQuery );
 		}
 	}
 	
@@ -74,22 +74,22 @@ class FiverrAccountCreator extends CBAbstract {
 			$username = $this->username;
 		}
 		$query = "SELECT credits FROM members where username='" . $username . "'";
-		$results = mysql_query ( $query );
-		$row = mysql_fetch_assoc ( $results );
+		$results = $this->getDBConnection()->queryDB ( $query );
+		$row = $results-> fetch_assoc();
 		return $row ['credits'];
 	}
 	
 	function getUserCreditsByEmail($email) {
 		$query = "SELECT credits FROM members where email='" . $email . "'";
-		$results = mysql_query ( $query );
-		$row = mysql_fetch_assoc ( $results );
+		$results = $this->getDBConnection()->queryDB ( $query );
+		$row = $results-> fetch_assoc();
 		return $row ['credits'];
 	}
 	
 	function getUserAccounts() {
 		$query = "SELECT accounts FROM members where username='" . $this->username . "'";
-		$results = mysql_query ( $query );
-		$row = mysql_fetch_assoc ( $results );
+		$results = $this->getDBConnection()->queryDB ( $query );
+		$row = $results-> fetch_assoc();
 		if (isset ( $row ['accounts'] )) {
 			return json_decode ( $row ['accounts'], true );
 		} else {
@@ -100,7 +100,7 @@ class FiverrAccountCreator extends CBAbstract {
 	function updateUserAccounts(array $accounts) {
 		$json = json_encode ( $accounts );
 		$query = "UPDATE members SET accounts='$json' where username='" . $this->username . "'";
-		mysql_query ( $query );
+		$this->getDBConnection()->queryDB ( $query );
 	}
 	
 	function addToAccounts(&$accounts, Account $account, $serviceName) {
@@ -138,7 +138,7 @@ class FiverrAccountCreator extends CBAbstract {
 						$argv ['twitter_number'] --;
 						$userCredits --;
 						$this->addToAccounts ( $accounts, $obj, 'twitter' );
-						mysql_query ( "Update members set credits=" . $userCredits . " where username='" . $this->username . "'" );
+						$this->getDBConnection()->queryDB ( "Update members set credits=" . $userCredits . " where username='" . $this->username . "'" );
 					} else {
 						echo ("Twitter Account Was NOT Created");
 					}

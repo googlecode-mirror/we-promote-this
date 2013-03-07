@@ -18,16 +18,20 @@ class Name {
 	function getLastName() {
 		return $this->lastName;
 	}
+    
+    function getDBConnection(){
+        $this->dbConnect->getDBConnection();
+    }
 	
 	function getRandomName() {
 		$query = "Select * from names order by rand() limit 1";
-		$results = mysql_query ( $query, $this->dbConnect );
-		$row = mysql_fetch_assoc ( $results );
+		$results = $this->getDBConnection()->queryDB ( $query, $this->dbConnect );
+		$row = $results-> fetch_assoc();
 		$this->firstName = $row ['name'];
 		
 		$query = "Select * from names where name!='" . $this->firstName . "' order by rand() limit 1";
-		$results = mysql_query ( $query, $this->dbConnect );
-		$row = mysql_fetch_assoc ( $results );
+		$results = $this->getDBConnection()->queryDB ( $query, $this->dbConnect );
+		$row = $results-> fetch_assoc();
 		$this->lastName = $row ['name'];
 	}
 }

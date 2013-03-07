@@ -66,11 +66,11 @@ class WPTUploadVideoToHost extends CBAbstract {
 	}
 	
 	function delegateUploadForMysqlResults($results) {
-		if (mysql_num_rows ( $results ) > 0) {
+		if ($results->num_rows > 0) {
 			$linearIDs = array ();
 			$class = get_class ( $this );
 			$file = $class . ".txt";
-			while ( ($row = mysql_fetch_assoc ( $results )) ) {
+			while ( ($row = $results-> fetch_assoc()) ) {
 				$id = $row ["id"];
 				$location = $row ["location"];
 				if (in_array ( $location, $this->linearLocation )) {
@@ -97,15 +97,13 @@ class WPTUploadVideoToHost extends CBAbstract {
 	function upload($id) {
 		// Update task id so I know whats being executed
 		$query = "update task set cmd='" . $id . "' where id=" . $this->taskID;
-		//mysql_query($query);
 		$this->getDBConnection ()->queryDB ( $query );
-		//$this->getDBConnection ()->threadSafeQuery ( $query, "LOW_PRIORITY WRITE" );
 		
 
 		$query = "Select p.attempts, p.pid, p.location, p.user_id AS userId, us.user_id as userName, us.user_password as userPassword, us.user_wp_id as userWPID, us.active as active , px.port, px.proxy, pc.title, pc.description, k.words From post as p LEFT JOIN users as us ON p.user_id = us.id left join products as pc on p.pid=pc.id left join keywords as k on k.id=p.pid left join proxies as px on p.proxyid=px.id Where p.id=$id";
 		//echo("Query: $query<br>");
 		$results = $this->getDBConnection ()->queryDB ( $query );
-		$row = mysql_fetch_assoc ( $results );
+		$row = $results-> fetch_assoc();
 		//echo("Row:<br>");
 		//print_r($row);
 		//echo "<br>";
@@ -308,15 +306,15 @@ class WPTUploadVideoToHost extends CBAbstract {
 	function runQuery($query, $con, $returnAffectedRows = false, $retry = 1) {
 		$affectedRowCount = 0;
 		$result = $this->getDBConnection ()->queryCon ( $query, $con );
-		if (mysql_errno ( $con )) {
-			if ($retry > 0 && mysql_errno ( $con ) == 2006) {
+		if ($this->getDBConnection()->getDBConnection()->errno) {
+			if ($retry > 0 && $this->getDBConnection()->getDBConnection()->errno == 2006) {
 				return $this->runQuery ( $query, $con, $returnAffectedRows, -- $retry );
 			} else {
-				$this->getLogger ()->log ( 'Couldnt execute query: ' . $query . '<br>Mysql Error (' . mysql_errno ( $con ) . '): ' . mysql_error ( $con ), PEAR_LOG_ERR );
+				$this->getLogger ()->log ( 'Couldnt execute query: ' . $query . '<br>Mysql Error (' . $this->getDBConnection()->getDBConnection()->errno . '): ' . $this->getDBConnection()->getDBConnection()->error, PEAR_LOG_ERR );
 			}
 		} else {
 			$this->getDBConnection ()->queryCon ( "COMMIT", $con );
-			$affectedRowCount = mysql_affected_rows ( $con );
+			$affectedRowCount = $con->affected_rows;
 		
 		}
 		if ($returnAffectedRows) {

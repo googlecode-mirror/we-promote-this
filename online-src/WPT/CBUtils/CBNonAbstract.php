@@ -58,12 +58,12 @@ class CBNonAbstract {
 	
 	function notifyDBOfTask() {
 		$query = "insert into task (class,running,started) values ('" . get_class ( $this ) . "',true,now())";
-		mysql_query ( $query );
-		$this->taskID = mysql_insert_id ();
+		$this->getDBConnection()->queryDB ( $query );
+		$this->taskID = $this->getDBConnection()->getDBConnection()->insert_id;
 	}
 	function notifyDBOfTaskFinished() {
 		$query = "update task set running=false where id=" . $this->taskID;
-		mysql_query ( $query );
+		$this->getDBConnection()->queryDB ( $query );
 	}
 	function reconnectDB() {
 		self::$DBConnection = new DBConnection ( mysqlServerIP2, dbname, dbuser, dbpassword );

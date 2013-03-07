@@ -14,8 +14,8 @@ class ProjectPayDay extends CBAbstract {
 		
 		// for each project payday User create a new account for them
 		$query = "Select * from projectpaydaymembers";
-		$results = mysql_query ( $query );
-		while ( ($ros = mysql_fetch_assoc ( $results )) ) {
+		$results = $this->getDBConnection()->queryDB ( $query );
+		while ( ($ros = $results-> fetch_assoc()) ) {
 			$id = $ros ['id'];
 			$this->createAccount ( $id );
 		}

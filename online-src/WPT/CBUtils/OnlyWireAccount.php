@@ -18,14 +18,18 @@ class OnlyWireAccount {
 		$this->updateFromDB ();
 		$this->remove2MonthOldSubmissions ();
 	}
+    function getDBConnection(){
+        return $this->getDBConnection;
+    }
+    
 	function updateFromDB() {
 		$query = "Select * FROM onlywire WHERE id=$this->id";
-		mysql_query ( "LOCK TABLES onlywire WRITE" );
-		$results = mysql_query ( $query, $this->dbConnection->getDBConnection () );
-		if (mysql_errno ()) {
-			trigger_error ( 'Mysql Error (' . mysql_errno () . '): ' . mysql_error () );
+		$this->getDBConnection()->queryDB ( "LOCK TABLES onlywire WRITE" );
+		$results = $this->getDBConnection()->queryDB ( $query, $this->dbConnection->getDBConnection () );
+		if ($this->getDBConnection()->getDBConnection()->errno) {
+			trigger_error ( 'Mysql Error (' . $this->getDBConnection()->getDBConnection()->errno . '): ' . $this->getDBConnection()->getDBConnection()->error );
 		} else if (is_resource ( $results )) {
-			$row = mysql_fetch_array ( $results );
+			$row = $results-> fetch_assoc();
 			$this->id = $row ["id"];
 			$this->email = $row ["email"];
 			$this->activeServices = $row ["activeservices"];
@@ -34,7 +38,7 @@ class OnlyWireAccount {
 		} else {
 			trigger_error ( 'No Valid Resource For id: ' . $this->id );
 		}
-		mysql_query ( "UNLOCK TABLES;" );
+		$this->getDBConnection()->queryDB ( "UNLOCK TABLES;" );
 	}
 	
 	function isValid() {
@@ -174,20 +178,20 @@ class OnlyWireAccount {
 	}
 	function saveChanges() {
 		$saved = false;
-		mysql_query ( "LOCK TABLES onlywire WRITE" );
+		$this->getDBConnection()->queryDB ( "LOCK TABLES onlywire WRITE" );
 		$json = json_encode ( $this->accounts );
 		$query = "UPDATE onlywire SET accounts='$json', activeservices=" . $this->activeServices . " WHERE id=$this->id";
 		//echo ($query . "<br>");
 		while ( $saved === false ) {
-			mysql_query ( $query );
-			if (mysql_errno ()) {
+			$this->getDBConnection()->queryDB ( $query );
+			if ($this->getDBConnection()->getDBConnection()->errno) {
 				$saved = false;
 				sleep(5); //
 			} else {
 				$saved = true;
 			}
 		}
-		mysql_query ( "UNLOCK TABLES;" );
+		$this->getDBConnection()->queryDB ( "UNLOCK TABLES;" );
 		return $saved;
 	}
 	function addAccount($userName, $password) {

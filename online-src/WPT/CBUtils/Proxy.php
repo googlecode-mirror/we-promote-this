@@ -64,8 +64,8 @@ CURLOPT_PROXYTYPE => CURLPROXY_HTTP ); // Set proxy type
 	function deleteProxy($proxy) {
 		//$fullProxy = $proxy ["proxy"] . ":" . $proxy ["port"];
 		$query = "Select errorCount from proxies where proxy='" . $proxy ['proxy'] . "'";
-		$results = mysql_query ( $query );
-		$row = mysql_fetch_assoc ( $results );
+		$results = $this->getDBConnection()->queryDB ( $query );
+		$row = $results-> fetch_assoc();
 		$count = $row ['errorCount'];
 		$count ++;
 		if ($count >= 3) {
@@ -76,7 +76,7 @@ CURLOPT_PROXYTYPE => CURLPROXY_HTTP ); // Set proxy type
 			//echo ("Update Proxy Error ($count): $fullProxy<br>");
 			$query = "Update proxies set errorCount=$count where proxy='" . $proxy ['proxy'] . "'";
 		}
-		mysql_query ( $query );
+		$this->getDBConnection()->queryDB ( $query );
 	}
 	
 	function getRandomProxy($proxies = null) {
@@ -112,15 +112,15 @@ CURLOPT_PROXYTYPE => CURLPROXY_HTTP ); // Set proxy type
 	
 	function ResetProxyErrorCount($proxy) {
 		$query = "Update proxies set errorCount=0 where proxy='" . $proxy ['proxy'] . "'";
-		mysql_query ( $query );
+		$this->getDBConnection()->queryDB ( $query );
 	}
 	
 	function getProxyHostList() {
 		$proxies = array ();
 		//$query = "SELECT * FROM proxies where errorCount<3 ORDER BY RAND()";
 		$query = "SELECT proxy, port FROM proxies where errorCount<3 ORDER BY RAND()";
-		$results = mysql_query ( $query );
-		while ( ($row = mysql_fetch_assoc ( $results )) ) {
+		$results = $this->getDBConnection()->queryDB ( $query );
+		while ( ($row = $results-> fetch_assoc()) ) {
 			$proxies [] = $row;
 		}
 		return $proxies;

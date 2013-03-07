@@ -89,10 +89,10 @@ class CBKeywordExtractor extends CBAbstract {
 	}
 	function update($query) {
 		//$this->getLogger()->logInfo ( "Updating Keywords using query: " . $query );
-		$results = mysql_query ( $query );
+		$results = $this->getDBConnection()->queryDB ( $query );
 		$className = get_class ( $this );
 		$file = $className . ".txt";
-		while ( ($row = mysql_fetch_array ( $results )) ) {
+		while ( ($row = $results-> fetch_assoc()) ) {
 			$id = $row ["id"];
 			$cmd = $className . ".php id=$id";
 			$this->getCommandLineHelper ()->run_in_background ( $cmd, $file );
@@ -105,17 +105,7 @@ class CBKeywordExtractor extends CBAbstract {
 		$batch = array ();
 		
 		//$batch[] = file_get_contents ( $this->updateDBQueryFilename );
-		$batch [] = "LOAD DATA LOW_PRIORITY LOCAL INFILE '" . mysql_real_escape_string ( realpath ( $this->updateDBQueryFilename ) ) . "' REPLACE INTO TABLE keywords FIELDS TERMINATED BY ',' ENCLOSED BY '\'' LINES TERMINATED BY '\\n' (id,words);";
-		
-		/*
-        $query = array_shift($batch);
-        $results = mysql_query($query);
-        echo("<br>$query<br><br>Results: ");
-        print_r($results);
-        echo("<br><br>Errors: ".mysql_error());
-        die();
-        */
-		
+		$batch [] = "LOAD DATA LOW_PRIORITY LOCAL INFILE '" . $this->getDBConnection()->getDBConnection()->real_escape_string ( realpath ( $this->updateDBQueryFilename ) ) . "' REPLACE INTO TABLE keywords FIELDS TERMINATED BY ',' ENCLOSED BY '\'' LINES TERMINATED BY '\\n' (id,words);";
 		$batch [] = "Insert into BadIDs (id) select id from keywords where CHAR_LENGTH(words)<=4 OR words not like '[\"%' OR words LIKE '%{BLANK}%' on duplicate key update count=count+1;";
 		$batch [] = "Delete from keywords where id in (select id from  BadIDs);\nOPTIMIZE TABLE keywords;";
 		
@@ -187,9 +177,9 @@ class CBKeywordExtractor extends CBAbstract {
 		} else {
 			echo ("No content for $id <br>");
 			$query = "Insert into BadIDs (id) values ('$id') on duplicate key update count=count+1;";
-			mysql_query ( $query );
-			if (mysql_errno ()) {
-				echo ("MySQL error " . mysql_errno () . ": " . mysql_error () . "\n<br>When executing:<br>\n$query\n<br>");
+			$this->getDBConnection()->queryDB ( $query );
+			if ($this->getDBConnection()->getDBConnection()->errno) {
+				echo ("MySQL error " . $this->getDBConnection()->getDBConnection()->errno . ": " . $this->getDBConnection()->getDBConnection()->error . "\n<br>When executing:<br>\n$query\n<br>");
 			}
 		}
 	}

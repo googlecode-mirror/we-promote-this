@@ -26,7 +26,7 @@ class CBMarketPlace extends CBAbstract {
             echo("Updating DB. Time: " . date("m-d-y h:i:s A") . "<br>");
             if ($this -> updateDB()) {
                 // update new donwload date in database
-                mysql_query("INSERT INTO feeddownload (lastdownloadtime) VALUE (NOW())");
+                $this->getDBConnection()->queryDB("INSERT INTO feeddownload (lastdownloadtime) VALUE (NOW())");
                 echo("Finished Updating DB With New Products. Time: " . date("m-d-y h:i:s A") . "<br>");
             }
         }
@@ -40,8 +40,8 @@ class CBMarketPlace extends CBAbstract {
     function areNewClickBankMarketPlaceFiles() {
         $success = false;
         $downloadTimeQery = "SELECT * FROM feeddownload order by id DESC limit 1";
-        $results = mysql_query($downloadTimeQery);
-        $row = mysql_fetch_array($results);
+        $results = $this->getDBConnection()->queryDB($downloadTimeQery);
+        $row = $results-> fetch_assoc();
         $downloadTime = $row["lastdownloadtime"];
         if (isset($downloadTime)) {
             echo("Last Download Time: $downloadTime<br>");
@@ -104,7 +104,7 @@ class CBMarketPlace extends CBAbstract {
         $dataloaded = false;
         chmod($in_dir, 0755);
         $txtfile = $in_dir . $in_file;
-        $loadsql = "LOAD DATA LOW_PRIORITY LOCAL INFILE '" . mysql_real_escape_string(realpath($txtfile)) . "' REPLACE INTO TABLE " . $tableName . " FIELDS TERMINATED BY '" . $this -> csvSep . "' LINES TERMINATED BY '" . $this -> lineTerminator . "' STARTING BY '" . $this -> csvPrefix . "'";
+        $loadsql = "LOAD DATA LOW_PRIORITY LOCAL INFILE '" . $this->getDBConnection()->getDBConnection()->real_escape_string(realpath($txtfile)) . "' REPLACE INTO TABLE " . $tableName . " FIELDS TERMINATED BY '" . $this -> csvSep . "' LINES TERMINATED BY '" . $this -> lineTerminator . "' STARTING BY '" . $this -> csvPrefix . "'";
         if ($ignoreLines > 0) {
             $loadsql .= ' IGNORE ' . $ignoreLines . ' LINES';
         }
@@ -113,10 +113,10 @@ class CBMarketPlace extends CBAbstract {
         }
         $loadsql .= ";";
 
-        mysql_query($loadsql);
-        if (mysql_errno()) {
-            echo("MySQL error " . mysql_errno() . ": " . mysql_error() . "\n<br>When executing:<br>\n$loadsql\n<br>");
-            if (mysql_errno() == 2006 && $retry > 0) {
+        $this->getDBConnection()->queryDB($loadsql);
+        if ($this->getDBConnection()->getDBConnection()->errno) {
+            echo("MySQL error " . $this->getDBConnection()->getDBConnection()->errno . ": " . $this->getDBConnection()->getDBConnection()->error . "\n<br>When executing:<br>\n$loadsql\n<br>");
+            if ($this->getDBConnection()->getDBConnection()->errno == 2006 && $retry > 0) {
                 echo("Trying to reconnect and try again (" . (4 - $retry) . ")<br>");
                 sleep(10);
                 $this -> reconnectDB();
@@ -158,11 +158,11 @@ class CBMarketPlace extends CBAbstract {
             $sites = $xpath -> query("Site", $category);
             foreach ($sites as $site) {
                 $values = array();
-                $values["category"] = mysql_real_escape_string($categoryName);
-                $values["id"] = mysql_real_escape_string($xpath -> query("Id", $site) -> item(0) -> nodeValue);
+                $values["category"] = $this->getDBConnection()->getDBConnection()->real_escape_string($categoryName);
+                $values["id"] = $this->getDBConnection()->getDBConnection()->real_escape_string($xpath -> query("Id", $site) -> item(0) -> nodeValue);
                 $values["popularityrank"] = $xpath -> query("PopularityRank", $site) -> item(0) -> nodeValue;
-                $values["title"] = mysql_real_escape_string($xpath -> query("Title", $site) -> item(0) -> nodeValue);
-                $values["description"] = mysql_real_escape_string($xpath -> query("Description", $site) -> item(0) -> nodeValue);
+                $values["title"] = $this->getDBConnection()->getDBConnection()->real_escape_string($xpath -> query("Title", $site) -> item(0) -> nodeValue);
+                $values["description"] = $this->getDBConnection()->getDBConnection()->real_escape_string($xpath -> query("Description", $site) -> item(0) -> nodeValue);
                 $values["hasrecurringproducts"] = $xpath -> query("HasRecurringProducts", $site) -> item(0) -> nodeValue;
                 $values["gravity"] = $xpath -> query("Gravity", $site) -> item(0) -> nodeValue;
                 $values["percentpersale"] = $xpath -> query("PercentPerSale", $site) -> item(0) -> nodeValue;

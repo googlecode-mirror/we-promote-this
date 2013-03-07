@@ -71,7 +71,8 @@
 						stretch="condensed" face="times">
 						This will be the product description. The words should wrap and
 						use the full width when there are
-						no pictures involved. Maybe there should be a limit on how many
+						no pictures involved. Maybe there
+						should be a limit on how many
 						lines are displayed at one time.
 						<!-- Make the text appear in 1 second, sliding from the left -->
 						<animator type="slide-in" direction="left" duration="3.0" />
@@ -97,9 +98,10 @@
 					<audio voice="neospeech:julie" margin-start="3.0">This will be the
 						product description. The words should wrap and use the full width
 						when there are
-						no pictures involved. Maybe there should be a limit on how many
+						no pictures involved. Maybe there should be a limit
+						on how many
 						lines are displayed at one time.
-         </audio>
+					</audio>
 				</stack>
 				<stack>
 					<text type="advanced" fontsize="14" weight="bold" style="italic"
@@ -151,7 +153,7 @@
 						the text. The text should stay to one side. That way the picture
 						can be displayed on the
 						other side. Good bye.
-         </audio>
+					</audio>
 				</stack>
 			</sequence>
 		</stack>

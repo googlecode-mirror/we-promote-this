@@ -58,8 +58,8 @@ class WPTDeleteUserYoutubeAccount extends CBAbstract {
 
     function deleteYTAccountForUID($uid) {
         $query = "Select us.user_id as userName from users as us where us.id=" . $uid;
-        $result = mysql_query($query);
-        $row = mysql_fetch_assoc($result);
+        $result = $this->getDBConnection()->queryDB($query);
+        $row = $result-> fetch_assoc();
         $userName = $row['userName'];
         //echo("Found username $userName for User ID: $uid<br>");
         $this -> deleteYTAccountForUserName($userName);

@@ -60,14 +60,14 @@ class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 		$className = get_class ( $this );
 		$file = $className . ".txt";
 		$result = $this->getDBConnection ()->queryWP ( $query );
-		while ( ($row = mysql_fetch_assoc ( $result )) ) {
+		while ( ($row = $result-> fetch_assoc()) ) {
 			$uid = $row ["uid"];
 			$level = $row ["level"];
 			$earned = $row ["earned"];
 			// find out how mand account the user already has
 			$accountsQuery = "Select count(*) as accounts FROM users where user_wp_id = $uid";
-			$aresult = mysql_query ( $accountsQuery );
-			$arow = mysql_fetch_assoc ( $aresult );
+			$aresult = $this->getDBConnection()->queryDB ( $accountsQuery );
+			$arow = $aresult-> fetch_assoc();
 			$numAccount = $arow ["accounts"];
 			
 			// Override level for user id 1 (cq2smooth)
@@ -132,7 +132,7 @@ class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 			$this->getDBConnection ()->queryWP ( "LOCK TABLES wp_usermeta WRITE" );
 			$accountQuery = "Select meta_key as account FROM wp_usermeta where user_id = $uid AND meta_key like 'youtube%_password' ORDER BY umeta_id DESC limit 1";
 			$aresult = $this->getDBConnection ()->queryWP ( $accountQuery );
-			$arow = mysql_fetch_assoc ( $aresult );
+			$arow = $aresult->fetch_assoc();
 			$account = $arow ["account"];
 			$account = str_ireplace ( 'youtube', '', $account );
 			$account = str_ireplace ( '_password', '', $account );

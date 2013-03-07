@@ -6,11 +6,11 @@ class UserAccount {
 	public $password;
 	function __construct($userID, DBConnection $DBConnection) {
 		$query = "Select * FROM users WHERE id=$userID";
-		$results = mysql_query ( $query, $DBConnection->getDBConnection () );
-		if (mysql_errno ()) {
-			trigger_error ( 'Mysql Error (' . mysql_errno () . '): ' . mysql_error () );
+		$results = $DBConnection->queryDB ( $query );
+		if ($this->getDBConnection()->getDBConnection()->errno) {
+			trigger_error ( 'Mysql Error (' . $this->getDBConnection()->getDBConnection()->errno . '): ' . $this->getDBConnection()->getDBConnection()->error );
 		} else if (is_resource ( $results )) {
-			$row = mysql_fetch_array ( $results );
+			$row = $results-> fetch_assoc();
 			$this->userID = $row ["id"];
 			$this->userName = $row ["user_id"];
 			$this->password = $row ["user_password"];

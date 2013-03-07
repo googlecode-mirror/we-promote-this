@@ -7,7 +7,7 @@ class CronUpdateWPTUserEarnings extends CronAbstract {
 		$query = "SELECT user_id, meta_value AS api FROM wp_usermeta WHERE meta_key='clickbank_clerk_api_key' AND CHAR_LENGTH(meta_value)>0";
 		$result = $this->getDBConnection()->queryWP ( $query );
 		$valueString = "";
-		while ( ($row = mysql_fetch_assoc ( $result )) ) {
+		while ( ($row = $result-> fetch_assoc()) ) {
 			$userId = $row ["user_id"];
 			$api = $row ["api"];
 			$total = $this->getTotalSales ( $api );

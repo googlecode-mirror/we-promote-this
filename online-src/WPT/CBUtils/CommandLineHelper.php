@@ -2,8 +2,10 @@
 class CommandLineHelper {
 	public $absRootPath;
 	public $relRootPath;
+    private $dbConnection;
 	
-	function __construct() {
+	function __construct($dbCon) {
+	    $this->dbConnection = $dbCon;
 		$path = dirname ( __FILE__ );
 		//$path = '/home/content/50/6934650/html/';
 		$onlineMode = false;
@@ -45,23 +47,17 @@ class CommandLineHelper {
 		return $files;
 	}
 	
-	function threadSafeQuery($query, $mode = "READ") {
-		mysql_query ( "LOCK TABLES task $mode;" );
-		$results = mysql_query ( $query );
-		if ($mode != "READ") {
-			mysql_query ( "COMMIT;" );
-		}
-		mysql_query ( "UNLOCK TABLES;" );
-		return $results;
-	}
+    function getDBConnection(){
+        return $this->dbConnection;
+    }
 	
 	function run_in_background($command, $output) {
 		$results = "Could not run Command";
 		if ($this->isOnline ()) {
-			$insertQuery = "insert ignore into task (cmd, output) values ('" . mysql_escape_string ( $command ) . "','" . mysql_escape_string ( $output ) . "')";
+		    
+			$insertQuery = "insert ignore into task (cmd, output) values ('" . $this->getDBConnection()->getDBConnection()->real_escape_string(  $command ) . "','" . $this->getDBConnection()->getDBConnection()->real_escape_string ( $output ) . "')";
 			//echo ("Insert Query " . $insertQuery . "<br>");
-			mysql_query ( $insertQuery );
-			//$this->threadSafeQuery($insertQuery,"LOW_PRIORITY WRITE");
+			$this->getDBConnection()->queryDB ( $insertQuery );
 			$results = basename ( $output );
 		} else {
 			//echo ("<font color='red'><b>Running online mode</b></font><br>");

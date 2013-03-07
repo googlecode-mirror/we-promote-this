@@ -54,19 +54,19 @@ class WPTDaemon extends CBAbstract {
 
     function removeDeadProcessesFromQueue() {
         $removeQuery = "delete from task where started is not null and (running=false or TIMESTAMPDIFF(MINUTE,started, now())>=" . $this -> processTimeLimit . ")";
-        mysql_query($removeQuery);
-        //mysql_query("COMMIT;");
+        $this->getDBConnection()->queryDB($removeQuery);
+        //$this->getDBConnection()->queryDB("COMMIT;");
         //$this->threadSafeQuery($removeQuery,"WRITE");
     }
 
     function runJobsInJobQueue() {
-        //mysql_query("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
-        //mysql_query ( "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ" );
-        //mysql_query ( "SET autocommit=0" );
+        //$this->getDBConnection()->queryDB("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+        //$this->getDBConnection()->queryDB ( "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ" );
+        //$this->getDBConnection()->queryDB ( "SET autocommit=0" );
         $runningTaskQuery = "Select id from task where running=true";
-        $results = mysql_query($runningTaskQuery);
+        $results = $this->getDBConnection()->queryDB($runningTaskQuery);
         //$results = $this->threadSafeQuery($runningTaskQuery);
-        $runningProcessCount = mysql_num_rows($results);
+        $runningProcessCount = $results->num_rows;
         if ($runningProcessCount < $this -> processLimit) {
             $newProcessCount = $this -> processLimit - $runningProcessCount;
         } else {
@@ -76,18 +76,18 @@ class WPTDaemon extends CBAbstract {
         System_Daemon::info('Starting: %s new processes', $newProcessCount);
 
         $runJobsQuery = "select id, cmd, output from task where running=false and started is null and cmd is not null and output is not null limit " . $newProcessCount;
-        $results = mysql_query($runJobsQuery);
+        $results = $this->getDBConnection()->queryDB($runJobsQuery);
         //$results = $this->threadSafeQuery($runJobsQuery);
         //echo ("runJobsInJobQueue Starting<br>\n\r");
-        while (($row = mysql_fetch_assoc($results))) {
+        while (($row = $results-> fetch_assoc())) {
             $cmd = $row['cmd'];
             $output = $row['output'];
             $taskID = $row['id'];
             $this -> getCommandLineHelper() -> startProcess($cmd, $output, $taskID);
-            mysql_query("delete from task where id=$taskID");
+            $this->getDBConnection()->queryDB("delete from task where id=$taskID");
         }
-        //mysql_query ( "COMMIT;" );
-        //mysql_query("SET autocommit=1");
+        //$this->getDBConnection()->queryDB ( "COMMIT;" );
+        //$this->getDBConnection()->queryDB("SET autocommit=1");
     }
 
 }
