@@ -43,7 +43,7 @@ abstract class CBAbstract {
 		}
 		
 		if (! isset ( self::$CommandLineHelper )) {
-			self::$CommandLineHelper = new CommandLineHelper ();
+			self::$CommandLineHelper = new CommandLineHelper (self::$DBConnection);
 		}
 		
 		if (! isset ( self::$Logger )) {
@@ -72,29 +72,29 @@ abstract class CBAbstract {
 	}
 	function notifyDBOfTask() {
 	    // SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-        //mysql_query("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+        //$this->getDBConnection()->queryDB("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
         // Turn auto commit off
-        //mysql_query("SET autocommit=0");
+        //$this->getDBConnection()->queryDB("SET autocommit=0");
         
-		mysql_query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
+		$this->getDBConnection()->queryDB("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
         // Turn auto commit on
-        mysql_query("SET autocommit=1");
+        $this->getDBConnection()->queryDB("SET autocommit=1");
         
 		$query = "insert into task (class,running,started) values ('" . get_class ( $this ) . "',true,now())";
         //$this->getDBConnection()->threadSafeQuery($query,"WRITE");
-        mysql_query($query);
-        //mysql_query("COMMIT;");
-		$this->taskID = mysql_insert_id ();
+        $this->getDBConnection()->queryDB($query);
+        //$this->getDBConnection()->queryDB("COMMIT;");
+		$this->taskID = $this->getDBConnection()->getDBConnection()->insert_id; 
 	}
 	function notifyDBOfTaskFinished() {
 		// echo ("Notifying DB Task Finished of id: " . $this->taskID . "<br>");
 		$query = "update task set running=false where id=" . $this->taskID;
         //$this->getDBConnection()->threadSafeQuery($query,"WRITE");
-        mysql_query($query);
-        //mysql_query("COMMIT;");
+        $this->getDBConnection()->queryDB($query);
+        //$this->getDBConnection()->queryDB("COMMIT;");
         // Turn auto commit on
-        //mysql_query("SET autocommit=1");
-        //mysql_query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
+        //$this->getDBConnection()->queryDB("SET autocommit=1");
+        //$this->getDBConnection()->queryDB("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
 	}
 	function reconnectDB() {
 		if (ONLINEMODE) {

@@ -142,37 +142,39 @@ class GrabScrapArticles extends CBAbstract {
 			$query = "SELECT id FROM $dbTableName";
 			$maxWaitTime = 60;
 			$time = 0;
-			while ( mysql_num_rows ( mysql_query ( $query ) ) < count ( $links ) && $time < $maxWaitTime ) {
+            $results = $this->getDBConnection()->queryDB ( $query );
+            
+			while ( $results->num_rows < count ( $links ) && $time < $maxWaitTime ) {
 				sleep ( 5 ); // Wait for created table to fully populate
 				$time += 5;
 			}
 			//Match Against original title
-			mysql_query ( "OPTIMIZE TABLE $dbTableName" ); // Optimize The Table
+			$this->getDBConnection()->queryDB ( "OPTIMIZE TABLE $dbTableName" ); // Optimize The Table
 			$query = "SELECT text, title, MATCH(title, text) AGAINST('$title' WITH QUERY EXPANSION) as score1, MATCH(title, text) AGAINST('$title' IN BOOLEAN MODE) as score2, MATCH(title, text) AGAINST('$keywords' WITH QUERY EXPANSION) as score3, MATCH(title, text) AGAINST('$keywords' IN BOOLEAN MODE) as score4 FROM $dbTableName order by ((score1/10)+score2+(score3/10)+score4) desc limit 1;";
 			//echo ("Running Query: $query<br><br>");
 			$finalArticle = $this->getFinalArticle ( $query );
 			// Delete Created Table
 			$query = "DROP TABLE IF EXISTS $dbTableName;";
-			mysql_query ( $query );
+			$this->getDBConnection()->queryDB ( $query );
 			// Return final article selected text
 			return $finalArticle;
 		}
 	}
 	function getFinalArticle($query, $attempt = 0) {
 		$finalArticle = array ();
-		$results = mysql_query ( $query );
-		if (mysql_errno () == 2006) {
+		$results = $this->getDBConnection()->queryDB ( $query );
+		if ($this->getDBConnection()->getDBConnection()->errno == 2006) {
 			if ($attempt < 1) {
 				// Try to reconnect
 				$this->reconnectDB ();
 				$finalArticle = $this->getFinalArticle ( $query, $attempt ++ );
 			} else {
-				$this->getLogger ()->logInfo ( 'Could not run query (' . $attempt . ' Attempts): ' . $query . '<br>Mysql Error (' . mysql_errno () . '): ' . mysql_error () );
+				$this->getLogger ()->logInfo ( 'Could not run query (' . $attempt . ' Attempts): ' . $query . '<br>Mysql Error (' . $this->getDBConnection()->getDBConnection()->errno . '): ' . $this->getDBConnection()->getDBConnection()->error );
 			}
-		} else if (mysql_errno ()) {
-			$this->getLogger ()->logInfo ( 'Could not run query: ' . $query . '<br>Mysql Error (' . mysql_errno () . '): ' . mysql_error () );
+		} else if ($this->getDBConnection()->getDBConnection()->errno) {
+			$this->getLogger ()->logInfo ( 'Could not run query: ' . $query . '<br>Mysql Error (' . $this->getDBConnection()->getDBConnection()->errno . '): ' . $this->getDBConnection()->getDBConnection()->error );
 		} else {
-			$row = mysql_fetch_array ( $results );
+			$row = $results-> fetch_assoc();
 			$finalArticle ['text'] = stripslashes ( $row ['text'] );
 			$finalArticle ['title'] = stripslashes ( $row ['title'] );
 		}
@@ -209,12 +211,12 @@ class GrabScrapArticles extends CBAbstract {
 		$textArray = explode ( " ", $text );
 		$textArray = array_slice ( $textArray, 0, (count ( $textArray ) < 5000) ? count ( $textArray ) : 5000 );
 		$text = implode ( " ", $textArray );
-		$tmpTitle = mysql_escape_string ( addslashes ( array_shift ( $titles ) ) );
-		$tmpArticleText = mysql_escape_string ( addslashes ( $text ) );
+		$tmpTitle = $this->getDBConnection()->getDBConnection()->real_escape_string ( addslashes ( array_shift ( $titles ) ) );
+		$tmpArticleText = $this->getDBConnection()->getDBConnection()->real_escape_string ( addslashes ( $text ) );
 		$articleInsertQuery .= "('" . $tmpArticleText . "','" . $tmpTitle . "'),";
 		$articleInsertQuery = substr ( $articleInsertQuery, 0, strlen ( $articleInsertQuery ) - 1 );
 		$query .= "INSERT IGNORE INTO $dbTableName (text,title) VALUES $articleInsertQuery";
-		mysql_query ( $query );
+		$this->getDBConnection()->queryDB ( $query );
 	}
 	function get_web_page($url) {
 		$options = array (CURLOPT_RETURNTRANSFER => true, // return web page

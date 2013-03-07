@@ -25,8 +25,8 @@ class Categorizer extends CBAbstract {
 	function constructClass() {
 		// Get Category and keywords from database
 		$query = "SELECT category, words FROM products LEFT JOIN keywords USING(id) WHERE id='" . $this->mainPID . "'";
-		$results = mysql_query ( $query );
-		$row = mysql_fetch_array ( $results );
+		$results = $this->getDBConnection()->queryDB ( $query );
+		$row = $results-> fetch_assoc();
 		$cat = htmlspecialchars_decode ( $row ['category'] );
 		//$cat =  $row ['category'] ;
 		//echo ("Cat for " . $this->mainPID . " in ClickBank is $cat<br>");
@@ -149,8 +149,8 @@ class Categorizer extends CBAbstract {
 		$catInsertQuery = substr ( $catInsertQuery, 0, strlen ( $catInsertQuery ) - 1 );
 		$query = "INSERT IGNORE INTO $dbTableName (id,cat) VALUES $catInsertQuery;";
 		//echo ("Insert Cat Query: $query<br>");
-		mysql_query ( $query );
-		mysql_query ( "OPTIMIZE TABLE $dbTableName" ); // Optimize The Table
+		$this->getDBConnection()->queryDB ( $query );
+		$this->getDBConnection()->queryDB ( "OPTIMIZE TABLE $dbTableName" ); // Optimize The Table
 	}
 	
 	function getBestCat(array $categories, array $possibleCategories, $tableNameSuffix = null) {
@@ -160,9 +160,9 @@ class Categorizer extends CBAbstract {
 			$dbTableName .= "_" . $tableNameSuffix;
 		}
 		$query = "DROP TABLE IF EXISTS $dbTableName;";
-		mysql_query ( $query );
+		$this->getDBConnection()->queryDB ( $query );
 		$query = "CREATE TEMPORARY TABLE $dbTableName ( id TEXT NOT NULL, cat TEXT NOT NULL , FULLTEXT KEY text ( cat ) );";
-		mysql_query ( $query );
+		$this->getDBConnection()->queryDB ( $query );
 		//echo ("Create Table Query: $query<br>");
 		$this->insertCatIntoDBTable ( $categories, $dbTableName );
 		
@@ -173,8 +173,8 @@ class Categorizer extends CBAbstract {
 			$cat = urlencode ( $cat );
 			$query = "SELECT id, cat, MATCH(cat) AGAINST('$cat') as score1, MATCH(cat) AGAINST('$cat' WITH QUERY EXPANSION) as score2, MATCH(cat) AGAINST('$cat' IN BOOLEAN MODE) as score3 FROM $dbTableName having ((score1/10)+(score2/10)+score3)>0 order by ((score1/10)+(score2/10)+score3) desc limit 1;";
 			//echo ("Match Query: $query<br>");
-			$results = mysql_query ( $query );
-			$row = mysql_fetch_assoc ( $results );
+			$results = $this->getDBConnection()->queryDB ( $query );
+			$row = $results-> fetch_assoc();
 			$id = $row ['id'];
 			$qCat = urldecode ( $row ['cat'] );
 			$index = "$id=$qCat";
@@ -205,7 +205,7 @@ class Categorizer extends CBAbstract {
 		
 		// Empty Table
 		$query = "TRUNCATE TABLE $dbTableName";
-		mysql_query ( $query );
+		$this->getDBConnection()->queryDB ( $query );
 		
 		// Add Possible Cats to Database
 		$this->insertCatIntoDBTable ( $possibleCategories, $dbTableName );
@@ -214,9 +214,9 @@ class Categorizer extends CBAbstract {
 		foreach ( $this->keywords as $ikeyword => $keyword ) {
 			$query = "SELECT id, cat, MATCH(cat) AGAINST('$keyword') as score1, MATCH(cat) AGAINST('$keyword' WITH QUERY EXPANSION) as score2, MATCH(cat) AGAINST('$keyword' IN BOOLEAN MODE) as score3 FROM $dbTableName having ((score1/10)+(score2/10)+score3)>0 order by ((score1/10)+(score2/10)+score3) desc limit 3;";
 			//die ( "Match Query: $query<br>" );
-			$results = mysql_query ( $query );
+			$results = $this->getDBConnection()->queryDB ( $query );
 			$dt = 3;
-			while ( ($row = mysql_fetch_assoc ( $results )) ) {
+			while ( ($row = $results-> fetch_assoc()) ) {
 				$id = $row ['id'];
 				$qCat = urlencode ( $row ['cat'] );
 				$index = "$ikeyword=$keyword";
@@ -251,7 +251,7 @@ class Categorizer extends CBAbstract {
 		
 		// Empty Table
 		$query = "TRUNCATE TABLE $dbTableName";
-		mysql_query ( $query );
+		$this->getDBConnection()->queryDB ( $query );
 		
 		//Combine keywordCatMap and GoogleCatMap
 		$bestCatMap = array_merge ( $keywordCatMap, $googleCatMap );
@@ -281,9 +281,9 @@ class Categorizer extends CBAbstract {
 		foreach ( $this->keywords as $keyword ) {
 			$query = "SELECT id, cat, MATCH(cat) AGAINST('$keyword') as score1, MATCH(cat) AGAINST('$keyword' IN BOOLEAN MODE) as score2 FROM $dbTableName order by ((score1/10)+score2) desc limit 3;";
 			//echo ("Match Query: $query<br>");
-			$results = mysql_query ( $query );
+			$results = $this->getDBConnection()->queryDB ( $query );
 			$dt = 3;
-			while ( ($row = mysql_fetch_assoc ( $results )) ) {
+			while ( ($row = $results-> fetch_assoc()) ) {
 				$id = $row ['id'];
 				$qCat = $row ['cat'];
 				$index = "$id=$qCat";
@@ -327,7 +327,7 @@ class Categorizer extends CBAbstract {
 
 		//Delete Created Table
 		$query = "DROP TABLE IF EXISTS $dbTableName;";
-		mysql_query ( $query );
+		$this->getDBConnection()->queryDB ( $query );
 		
 		return array ("catname" => urldecode ( $bestCat ), "catid" => $bestCatID, 'posscatname' => urldecode ( $bestPossCat ), 'posscatid' => $bestPossCatID );
 	}

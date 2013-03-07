@@ -6,12 +6,12 @@ require_once 'UserAccount.php';
 new ConfigParser ( ); // Get the configuation details and store them as environment variables
 if (isset ( $_REQUEST ['userName'] ) && isset ( $_REQUEST ['password'] )) {
 	$DBConnection = new DBConnection ( mysqlServerIP2, dbname, dbuser, dbpassword );
-	$results = mysql_query ( "Select id from users Where username='" . $_REQUEST ['userName'] . "' AND password='" . $_REQUEST ['password'] . "'" );
-	$row = mysql_fetch_assoc ( $results );
+	$results = $DBConnection->queryDB ( "Select id from users Where username='" . $_REQUEST ['userName'] . "' AND password='" . $_REQUEST ['password'] . "'" );
+	$row = $results-> fetch_assoc();
 	$userID = $row ["id"];
 	$userAccount = new UserAccount ( $userID, $DBConnection );
-	$results = mysql_query ( "Select location from uploadsites order by location" );
-	while ( ($row = mysql_fetch_assoc ( $results )) ) {
+	$results = $DBConnection->queryDB ( "Select location from uploadsites order by location" );
+	while ( ($row = $results-> fetch_assoc()) ) {
 		$accountName = $row ['location'];
 		if (isset ( $_REQUEST [$accountName . '-userName'] )) {
 			$accountUserName = $_REQUEST [$accountName . '-userName'];

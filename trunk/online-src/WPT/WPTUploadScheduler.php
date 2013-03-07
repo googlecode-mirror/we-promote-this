@@ -59,7 +59,7 @@ class WPTUploadScheduler extends CBAbstract {
 		AND u3.meta_key='clickbank' AND u3.meta_value IS NOT NULL
 		AND u4.meta_key='clickbank_clerk_api_key' AND u4.meta_value IS NOT NULL";
         $result = $this -> getDBConnection() -> queryWP($query);
-        while (($row = mysql_fetch_assoc($result))) {
+        while (($row = $result-> fetch_assoc())) {
             $user = new User();
             $user -> user_id = $row['user_id'];
             $user -> user_password = $row['user_password'];
@@ -74,8 +74,8 @@ class WPTUploadScheduler extends CBAbstract {
             $videoString = "('" . implode("','", $videoArray) . "')";
             // Find videos that have no keywords and delete them
             $badVideosQuery = "SELECT p.id FROM products as p left join keywords AS k using(id) WHERE p.id in $videoString AND (k.id is null OR k.words='[\"{BLANK}\"]' OR CHAR_LENGTH(k.words)<=4)";
-            $result = mysql_query($badVideosQuery);
-            while (($row = mysql_fetch_assoc($result))) {
+            $result = $this->getDBConnection()->queryDB($badVideosQuery);
+            while (($row = $result-> fetch_assoc())) {
                 $videoPID = $row['id'];
                 $folder = $videoPath . $videoPID;
                 $this -> rrmdir($folder);
@@ -191,7 +191,7 @@ class WPTUploadScheduler extends CBAbstract {
         /*
          foreach(explode(";",$batchQuery) as $query)
          {
-         mysql_query($query);
+         $this->getDBConnection()->queryDB($query);
          }
          */
 

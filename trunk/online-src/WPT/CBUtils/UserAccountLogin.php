@@ -38,8 +38,8 @@ function getLoginForm() {
 
 if (isset ( $_REQUEST ['userName'] ) && isset ( $_REQUEST ['password'] )) {
 	$DBConnection = new DBConnection ( mysqlServerIP2, dbname, dbuser, dbpassword );
-	$results = mysql_query ( "Select id from users Where username='" . $_REQUEST ['userName'] . "' AND password='" . $_REQUEST ['password'] . "'" );
-	$row = mysql_fetch_assoc ( $results );
+	$results = $DBConnection->queryDB ( "Select id from users Where username='" . $_REQUEST ['userName'] . "' AND password='" . $_REQUEST ['password'] . "'" );
+	$row = $results-> fetch_assoc();
 	$userID = $row ["id"];
 	$userAccount = new UserAccount ( $userID, $DBConnection );
 	if ($userAccount->isValid ()) {
@@ -89,10 +89,10 @@ if (isset ( $_REQUEST ['userName'] ) && isset ( $_REQUEST ['password'] )) {
 		<input type='hidden' name='userName' value='" . $_REQUEST ['userName'] . "'><input type='hidden' name='password' value='" . $_REQUEST ['password'] . "'>
 		<table border=0 width='50%' align='center'>
 		";
-		$results = mysql_query ( "Select location, working, type from uploadsites order by type, location" );
+		$results = $DBConnection->queryDB ( "Select location, working, type from uploadsites order by type, location" );
 		$videoTypeSwitch = false;
 		$articleTypeSwitch = false;
-		while ( ($row = mysql_fetch_assoc ( $results )) ) {
+		while ( ($row = $results-> fetch_assoc()) ) {
 			$location = $row ['location'];
 			$working = ( bool ) $row ['working'];
 			$type = $row ['type'];

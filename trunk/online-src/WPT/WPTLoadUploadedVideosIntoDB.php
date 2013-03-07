@@ -26,8 +26,8 @@ class WPTLoadUploadedVideosIntoDB extends CBAbstract {
         $query -> setMaxResults(50);
 
         $query = "Select * from users as us order by rand()";
-        $results = mysql_query($query);
-        while (($row = mysql_fetch_assoc($results))) {
+        $results = $this->getDBConnection()->queryDB($query);
+        while (($row = $results-> fetch_assoc())) {
             $id = $row['id'];
             $userName = $row['user_id'];
             $userwpid = $row['user_wp_id'];
@@ -80,8 +80,8 @@ class WPTLoadUploadedVideosIntoDB extends CBAbstract {
         $postTime = date("Y-m-d h:i:s",strtotime($videoEntry -> getUpdated()));
         $postURL = $videoEntry -> getVideoWatchPageUrl();
         //$query = "Select pr.id as pid from prpoducts as pr where pr.title = '" . $title . "'";
-        //$results = mysql_query($query);
-        //$row = mysql_fetch_assoc($results);
+        //$results = $this->getDBConnection()->queryDB($query);
+        //$row = $results-> fetch_assoc();
         //$pid = $row['pid'];
         
         $pattern = '/WPT\/(.*?)\//i';
@@ -91,7 +91,7 @@ class WPTLoadUploadedVideosIntoDB extends CBAbstract {
         $pid = $matches[1];
         $query = "Insert Ignore into post (pid, user_id, user_wp_id, location, posted, posttime, postURL) Values('$pid',$userID,$userWPID,'youtube',1, '$postTime', '$postURL')";
         //die("Query: $query<br>");
-        mysql_query($query);
+        $this->getDBConnection()->queryDB($query);
     }
 
 }

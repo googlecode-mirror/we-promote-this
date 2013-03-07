@@ -55,8 +55,8 @@ class WPTVVideoToCreate extends CBAbstract {
             $query = $query2;
         }
 
-        $result = mysql_query($query);
-        $row = mysql_fetch_assoc($result);
+        $result = $this->getDBConnection()->queryDB($query);
+        $row = $result-> fetch_assoc();
         $pid = $row["pid"];
         //$pid = "ETVCORP";
         echo($pid);

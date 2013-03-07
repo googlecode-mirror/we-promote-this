@@ -57,8 +57,8 @@ class WPTYTBoost extends CBAbstract {
         $class = get_class($this);
         $file = $class . ".txt";
         $query = "Select id from users where active=1;";
-        $result = mysql_query($query);
-        while (($row = mysql_fetch_assoc($result))) {
+        $result = $this->getDBConnection()->queryDB($query);
+        while (($row = $result-> fetch_assoc())) {
             $uid = $row['id'];
             $cmd = $class . ".php uid=$uid";
             $this -> getCommandLineHelper() -> run_in_background($cmd, $file);
@@ -71,8 +71,8 @@ class WPTYTBoost extends CBAbstract {
         $this -> developerKey = "AI39si4YMOXimVNhFRo7aFiCrDMVCvAuyXWChiXMPmf75RuWe-vLLchN0wx_pWigY1A_86dNZWNKaUWQMB7PJT-KcJdRWTyONg";
         $this -> ytAccounts = array();
         $query = "Select user_id, user_password from users where active=1 AND id!=$uid;";
-        $result = mysql_query($query);
-        while (($row = mysql_fetch_assoc($result))) {
+        $result = $this->getDBConnection()->queryDB($query);
+        while (($row = $result-> fetch_assoc())) {
             $this -> ytAccounts[$row['user_id']] = $row['user_password'];
         }
         $this -> boostYtAccount($uid);
@@ -81,8 +81,8 @@ class WPTYTBoost extends CBAbstract {
 
     function boostYtAccount($uid) {
         $query = "Select user_id, user_password from users where id=$uid;";
-        $result = mysql_query($query);
-        $row = mysql_fetch_assoc($result);
+        $result = $this->getDBConnection()->queryDB($query);
+        $row = $result-> fetch_assoc();
         $userName = $row['user_id'];
         $password = $row['user_password'];
         //echo("Username: $userName | Password: $password<br>");
@@ -108,8 +108,8 @@ class WPTYTBoost extends CBAbstract {
                     //$query = "Select id, boosted from post where postURL='".$videoURL."'";
                     $query = "Select id from boosted where video_id='" . $videoID . "' AND user_id=$uid";
                     //echo($query . "<br>");
-                    $result = mysql_query($query);
-                    $resultCount = mysql_num_rows($result);
+                    $result = $this->getDBConnection()->queryDB($query);
+                    $resultCount = $result->num_rows;
                     $boosted = true;
                     if ($resultCount == 0) {
                         $boosted = false;
@@ -140,7 +140,7 @@ class WPTYTBoost extends CBAbstract {
                         //}
                         echo("</font>");
                         $query = "Insert Ignore INTO boosted (user_id, video_id) Values ($uid,'$videoID')";
-                        mysql_query($query);
+                        $this->getDBConnection()->queryDB($query);
                         echo("<b><a href='$videoURL'>$videoURL</a> NOW boosted!!!</b><br>");
                         sleep(rand(10, 30));
                     } else {
