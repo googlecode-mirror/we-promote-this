@@ -192,7 +192,7 @@ class WPTUploadVideoToHost extends CBAbstract {
 							if (is_array ( $serverResponse )) {
 								$serverResponse = print_r ( $serverResponse, true );
 							}
-							$updateQuery = "Update post SET error='".addslashes($serverResponse)."', attempts=$attempts WHERE id=$id";
+							$updateQuery = "Update post SET error='" . addslashes ( $serverResponse ) . "', attempts=$attempts WHERE id=$id";
 							$rowsAffected = $this->runQuery ( $updateQuery, $this->getDBConnection ()->getDBConnection (), true );
 							if ($rowsAffected == 0) {
 								$this->getLogger ()->logInfo ( "Could not update post id=$id with error status<br>" );
@@ -305,14 +305,19 @@ class WPTUploadVideoToHost extends CBAbstract {
 		}
 	}
 	
-	function runQuery($query, $con, $returnAffectedRows = false) {
+	function runQuery($query, $con, $returnAffectedRows = false, $retry = 1) {
 		$affectedRowCount = 0;
 		$result = $this->getDBConnection ()->queryCon ( $query, $con );
 		if (mysql_errno ( $con )) {
-			$this->getLogger ()->log ( 'Couldnt execute query: ' . $query . '<br>Mysql Error (' . mysql_errno ( $con ) . '): ' . mysql_error ( $con ), PEAR_LOG_ERR );
+			if ($retry > 0 && mysql_errno ( $con ) == 2006) {
+				return $this->runQuery ( $query, $con, $returnAffectedRows, -- $retry );
+			} else {
+				$this->getLogger ()->log ( 'Couldnt execute query: ' . $query . '<br>Mysql Error (' . mysql_errno ( $con ) . '): ' . mysql_error ( $con ), PEAR_LOG_ERR );
+			}
 		} else {
-			$affectedRowCount = mysql_affected_rows ( $con );
 			$this->getDBConnection ()->queryCon ( "COMMIT", $con );
+			$affectedRowCount = mysql_affected_rows ( $con );
+		
 		}
 		if ($returnAffectedRows) {
 			return $affectedRowCount;
