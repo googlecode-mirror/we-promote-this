@@ -1,0 +1,113 @@
+.pmpro_checkout thead th {
+	border-bottom: 1px solid #FFD21F;
+	border-top: 1px solid #FFD21F;
+	color: #FFD21F;
+	font-weight: bold;
+	padding: 10px;
+}
+
+.pmpro_checkout tbody td {
+	border-bottom: 1px solid #FFD21F;
+	padding: 10px;
+}
+
+.pmpro_checkout tr.odd td {
+	background: none repeat scroll 0 0 #2471BE;
+}
+
+.pmpro_checkout tr.selected td {
+	background: none repeat scroll 0 0 #FFFFCC;
+}
+
+.pmpro_checkout tr.active td {
+	background: none repeat scroll 0 0 #FFFFCC;
+	color: #2471BE;
+}
+
+body, select, textarea {
+	color: #fff;
+}
+
+#theme-my-login {
+	width: 300px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#theme-my-login form, #theme-my-login1 form, #theme-my-login2 form {
+	background: none repeat scroll 0 0 #2471BE;
+	border: 1px solid #FFD21F;
+	box-shadow: 0 4px 10px -1px rgba(200,200,200,0.7);
+	font-weight: normal;
+	margin-left: 8px;
+	padding: 26px 24px 46px;
+}
+
+#theme-my-login ul {
+	display: inline;
+	padding: 30px;
+}
+
+#theme-my-login ul li {
+	display: inline;
+	padding-right: 26px;
+}
+
+#theme-my-login .forgetmenot, #theme-my-login1 .forgetmenot, #theme-my-login2 .forgetmenot {
+	float: right;
+}
+
+#theme-my-login .submit input {
+	width: 50%;
+	padding: 10px;
+}
+
+#theme-my-login #lostpasswordform .submit input {
+	width: 100%;
+}
+
+#theme-my-login form .input, #theme-my-login input[type="text"], #theme-my-login1 form .input, #theme-my-login1 input[type="text"], #theme-my-login2 form .input, #theme-my-login2 input[type="text"] {
+	background: none repeat scroll 0 0 #FFFFFF;
+	border: 1px solid #E5E5E5;
+	box-shadow: 1px 1px 2px rgba(200,200,200,0.2) inset;
+	color: #555555;
+	font-size: 24px;
+	font-weight: 200;
+	line-height: 1;
+	margin-right: 6px;
+	margin-top: 2px;
+	outline: 0 none;
+	padding: 3px;
+	width: 100%;
+}
+
+#pmpro_user_fields .social_connect_form {
+	display: inline;
+}
+
+#headerimg {
+	padding: 0 0 !important;
+}
+
+.register_button, .logout_button {
+	float: left;
+	padding-top: 20px;
+	position: absolute;
+	right: 25%;
+	top: 4%;
+}
+
+
+.sociallink_page_header .social4i {
+	height: 0px;
+}
+
+.sociallink_page_header .social4i {
+	position: absolute;
+	right: 71px;
+	top: 50%;
+}
+
+#theme-my-login2, .wpt_loggedin, .wpt_loggedout{
+	display: none;
+}
