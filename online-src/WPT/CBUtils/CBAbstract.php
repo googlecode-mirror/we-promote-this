@@ -1,8 +1,9 @@
 <?php
-// error_reporting ( E_ALL ); // all errors
+ error_reporting ( E_ALL ); // all errors
 // ror_reporting ( E_ALL ^ E_NOTICE ); // turn on all errors, warnings minus
 // notices
-error_reporting ( E_ERROR ); // Errors only
+//error_reporting ( E_ERROR ); // Errors only
+
 
 set_time_limit ( 300 ); // 5 Minutes
 ob_start ();
@@ -35,7 +36,7 @@ abstract class CBAbstract {
 		}
 		
 		if (! isset ( self::$ConfigParser )) {
-			self::$ConfigParser = new ConfigParser ();
+			self::$ConfigParser = new ConfigParser ( );
 		}
 		
 		if (! isset ( self::$DBConnection )) {
@@ -43,11 +44,11 @@ abstract class CBAbstract {
 		}
 		
 		if (! isset ( self::$CommandLineHelper )) {
-			self::$CommandLineHelper = new CommandLineHelper (self::$DBConnection);
+			self::$CommandLineHelper = new CommandLineHelper ( self::$DBConnection );
 		}
 		
 		if (! isset ( self::$Logger )) {
-			self::$Logger = new LogHelper ();
+			self::$Logger = new LogHelper ( );
 		}
 		
 		if (ONLINEMODE) {
@@ -58,12 +59,14 @@ abstract class CBAbstract {
 		if (ONLINEMODE) {
 			$this->notifyDBOfTaskFinished ();
 		}
+		echo (" ");
 	}
 	function __destruct() {
 		$this->getCommandLineHelper ()->__destruct ();
+		$this->getDBConnection ()->__destruct ();
 		$this->outputContent = ob_get_contents (); // Capture all the output and
-		                                           // display it when class is
-		                                           // finished
+		// display it when class is
+		// finished
 		ob_end_clean ();
 		echo ($this->outputContent);
 	}
@@ -71,40 +74,54 @@ abstract class CBAbstract {
 		return $this->outputContent;
 	}
 	function notifyDBOfTask() {
-	    // SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-        //$this->getDBConnection()->queryDB("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
-        // Turn auto commit off
-        //$this->getDBConnection()->queryDB("SET autocommit=0");
-        
+		// SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+		//$this->getDBConnection()->queryDB("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+		// Turn auto commit off
+		//$this->getDBConnection()->queryDB("SET autocommit=0");
+		
+
 		//$this->getDBConnection()->queryDB("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
-        // Turn auto commit on
-        //$this->getDBConnection()->queryDB("SET autocommit=1");
-        
-		$query = "insert DELAYED into task (class,running,started) values ('" . get_class ( $this ) . "',true,now())";
-        //$this->getDBConnection()->threadSafeQuery($query,"WRITE");
-        $this->getDBConnection()->queryDB($query);
-        //$this->getDBConnection()->queryDB("COMMIT;");
-		$this->taskID = $this->getDBConnection()->getDBConnection()->insert_id; 
+		// Turn auto commit on
+		//$this->getDBConnection()->queryDB("SET autocommit=1");
+		
+
+		$query = "insert into task (class,running,started) values ('" . get_class ( $this ) . "',true,now())";
+		//$this->getDBConnection()->threadSafeQuery($query,"WRITE");
+		$this->getDBConnection ()->queryDB ( $query );
+		//$this->getDBConnection()->queryDB("COMMIT;");
+		$this->taskID = $this->getDBConnection ()->getDBConnection ()->insert_id;
 	}
 	function notifyDBOfTaskFinished() {
 		// echo ("Notifying DB Task Finished of id: " . $this->taskID . "<br>");
-		$query = "update LOW_PRIORITY task set running=false where id=" . $this->taskID;
-        //$this->getDBConnection()->threadSafeQuery($query,"WRITE");
-        $this->getDBConnection()->queryDB($query);
-        //$this->getDBConnection()->queryDB("COMMIT;");
-        // Turn auto commit on
-        //$this->getDBConnection()->queryDB("SET autocommit=1");
-        //$this->getDBConnection()->queryDB("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
+		$query = "update task set running=false where id=" . $this->taskID;
+		//$this->getDBConnection()->threadSafeQuery($query,"WRITE");
+		$this->getDBConnection ()->queryDB ( $query );
+		//$this->getDBConnection()->queryDB("COMMIT;");
+	// Turn auto commit on
+	//$this->getDBConnection()->queryDB("SET autocommit=1");
+	//$this->getDBConnection()->queryDB("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
 	}
+	
+	function reconnectCon($con, $tries = 3) {
+		// Check if connection is open and return if you can reconnect
+		if ($con->ping ()) {
+			return $con;
+		} else {
+			// Get the tread ID
+			$threadID = $con->thread_id;
+			// Find out which connection it is and reset it then return it
+			if ($this->getDBConnection ()->getDBConnection ()->thread_id == $threadID) {
+			
+			}
+		}
+	}
+	
 	function reconnectDB() {
-	    /*
 		if (ONLINEMODE) {
 			self::$DBConnection = new DBConnection ( mysqlServerIP2, dbname, dbuser, dbpassword, wpip, wpdbname, wpdbuser, wpdbpassword );
 		} else {
 			self::$DBConnection = new DBConnection ( localmysqlServerIP2, localdbname, localdbuser, localdbpassword, wpip, wpdbname, wpdbuser, wpdbpassword );
 		}
-         */
-         $this->getDBConnection()->reconnect();
 	}
 	static function getConfigParser() {
 		return self::$ConfigParser;
