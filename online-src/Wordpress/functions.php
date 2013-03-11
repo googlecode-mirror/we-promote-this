@@ -4,6 +4,10 @@
 // $path = realpath(dirname(__FILE__))."/../../../WePromoteThis/Wordpress/functions.php";
 // include_once $path;
 
+session_name('WePromoteThis');
+
+session_start();
+
 add_action('show_user_profile', 'my_show_extra_profile_fields');
 add_action('edit_user_profile', 'my_show_extra_profile_fields');
 add_action('personal_options_update', 'my_save_extra_profile_fields');
@@ -11,6 +15,7 @@ add_action('edit_user_profile_update', 'my_save_extra_profile_fields');
 add_action('wp_enqueue_scripts', 'wpt_custom_scripts');
 add_action('admin_enqueue_scripts', 'wpt_custom_admin_scripts');
 add_action('wp_head', 'setupWPT');
+add_action('wp_footer', 'setupFooter');
 add_filter('get_search_form', 'my_search_form');
 
 //Add login buttons before search form
@@ -21,9 +26,6 @@ function my_search_form($form) {
     if (function_exists('display_social4i')) {
         $socialLink = display_social4i("large", "align-right");
     }
-
-    //$otherform = do_action( 'social_connect_form' );
-    $socialConnectForm = '';
 
     if (function_exists('theme_my_login')) {
         global $theme_my_login;
@@ -43,10 +45,18 @@ function my_search_form($form) {
     <div class='sociallink_page_header'>
     " . $socialLink . "
     </div>
-    
     ";
-
     return $form;
+}
+
+function setupFooter() {
+    //echo("  <div id='hidden_social_connect_form'>
+    echo("  <div id='test'>
+         ");
+    $socialConnectForm = do_action('social_connect_form');
+    echo('
+    </div>
+    ');
 }
 
 /**
@@ -82,19 +92,9 @@ function wpt_js_sctipt($hook) {
 
     // This allows us to pass PHP variables to the Javascript code. We can pass multiple vars in the array.
     wp_localize_script('wpt_javascript', 'wptuser', array('ytAccounts' => $accountNum, 'isUserLoggedIn' => is_user_logged_in()));
-    
-     if ('checkout.php' == $hook)
-	 {
-	 	wp_enqueue_script('wpt_pmp_javascript', 'http://WePromoteThis.com/WePromoteThis/Wordpress/pmp_scripts.js');
-	 }
-	
-
 }
 
 function setupWPT() {
-    session_name('WePromoteThis');
-
-    session_start();
 
     global $hop;
 
@@ -139,14 +139,22 @@ function setupWPT() {
             echo("FB Ref: $fbref<br>");
         }
         echo("Referrer: $hop<br>");
-
-        $plink = "http://wepromotethis.com/";
-        $eplink = urlencode($plink);
-
-        echo('<link rel="canonical" href="' . $eplink . '" />');
-        echo('<meta property="og:url" content="' . $eplink . '" />');
     }
 
+    $plink = "http://www.wepromotethis.com/hop/" . $hop;
+    $eplink = urlencode($plink);
+
+    echo('<link rel="canonical" href="' . $eplink . '" />');
+    echo('
+        <meta content="website" property="og:type">
+        <meta content="WePromoteThis.com" property="og:title">
+        <meta content="' . $eplink . '" property="og:url">
+        <meta content="When you become a member of WePromoteThis.com you join a network of users who donate their computer\'s idle time. WePromoteThis.com sends information to your computer which it uses to create a video and upload back to WepromoteThis.com. Behind the scenes We will post these videos on the web loaded with your ClickBank affiliate ID. When internet surfers come across these videos, click on your affiliate product link, and make a purchase, YOU get paid!!!!" property="og:description">
+        <meta content="We Promote This" property="og:site_name">
+        <meta content="http://wepromotethis.com/WePromoteThis/WPT/wepromotethis-fblike.png" property="og:image">
+        
+        <meta http-equiv="X-UA-Compatible" content="IE=8" >
+        ');
 }
 
 function my_show_extra_profile_fields($user) {

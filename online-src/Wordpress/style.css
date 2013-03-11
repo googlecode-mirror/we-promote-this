@@ -111,3 +111,9 @@ body, select, textarea {
 #theme-my-login2, .wpt_loggedin, .wpt_loggedout{
 	display: none;
 }
+
+
+#hidden_social_connect_form{
+	display: none;
+}
+
