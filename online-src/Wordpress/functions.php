@@ -31,7 +31,6 @@ function my_search_form($form) {
     }
 
     $form .= "<div class='register_button wpt_loggedout'>
-    " . $socialConnectForm . "
     <div>
     " . $themeMyLoginForm . "
     </div>
@@ -53,9 +52,9 @@ function my_search_form($form) {
 /**
  * Enqueue style-file
  */
-function wpt_custom_scripts() {
+function wpt_custom_scripts($hook) {
     wp_enqueue_style('wpt_style', "http://WePromoteThis.com/WePromoteThis/Wordpress/style.css");
-    wpt_js_sctipt();
+    wpt_js_sctipt($hook);
 
 }
 
@@ -65,7 +64,7 @@ function wpt_custom_admin_scripts($hook) {
     wpt_js_sctipt();
 }
 
-function wpt_js_sctipt() {
+function wpt_js_sctipt($hook) {
     wp_enqueue_script('wpt_javascript', 'http://WePromoteThis.com/WePromoteThis/Wordpress/scripts.js');
 
     global $current_user, $wpdb;
@@ -83,6 +82,12 @@ function wpt_js_sctipt() {
 
     // This allows us to pass PHP variables to the Javascript code. We can pass multiple vars in the array.
     wp_localize_script('wpt_javascript', 'wptuser', array('ytAccounts' => $accountNum, 'isUserLoggedIn' => is_user_logged_in()));
+    
+     if ('checkout.php' == $hook)
+	 {
+	 	wp_enqueue_script('wpt_pmp_javascript', 'http://WePromoteThis.com/WePromoteThis/Wordpress/pmp_scripts.js');
+	 }
+	
 
 }
 
