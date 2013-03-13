@@ -28,7 +28,7 @@ body, select, textarea {
 	color: #fff;
 }
 
-#theme-my-login {
+#theme-my-login, #theme-my-login1, #theme-my-login2 {
 	width: 300px;
 	margin-left: auto;
 	margin-right: auto;
@@ -43,15 +43,19 @@ body, select, textarea {
 	padding: 26px 24px 46px;
 }
 
-#theme-my-login ul {
+#theme-my-login ul, #theme-my-login1 ul, #theme-my-login2 ul {
 	display: inline;
 	padding: 30px;
+	position: relative;
+	top: -35px;
+
 }
 
-#theme-my-login ul li {
+#theme-my-login ul li, #theme-my-login1 ul li, #theme-my-login2 ul li {
 	display: inline;
 	padding-right: 26px;
 }
+
 
 #theme-my-login .forgetmenot, #theme-my-login1 .forgetmenot, #theme-my-login2 .forgetmenot {
 	float: right;
@@ -81,6 +85,10 @@ body, select, textarea {
 	width: 100%;
 }
 
+#theme-my-login, #theme-my-login1, #theme-my-login2 {
+	color: #fff;
+}
+
 #pmpro_user_fields .social_connect_form {
 	display: inline;
 }
@@ -97,23 +105,23 @@ body, select, textarea {
 	top: 4%;
 }
 
-
-.sociallink_page_header .social4i {
-	height: 0px;
+.sociallink_page_header {
+	width: 100%;
 }
 
 .sociallink_page_header .social4i {
-	position: absolute;
-	right: 71px;
-	top: 50%;
+	float: right;
+    padding-right: 71px;
+    position: relative;
+    z-index: 0;
+    height: 0px;
 }
 
-#theme-my-login2, .wpt_loggedin, .wpt_loggedout{
+#theme-my-login2, .wpt_loggedin, .wpt_loggedout {
 	display: none;
 }
 
-
-#hidden_social_connect_form{
+#hidden_social_connect_form {
 	display: none;
 }
 
