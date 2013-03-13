@@ -3,11 +3,12 @@
 // Use Example below:
 // $path = realpath(dirname(__FILE__))."/../../../WePromoteThis/Wordpress/functions.php";
 // include_once $path;
+//session_save_path(dirname(__FILE__));
+//session_name('WePromoteThis');
+//session_start();
 
-session_name('WePromoteThis');
-
-session_start();
-
+remove_action( 'wp_head', 'jetpack_og_tags' );
+add_filter('jetpack_enable_open_graph', '__return_false', 99); 
 add_action('show_user_profile', 'my_show_extra_profile_fields');
 add_action('edit_user_profile', 'my_show_extra_profile_fields');
 add_action('personal_options_update', 'my_save_extra_profile_fields');
@@ -29,8 +30,11 @@ function my_search_form($form) {
 
     if (function_exists('theme_my_login')) {
         global $theme_my_login;
-        $themeMyLoginForm = $theme_my_login -> shortcode(wp_parse_args('[widget_theme_my_login]'));
+        //$themeMyLoginForm = $theme_my_login -> shortcode(wp_parse_args('[widget_theme_my_login]'));
+        $themeMyLoginForm = $theme_my_login -> shortcode(wp_parse_args('[theme_my_login]'));
     }
+    
+    //$themeMyLoginForm = wp_login_form( array('echo' => false) );
 
     $form .= "<div class='register_button wpt_loggedout'>
     <div>
@@ -50,13 +54,9 @@ function my_search_form($form) {
 }
 
 function setupFooter() {
-    //echo("  <div id='hidden_social_connect_form'>
-    echo("  <div id='test'>
-         ");
+    echo("<div id='hidden_social_connect_form'>");
     $socialConnectForm = do_action('social_connect_form');
-    echo('
-    </div>
-    ');
+    echo('</div>');
 }
 
 /**
@@ -144,16 +144,20 @@ function setupWPT() {
     $plink = "http://www.wepromotethis.com/hop/" . $hop;
     $eplink = urlencode($plink);
 
-    echo('<link rel="canonical" href="' . $eplink . '" />');
+    echo('<link rel="canonical" href="' . $eplink . '" />
+    <link rel="canonical" href="https://www.wepromotethis.com">
+    <link rel="canonical" href="https://www.wepromotethis.com/hop">
+    <link rel="canonical" href="https://www.facebook.com/pages/WePromoteThiscom/367519556648222">
+    ');
     echo('
         <meta content="website" property="og:type">
         <meta content="WePromoteThis.com" property="og:title">
-        <meta content="' . $eplink . '" property="og:url">
+        <meta content="https://www.facebook.com/pages/WePromoteThiscom/367519556648222" property="og:url">
         <meta content="When you become a member of WePromoteThis.com you join a network of users who donate their computer\'s idle time. WePromoteThis.com sends information to your computer which it uses to create a video and upload back to WepromoteThis.com. Behind the scenes We will post these videos on the web loaded with your ClickBank affiliate ID. When internet surfers come across these videos, click on your affiliate product link, and make a purchase, YOU get paid!!!!" property="og:description">
         <meta content="We Promote This" property="og:site_name">
         <meta content="http://wepromotethis.com/WePromoteThis/WPT/wepromotethis-fblike.png" property="og:image">
-        
-        <meta http-equiv="X-UA-Compatible" content="IE=8" >
+        <meta content="291806197568104" property="fb:app_id">
+        <meta content="41000130" property="fb:admins">
         ');
 }
 
