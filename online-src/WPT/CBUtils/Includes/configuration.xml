@@ -45,4 +45,5 @@
 	<stupeflixHost>http://services.stupeflix.com/</stupeflixHost>
 	<dpaduser>cbank11</dpaduser>
 	<dpadpassword>Cbtedb11v2</dpadpassword>
+	<cbmarketplacefeed>https://accounts.clickbank.com/feeds/marketplace_feed_v2.xml.zip</cbmarketplacefeed>
 </ConfigurationConstants>

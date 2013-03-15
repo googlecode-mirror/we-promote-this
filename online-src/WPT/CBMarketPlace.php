@@ -54,7 +54,7 @@ class CBMarketPlace extends CBAbstract {
         }
         printf("There has been %d day(s) since the last downloadtime.<br>", $daysDiff);
         if ($daysDiff >= 7) {
-            $success = $this -> copyFile("http://www.clickbank.com/feeds/marketplace_feed_v2.xml.zip", $this -> outputPath);
+            $success = $this -> copyFile(cbmarketplacefeed, $this -> outputPath);
             //$success = true;
             if ($success) {
                 $archive = new PclZip($this -> outputPath . 'marketplace_feed_v2.xml.zip');
