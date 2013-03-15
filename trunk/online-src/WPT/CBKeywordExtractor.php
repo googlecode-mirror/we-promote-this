@@ -113,7 +113,7 @@ class CBKeywordExtractor extends CBAbstract {
 		$batchQueryOutput = implode ( "\n<br>", $batch );
 		$this->runBatchQuery ( $batchQuery );
 		echo ($batchQueryOutput);
-		$this->getDBConnection ()->getMysqliDBConnection ()->close ();
+		$this->getDBConnection ()->getDBConnection ()->close ();
 		
 		sleep ( 60*30 ); // wait 30 mintue(s)
 		$this->clearFile ( $this->updateDBQueryFilename );
@@ -121,7 +121,7 @@ class CBKeywordExtractor extends CBAbstract {
 	}
 	function runBatchQuery($batchQuery) {
 		//echo ("<br>Running multi_query update on DB");
-		$con = $this->getDBConnection ()->getMysqliDBConnection ();
+		$con = $this->getDBConnection ()->getDBConnection ();
 		$con->multi_query ( $batchQuery );
 		do {
 			//$con->use_result ()->close ();
