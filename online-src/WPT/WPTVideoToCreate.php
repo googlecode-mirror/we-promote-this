@@ -26,12 +26,14 @@ class WPTVVideoToCreate extends CBAbstract {
 		LEFT JOIN products as pr ON grow.id=pr.id
 		LEFT JOIN keywords as k ON k.id=grow.id
 		WHERE k.id is not null AND k.words!='[\"{BLANK}\"]' AND CHAR_LENGTH(k.words)>4 AND CHAR_LENGTH(pr.description)>5
+		AND pr.gravity <40
+        AND pr.gravity >0
 		GROUP BY (grow.id)
 		
 		";
 		
 		//$query.="ORDER BY COUNT(grow.id) ASC, pr.gravity DESC, pr.commission DESC, pr.popularityrank DESC, CHAR_LENGTH(pr.description) DESC, RAND()";
-		$query.="ORDER BY COUNT(grow.id) ASC, pr.initialearningspersale DESC, pr.averageearningspersale DESC, pr.gravity ASC, pr.popularityrank DESC, CHAR_LENGTH(pr.description) DESC, RAND() ";
+		$query.="ORDER BY COUNT(grow.id) ASC, pr.gravity ASC, pr.initialearningspersale DESC, pr.averageearningspersale DESC, pr.popularityrank DESC, CHAR_LENGTH(pr.description) DESC, RAND() ";
 		
 		$query.="LIMIT 1";
 
