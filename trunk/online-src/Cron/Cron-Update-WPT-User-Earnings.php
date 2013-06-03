@@ -33,7 +33,7 @@ class CronUpdateWPTUserEarnings extends CronAbstract {
     function getTotalSales($api) {
         $ch = curl_init ();
         $params = array ();
-        $url = "https://api.clickbank.com/rest/1.2/quickstats/count";
+        $url = "https://api.clickbank.com/rest/1.3/quickstats/count";
         $currentMonth = date ( "m" );
         if(isset($_REQUEST['m'])){
             $currentMonth = $_REQUEST['m'];
