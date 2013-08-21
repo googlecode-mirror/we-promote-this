@@ -22,16 +22,31 @@ add_filter('get_search_form', 'my_search_form');
 //Add login buttons before search form
 
 function my_search_form($form) {
+    global $hop;
+    
+    $plink = "http://www.wepromotethis.com/hop/" . $hop;
+    $eplink = urlencode($plink);
 
     $socialLink = '';
     if (function_exists('display_social4i')) {
         $socialLink = display_social4i("large", "align-right");
+        // Modify $socialLink so that the twitter, facebook, and google plus buttons display properly
+        $socialLink = preg_replace('/data-url="([^"]+)"/i', 'data-url="'.$plink.'" ', $socialLink);
+        $socialLink = preg_replace('/data-counturl="([^"]+)"/i', 'data-counturl="wepromotethis.com" ', $socialLink);
+        $socialLink = preg_replace('/data-text="([^"]+)"/i', 'data-text="I just turned my computer into an ATM. Thanks #WPT !!! " ', $socialLink);
+        $socialLink = preg_replace('/(<g:plusone.* href=)"([^"]+)"/i', '$1"https://plus.google.com/106500919528675853199"', $socialLink);
+        $socialLink = preg_replace('/(<fb:like.* href=|fb-like.* data-href=)"([^"]+)"/i', '$1"https://www.facebook.com/pages/WePromoteThiscom/367519556648222?ref=hl"', $socialLink);
     }
 
     if (function_exists('theme_my_login')) {
-        global $theme_my_login;
+        //global $theme_my_login;
         //$themeMyLoginForm = $theme_my_login -> shortcode(wp_parse_args('[widget_theme_my_login]'));
-        $themeMyLoginForm = $theme_my_login -> shortcode(wp_parse_args('[theme_my_login]'));
+        //$themeMyLoginForm = $theme_my_login -> shortcode(wp_parse_args('[theme_my_login]'));
+        ob_start();
+        theme_my_login(wp_parse_args('[widget_theme_my_login]'));
+        //theme_my_login(wp_parse_args('[theme_my_login]'));
+        $themeMyLoginForm = ob_get_contents();
+        ob_end_clean();
     }
     
     //$themeMyLoginForm = wp_login_form( array('echo' => false) );
@@ -71,7 +86,7 @@ function wpt_custom_scripts($hook) {
 function wpt_custom_admin_scripts($hook) {
     if ('profile.php' != $hook)
         return;
-    wpt_js_sctipt();
+    wpt_js_sctipt($hook);
 }
 
 function wpt_js_sctipt($hook) {
@@ -95,9 +110,8 @@ function wpt_js_sctipt($hook) {
 }
 
 function setupWPT() {
-
     global $hop;
-
+    
     if ($_COOKIE['hop'] != '') {
         $hop = $_COOKIE['hop'];
     } else if (isset($_SESSION['hop'])) {
@@ -140,24 +154,27 @@ function setupWPT() {
         }
         echo("Referrer: $hop<br>");
     }
-
+    
+    
     $plink = "http://www.wepromotethis.com/hop/" . $hop;
     $eplink = urlencode($plink);
-
+    
+        
     echo('<link rel="canonical" href="' . $eplink . '" />
-    <link rel="canonical" href="https://www.wepromotethis.com">
-    <link rel="canonical" href="https://www.wepromotethis.com/hop">
-    <link rel="canonical" href="https://www.facebook.com/pages/WePromoteThiscom/367519556648222">
+    <link rel="canonical" href="https://www.wepromotethis.com" />
+    <link rel="canonical" href="https://www.wepromotethis.com/hop" />
+    <link rel="canonical" href="https://www.facebook.com/pages/WePromoteThiscom/367519556648222?ref=hl" />
     ');
     echo('
-        <meta content="website" property="og:type">
-        <meta content="WePromoteThis.com" property="og:title">
-        <meta content="https://www.facebook.com/pages/WePromoteThiscom/367519556648222" property="og:url">
-        <meta content="When you become a member of WePromoteThis.com you join a network of users who donate their computer\'s idle time. WePromoteThis.com sends information to your computer which it uses to create a video and upload back to WepromoteThis.com. Behind the scenes We will post these videos on the web loaded with your ClickBank affiliate ID. When internet surfers come across these videos, click on your affiliate product link, and make a purchase, YOU get paid!!!!" property="og:description">
-        <meta content="We Promote This" property="og:site_name">
-        <meta content="http://wepromotethis.com/WePromoteThis/WPT/wepromotethis-fblike.png" property="og:image">
-        <meta content="291806197568104" property="fb:app_id">
-        <meta content="41000130" property="fb:admins">
+        <meta content="website" property="og:type" />
+        <meta content="WePromoteThis.com" property="og:title" />'.
+        '<meta content="https://www.facebook.com/pages/WePromoteThiscom/367519556648222?ref=hl" property="og:url" />'.
+        '<meta content="'.$eplink.'" property="og:url" />'.
+        '<meta content="When you become a member of WePromoteThis.com you join a network of users who donate their computer\'s idle time. WePromoteThis.com sends information to your computer which it uses to create a video and upload back to WepromoteThis.com. Behind the scenes We will post these videos on the web loaded with your ClickBank affiliate ID. When internet surfers come across these videos, click on your affiliate product link, and make a purchase, YOU get paid!!!!" property="og:description" />
+        <meta content="We Promote This" property="og:site_name" />
+        <meta content="http://wepromotethis.com/WePromoteThis/WPT/wepromotethis-fblike.png" property="og:image" />
+        <meta content="291806197568104" property="fb:app_id" />
+        <meta content="41000130" property="fb:admins" />
         ');
 }
 
