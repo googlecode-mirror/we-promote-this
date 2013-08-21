@@ -100,8 +100,6 @@ class CBKeywordExtractor extends CBAbstract {
 	}
 	function runUpdateQuery() {
 		//GRAB Query txt from ProductUpdateDBQuery and run mysqli mutli query
-		
-
 		$batch = array ();
 		
 		//$batch[] = file_get_contents ( $this->updateDBQueryFilename );

@@ -24,9 +24,14 @@
 	color: #2471BE;
 }
 
-body, select, textarea {
-	color: #fff;
+body, select {
+	color: #fff !important;
 }
+
+input, textarea {
+	color: #000000 !important;
+}
+
 
 #theme-my-login, #theme-my-login1, #theme-my-login2 {
 	width: 300px;
