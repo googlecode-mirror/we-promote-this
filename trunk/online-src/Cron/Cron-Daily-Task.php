@@ -6,5 +6,6 @@ new CronController ( "WPTCleanOldVideos" );
 new CronController("WPTUploadScheduler");
 //new CronController ( "WPTCreateYoutubeAccountForUsers" );
 new CronController ( "CBMarketPlace" ); // This one actually has a check in place to only run weekly
+require_once 'Cron-Keyword-Update-Random.php';
 require_once 'Cron-Keyword-RunUpdateQuery.php';
 ?>
