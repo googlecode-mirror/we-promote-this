@@ -201,6 +201,7 @@ function show_clickbank_fields($user) {
     		<br />
     		<span class="description">Please enter your ClickBank Clerk API Key.</span></td>
     	</tr>
+   </table>
 	');
 
 }
@@ -216,6 +217,8 @@ function show_youtube_fields($user) {
 	WHERE u1.user_id=" . $user -> ID . " AND u1.meta_key LIKE 'youtube%' AND u1.meta_value IS NOT NULL AND CHAR_LENGTH(u1.meta_value)>0
 	AND u2.meta_key=CONCAT(u1.meta_key,'_password') AND u2.meta_value IS NOT NULL AND CHAR_LENGTH(u2.meta_value)>0
 	");
+	
+	echo('<table class="form-table">');
 
     $accountNum = 0;
     foreach ($ytAccounts as $ytAccount) {
@@ -227,20 +230,15 @@ function show_youtube_fields($user) {
 
         echo('
         	<tr>
-        		<td colspan="2">
-        		<br>
+        		<th class="white"><label for="Youtube '.$accountNum.' UserName">Youtube ' . $accountNum . ' Username</label></th>
+        		<td>
+        		<input type="text" name="' . $ytName . '" id="' . $ytName . '" value="' . $ytValue . '" class="regular-text" />
         		</td>
         	</tr>
         	<tr>
-        		<td class="white">Youtube ' . $accountNum . ' Username</td>
+        		<th class="white"><label for="Youtube '.$accountNum.' Password">Youtube ' . $accountNum . ' Password</label></th>
         		<td>
-        		<input type="text" name="' . $ytName . '" id="' . $ytName . '" value="' . $ytValue . '" style="width: 300px;" />
-        		</td>
-        	</tr>
-        	<tr>
-        		<td class="white">Youtube ' . $accountNum . ' Password</td>
-        		<td>
-        		<input type="text" name="' . $ytPass . '" id="' . $ytPass . '" value="' . $ytPassValue . '" style="width: 300px;" />
+        		<input type="text" name="' . $ytPass . '" id="' . $ytPass . '" value="' . $ytPassValue . '" class="regular-text" />
         		</td>
         	</tr>
 	');
@@ -253,22 +251,30 @@ function show_youtube_fields($user) {
     		</td>
     	</tr>
     	<tr>
-    		<td class="white">Youtube ' . $accountNum . ' Username</td>
+    		<th class="white"><label for="Youtube '.$accountNum.' UserName">Youtube ' . $accountNum . ' Username</label></th>
     		<td>
-    		  <input type="text" name="youtube' . $accountNum . '" id="youtube' . $accountNum . '" value="" style="width: 300px;" />
+    		  <input type="text" name="youtube' . $accountNum . '" id="youtube' . $accountNum . '" value="" class="regular-text" />
     		</td>
     	</tr>
     	<tr>
-    		<td class="white">Youtube ' . $accountNum . ' Password</td>
+    		<th class="white"><label for="Youtube '.$accountNum.' Password">Youtube ' . $accountNum . ' Password</label></th>
     		<td>
-    		  <input type="text" name="youtube' . $accountNum . '_password" id="youtube' . $accountNum . '_password" value="" style="width: 300px;" />
+    		  <input type="text" name="youtube' . $accountNum . '_password" id="youtube' . $accountNum . '_password" value="" class="regular-text" />
     		</td>
     	</tr>
     	<tr id="addYoutubeTR">
-    		<td align="center"  colspan="2">
+    		<td align="left">
     		  <input type="button" class="button button-primary" value="Add Youtube Account" onClick="addYoutubeAccount();">
     		</td>
     	</tr>
+    	<tr id="addYoutubeFromFileTR">
+    		<th class="white"><label for="Upload File">Upload Accounts From File</label></th>
+    		<td align="left">
+    		  <input type="file" class="button button-primary" value="Add Youtube Accounts From File">
+    		</td>
+    	</tr>
+    	</table>
+		
 ');
 }
 
