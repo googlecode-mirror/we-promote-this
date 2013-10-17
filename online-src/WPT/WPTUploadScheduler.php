@@ -89,7 +89,7 @@ class WPTUploadScheduler extends CBAbstract {
             $videoString = "('" . implode("'),('", $videoArray) . "')";
             $videoCount = count($videoArray);
 
-            // Create table containg all possible videos to upload
+            // Create table containing all possible videos to upload
             $createUploadedVideosTableQuery = "DROP TABLE IF EXISTS uploadedVideos;CREATE TEMPORARY TABLE uploadedVideos(id tinytext NOT NULL, PRIMARY KEY(id ( 20 )));INSERT INTO uploadedVideos VALUES $videoString;";
 
             // Create table containing all user_ids and passwords
@@ -114,31 +114,50 @@ class WPTUploadScheduler extends CBAbstract {
             // Set all user inactive
             $createUserTableQuery = "UPDATE users set active=0;";
             // Insert all users from Wordpress
-            $createUserTableQuery .= "INSERT IGNORE INTO users (user_id, user_password, user_wp_id) VALUES $userString ON DUPLICATE KEY UPDATE active=1 ;";
+            $createUserTableQuery .= "INSERT IGNORE INTO users (user_id, user_password, user_wp_id) VALUES $userString ON DUPLICATE KEY UPDATE active=1;";
+            // Assign a category to all users without one based on the lowest category count for the wordpress user
+            $createUserTableQuery .= "Update users set category = 
+									(Select p.category 
+									from (Select distinct category from products) as p 
+									LEFT JOIN (Select category from users) as u using(category)
+									group by p.category
+									order by count(u.category) asc, Rand() limit 1)
+									WHERE category is null;";
             //Delete users who no longer exist in wp
             $createUserTableQuery .= "Delete from users where active=0;";
-
             // ADD all possible video combinations without posttimes
             // one video per user
             //$insertVideoUploadsQuery = "INSERT IGNORE INTO post (pid, user_id, location, proxyid) select uv.id as pid, (SELECT grow.user_id from ((SELECT id as user_id FROM users) UNION ALL (SELECT p.user_id FROM post as p JOIN users as us USING (user_id) WHERE us.active=1 )) as grow GROUP BY grow.user_id  ORDER BY count( grow.user_id ) ASC , rand( )  limit 1) as user_id, uploadsites.location as location , (select id from proxies order by rand() limit 1) as proxyid from uploadedVideos as uv left join keywords as k USING(id), uploadsites where k.id is not null and CHAR_LENGTH(k.words)>4 and k.words!='[\"{BLANK}\"]' and uploadsites.working=1 and uploadsites.type='video';";
-            // all videos for every user
+            // all videos for every user based on category
             $insertVideoUploadsQuery = "INSERT IGNORE INTO post 
             (pid, user_id, user_wp_id, location, proxyid) 
-            select uv.id as pid, us.id as user_id, us.user_wp_id as user_wp_id, uploadsites.location as location , (select id from proxies order by rand() limit 1) as proxyid 
-            from 
-            uploadedVideos as uv 
-            left join keywords as k USING(id), 
-            uploadsites, 
-            (Select grow.id, grow.user_wp_id, grow.active from
-            (
-            Select * from users
-            UNION ALL 
-            Select u1.* from users as u1 left join post as p1 on (u1.id=p1.user_id and p1.posted=1) group by p1.user_id 
-            ) as grow
-            group by grow.id
-            order by count(grow.id) asc, rand()) as us 
-            where k.id is not null and CHAR_LENGTH(k.words)>4 and k.words!='[\"{BLANK}\"]' and uploadsites.working=1 and uploadsites.type='video' and us.active=1;";
-
+			SELECT uv.id AS pid, us.id AS user_id, us.user_wp_id AS user_wp_id, uploadsites.location AS location, 
+			(
+			SELECT id
+			FROM proxies
+			ORDER BY RAND()
+			LIMIT 1) AS proxyid
+			FROM 
+			 uploadedVideos AS uv
+			LEFT JOIN keywords AS k USING(id)
+			LEFT JOIN (select distinct category, id from products) as p on p.id = k.id
+			, 
+			 uploadsites, 
+			 (
+			SELECT grow.id, grow.user_wp_id, grow.active, grow.category
+			FROM
+			 (
+			SELECT *
+			FROM users UNION ALL
+			SELECT u1.*
+			FROM users AS u1
+			LEFT JOIN post AS p1 ON (u1.id=p1.user_id AND p1.posted=1)
+			GROUP BY p1.user_id 
+			) AS grow
+			GROUP BY grow.id
+			ORDER BY COUNT(grow.id) ASC, RAND()) AS us
+			WHERE k.id IS NOT NULL AND CHAR_LENGTH(k.words)>4 AND k.words!='[\"{BLANK}\"]' AND uploadsites.working=1 AND uploadsites.type='video' AND us.active=1
+			AND p.category = us.category;";
             //Append all queries
             if (isset($_REQUEST['debug'])) {
                 $debugQuery = $createUploadedVideosTableQuery . "<br><br>" . $deleteQuery . "<br><br>" . $createUserTableQuery . "<br><br>" . $insertVideoUploadsQuery;

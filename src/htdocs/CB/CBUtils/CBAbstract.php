@@ -56,6 +56,30 @@ abstract class CBAbstract {
     function reconnectDB() {
         self::$DBConnection = new DBConnection(mysqlServerIP2, dbname, dbuser, dbpassword);
     }
+	
+	 function runQuery($query, $con, $returnAffectedRows = false, $retry = 3) {
+        $affectedRowCount = 0;
+        $results = $this -> getDBConnection() -> queryCon($query, $con);
+        $affectedRowCount = $con -> affected_rows;
+        if ($con -> errno) {
+            if ($retry > 0 && $con -> errno == 2006) {
+                //sleep(10 + rand(0, 15));
+                if (!$con -> ping()) {
+                    $this -> reconnectDB();
+                    $con = $this -> getDBConnection() -> getMatchingCon($con);
+                }
+                return $this -> runQuery($query, $con, $returnAffectedRows, --$retry);
+
+            } else {
+                $this -> getLogger() -> log('Couldnt execute query: ' . $query . '<br>Mysql Error (' . $con -> errno . '): ' . $con -> error . " | Retries: " . (3 - $retry), PEAR_LOG_ERR);
+            }
+        }
+        if ($returnAffectedRows) {
+            return $affectedRowCount;
+        } else {
+            return $results;
+        }
+    }
 
     static function getConfigParser() {
         return self::$ConfigParser;
