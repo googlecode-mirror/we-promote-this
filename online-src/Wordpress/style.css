@@ -1,3 +1,21 @@
+/*
+Theme Name:     We Promote This
+Theme URI:      http: //www.wepromotethis.com/
+Description:    Child theme for Online Marketer Theme
+Author:         Chris Queen
+Author URI:     http: //www.wepromotethis.com/
+Template:       online-marketer
+Version:        1.8.9
+
+@import url("../../wp-content/themes/online-marketer/style.css");
+
+@import url("http://wepromotethis.com/wp-content/themes/online-marketer/style.css");
+
+
+*/
+
+@import url("../../wp-content/themes/online-marketer/style.css");
+
 .pmpro_checkout thead th {
 	border-bottom: 1px solid #FFD21F;
 	border-top: 1px solid #FFD21F;
@@ -128,5 +146,9 @@ input, textarea {
 
 #hidden_social_connect_form {
 	display: none;
+}
+
+.profile-table input {
+ width: 300px;	
 }
 

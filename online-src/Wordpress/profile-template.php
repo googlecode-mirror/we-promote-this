@@ -76,7 +76,7 @@ get_header();
         }
   }
 echo $cb_referer; ?>">
-  <table width="100%" cellspacing="0" cellpadding="0" border="0" id="profileTable">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0" id="profileTable" class="form-table profile-table">
 	<?php if ( isset($_GET['updated']) ):
 $d_url = $_GET['d'];?>
 	<tr>
@@ -92,38 +92,37 @@ $d_url = $_GET['d'];?>
 	</tr>
 	<tr>
 	  <td class="white">First Name</td>
-	  <td><input type="text" name="first_name" id="first_name" value="<?php echo $userdata->first_name ?>" style="width: 300px;" /></td>
+	  <td><input type="text" name="first_name" id="first_name" value="<?php echo $userdata->first_name ?>"  /></td>
 	</tr>
 	<tr>
 	  <td class="white">Last Name</td>
-	  <td><input type="text" name="last_name" class="mid2" id="last_name" value="<?php echo $userdata->last_name ?>" style="width: 300px;" /></td>
+	  <td><input type="text" name="last_name" class="mid2" id="last_name" value="<?php echo $userdata->last_name ?>"  /></td>
 	</tr>
 	<tr>
 	  <td class="white">Email <span style="color: #F00">*</span></td>
-	  <td><input type="text" name="email" class="mid2" id="email" value="<?php echo $userdata->user_email ?>" style="width: 300px;" /></td>
+	  <td><input type="text" name="email" class="mid2" id="email" value="<?php echo $userdata->user_email ?>"  /></td>
 	</tr>
 	<tr>
 	  <td class="white">New Password </td>
-	  <td><input type="password" name="pass1" class="mid2" id="pass1" value="" style="width: 300px;" /></td>
+	  <td><input type="password" name="pass1" class="mid2" id="pass1" value=""  /></td>
 	</tr>
 	<tr>
 	  <td class="white">New Password Confirm </td>
-	  <td><input type="password" name="pass2" class="mid2" id="pass2" value="" style="width: 300px;" /></td>
+	  <td><input type="password" name="pass2" class="mid2" id="pass2" value=""  /></td>
 	</tr>
 	<tr>
 	  <td align="right" colspan="2" class="white"><span style="color: #F00">*</span> <span style="padding-right:40px;">mandatory fields</span></td>
 	</tr>
 	<tr>
-		<td class="white">ClickBank Username <span style="color: #F00">*</span></td>
-		<td><input type="text" name="clickbank" id="clickbank" value="<?php echo esc_attr( get_the_author_meta( 'clickbank', $userdata->ID ) ); ?>" style="width: 300px;" /></td>
+		<td class="white" colspan="2">
+			<?php wepromotethis_show_clickbank_fields($userdata);?>
+		</td>
 	</tr>
 	<tr>
-		<td class="white">ClickBank Clerk API Key <span style="color: #F00">*</span></td>
-		<td><input type="text" name="clickbank_clerk_api_key" id="clickbank_clerk_api_key" value="<?php echo esc_attr( get_the_author_meta( 'clickbank_clerk_api_key', $userdata->ID ) ); ?>" style="width: 300px;" /></td>
-	</tr>
-	<?php 
-	show_youtube_fields($userdata);
-    ?>
+		<td class="white" colspan="2">
+			<?php	wepromotethis_show_youtube_fields($userdata); ?>
+    	</td>
+    </tr>
 
      <tr>
 	  <td align="center" colspan="2"><br><input type="submit" value="Update" /></td>

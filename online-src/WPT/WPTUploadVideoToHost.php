@@ -255,16 +255,21 @@ class WPTUploadVideoToHost extends CBAbstract {
         //$this->getDBConnection()->queryDB("Drop table if exists post_bak");
         $this -> runQuery("CREATE Temporary table IF NOT EXISTS post_bak LIKE post;", $this -> getDBConnection() -> getDBConnection());
         $this -> runQuery("INSERT IGNORE INTO post_bak SELECT * FROM post WHERE user_id=$uid;", $this -> getDBConnection() -> getDBConnection());
-        // Delete all the users uploaded videos except the ones that were uploaded within the last 5 hours of when the account stoped working
+        // Delete all the users uploaded videos except the ones that were uploaded within the last 2 hours of when the account stopped working
         $deleteQuery1 = "Delete from post where id IN (
         Select DISTINCT grow.id from
-        (SELECT TIMESTAMPDIFF(HOUR, p.posttime ,MAX(p2.posttime)) as last_time,p.id FROM post_bak as p, post_bak as p2 where p.user_id=$uid and p.user_id=p2.user_id and p.posted=1 and p2.posted=1 group by p.user_id, p.pid, p.location having last_time>5) as grow );
+        (SELECT TIMESTAMPDIFF(HOUR, p.posttime ,MAX(p2.posttime)) as last_time,p.id FROM post_bak as p, post_bak as p2 where p.user_id=$uid and p.user_id=p2.user_id and p.posted=1 and p2.posted=1 group by p.user_id, p.pid, p.location having last_time>2) as grow );
         ";
         $this -> runQuery($deleteQuery1, $this -> getDBConnection() -> getDBConnection());
         //$this->getDBConnection ()->threadSafeQuery ( $deleteQuery1);
         $deleteQuery2 = "Delete from post as p where p.user_id=$uid and p.posted=0;";
         $this -> runQuery($deleteQuery2, $this -> getDBConnection() -> getDBConnection());
         //$this->getDBConnection ()->threadSafeQuery ( $deleteQuery2 );
+        // Give the pid associated with the remaining posted videos for the user +1 count in the badids table
+        $badIdsQuery = "Insert into BadIDs (id) 
+			Select pid from post where posted=1 AND user_id=$uid
+			 on duplicate key update count=count+1;";
+        $this -> runQuery($badIdsQuery, $this -> getDBConnection() -> getDBConnection());
         $this -> removeUser($uid, $userName);
     }
 
