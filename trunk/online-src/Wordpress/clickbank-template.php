@@ -55,7 +55,7 @@ get_currentuserinfo();
   <input type="hidden" name="dashboard_url" value="<?php echo get_option("dashboard_url"); ?>" />
   <input type="hidden" name="user_id" id="user_id" value="<?php echo $user_id; ?>" />
   <input type="hidden" name="email" id="email" value="<?php echo $userdata->user_email ?>" />
-  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0"  class="form-table profile-table">
 	<?php if ( isset($_GET['updated']) ):
 $d_url = $_GET['d'];?>
 	<tr>
@@ -70,12 +70,9 @@ $d_url = $_GET['d'];?>
 		<td colspan="2" align="center" class="white"><h2>Update ClickBank Info</h2><br></td>
 	</tr>
 	<tr>
-		<td class="white">ClickBank Username</td>
-		<td><input type="text" name="clickbank" id="clickbank" value="<?php echo esc_attr( get_the_author_meta( 'clickbank', $userdata->ID ) ); ?>" style="width: 300px;" /></td>
-	</tr>
-	<tr>
-		<td  class="white">ClickBank Clerk API Key</td>
-		<td><input type="text" name="clickbank_clerk_api_key" id="clickbank_clerk_api_key" value="<?php echo esc_attr( get_the_author_meta( 'clickbank_clerk_api_key', $userdata->ID ) ); ?>" style="width: 300px;" /></td>
+		<td class="white" colspan="2">
+			<?php wepromotethis_show_clickbank_fields($userdata);?>
+		</td>
 	</tr>
 	<tr>
 	  <td align="center" colspan="2"><input type="submit" value="Update" /></td>
