@@ -26,6 +26,7 @@ Version:        1.8.9
 
 .pmpro_checkout tbody td {
 	border-bottom: 1px solid #FFD21F;
+	background: none repeat scroll 0 0 #6FC2F6;
 	padding: 10px;
 }
 
