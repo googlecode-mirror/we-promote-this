@@ -67,16 +67,25 @@ class WPTDeleteBadVideos extends CBAbstract {
 		}
 		else {
 			// If not then delete from post table
-			echo("<font color='red'><b>Youtube Video ID: <a href='".$api.$videoId."'>" . $videoId . '</a> Is NOT Valid.</b></font><br>');
+			
 			// Add 1 point for pid associated with video in the badids table
+			$selectQuery = "Select p.pid from post as p LEFT JOIN products as pr ON pr.id=p.pid where p.postURL like '%watch?v=" . $videoId . "%'";
 			$badIdsQuery = "Insert into BadIDs (id) 
-			Select pid from post where postURL like '%watch?v=" . $videoId . "%'
+			".$selectQuery."
 			 on duplicate key update count=count+1;";
 			//echo('Bad IDs Query : '.$badIdsQuery."<br>");
 			$this -> runQuery($badIdsQuery, $this -> getDBConnection() -> getDBConnection());
+			$selectQuery2 = "Select p.pid AS pid, pr.category AS category from post as p LEFT JOIN products as pr ON pr.id=p.pid where p.postURL like '%watch?v=" . $videoId . "%'";
+			
+			$results = $this -> runQuery($selectQuery2, $this -> getDBConnection() -> getDBConnection());
+			$row = $results -> fetch_assoc();
+			$pid = $row['pid'];
+			$category = $row['category'];
+			$postURL = $row["postURL"];
 			$deleteQuery = "DELETE FROM post WHERE postURL like '%watch?v=" . $videoId . "%'";
 			//echo("Delete Query: ".$deleteQuery."<br>");
 			$this -> runQuery($deleteQuery, $this -> getDBConnection() -> getDBConnection());
+			echo("<font color='red'><b>Youtube Video ID: <a href='".$api.$videoId."'>" . $videoId . '</a> | PID: '.$pid.' | Category: '.$category.' Is NOT Valid.</b></font><br>');
 
 		}
 
