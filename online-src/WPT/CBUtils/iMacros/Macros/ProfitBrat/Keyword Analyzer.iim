@@ -1,0 +1,18 @@
+﻿VERSION BUILD=7300701 RECORDER=FX
+'SET !EXTRACT_TEST_POPUP NO
+SET !DATASOURCE keyword_ideas.csv
+SET !DATASOURCE_COLUMNS 6
+SET !LOOP 2
+SET !DATASOURCE_LINE {{!LOOP}} 
+
+
+TAB T=1
+URL GOTO=http://www.google.com/search?q=%22kelly+osbourne+weight+loss%22&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a#sclient=psy&hl=en&client=firefox-a&rls=org.mozilla:en-US%3Aofficial&source=hp&q=%22fast+weight+loss+diets%22&pbx=1&oq=%22fast+weight+loss+diets%22&aq=f&aqi=g-c5&aql=1&gs_sm=e&gs_upl=48238l50977l3l51103l13l13l1l0l0l6l232l1692l1.7.3l11l0&bav=on.2,or.r_gc.r_pw.r_cp.&fp=8611df39e77e29eb&biw=942&bih=914
+TAG POS=1 TYPE=INPUT:TEXT FORM=NAME:f ATTR=ID:lst-ib CONTENT="{{!COL1}}",
+TAG POS=1 TYPE=BUTTON ATTR=NAME:btnG
+WAIT SECONDS=1
+TAG POS=1 TYPE=DIV ATTR=ID:resultStats EXTRACT=TXT
+'SET !VAR2 {{!EXTRACT}} 
+'SET !EXTRACT {{!COL1}},{{!VAR2}}
+
+SAVEAS TYPE=TXT FOLDER=* FILE=+keywords_analyzed     

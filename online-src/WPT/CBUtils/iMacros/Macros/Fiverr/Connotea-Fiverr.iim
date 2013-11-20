@@ -1,0 +1,25 @@
+﻿VERSION BUILD=7300701 RECORDER=FX
+SET !EXTRACT_TEST_POPUP NO
+PROMPT "Please enter the full path to your accounts file. Example C:\\Documents\\Accounts.csv" !VAR1
+SET !DATASOURCE {{!VAR1}}
+SET !DATASOURCE_COLUMNS 9
+SET !LOOP 2
+SET !DATASOURCE_LINE {{!LOOP}} 
+
+TAB T=1
+URL GOTO=http://www.connotea.org/
+TAG POS=1 TYPE=A ATTR=TXT:sign<SP>up
+TAG POS=1 TYPE=INPUT:TEXT FORM=NAME:register ATTR=ID:firstname CONTENT={{!COL1}}
+TAG POS=1 TYPE=INPUT:TEXT FORM=NAME:register ATTR=ID:lastname CONTENT={{!COL2}}
+TAG POS=1 TYPE=INPUT:TEXT FORM=NAME:register ATTR=ID:username CONTENT={{!COL4}}
+SET !ENCRYPTION NO
+TAG POS=1 TYPE=INPUT:PASSWORD FORM=NAME:register ATTR=ID:password CONTENT={{!COL8}}
+TAG POS=1 TYPE=INPUT:PASSWORD FORM=NAME:register ATTR=ID:passwordconfirm CONTENT={{!COL8}}
+TAG POS=1 TYPE=INPUT:TEXT FORM=NAME:register ATTR=ID:email CONTENT={{!COL3}}
+TAG POS=1 TYPE=INPUT:TEXT FORM=NAME:register ATTR=ID:email2 CONTENT={{!COL3}}
+
+' Get Captcha code from user
+PROMPT "Please enter the Captcha text:" !VAR2 
+
+TAG POS=1 TYPE=INPUT:TEXT FORM=NAME:register ATTR=ID:recaptcha_response_field CONTENT={{!VAR2}} 
+TAG POS=1 TYPE=INPUT:SUBMIT FORM=NAME:register ATTR=NAME:button&&VALUE:register

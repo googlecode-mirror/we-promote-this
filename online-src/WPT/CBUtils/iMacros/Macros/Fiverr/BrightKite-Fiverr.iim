@@ -1,0 +1,15 @@
+﻿VERSION BUILD=7300701 RECORDER=FX
+SET !EXTRACT_TEST_POPUP NO
+PROMPT "Please enter the full path to your accounts file. Example C:\\Documents\\Accounts.csv" !VAR1
+SET !DATASOURCE {{!VAR1}}
+SET !DATASOURCE_COLUMNS 9
+SET !LOOP 2
+SET !DATASOURCE_LINE {{!LOOP}}
+TAB T=1
+URL GOTO=http://brightkite.com/
+TAG POS=1 TYPE=A ATTR=ID:signup-button
+TAG POS=1 TYPE=INPUT:TEXT FORM=ACTION:http://brightkite.com/account/signup ATTR=ID:person_name CONTENT={{!COL1}}<SP>{{!COL2}}
+TAG POS=1 TYPE=INPUT:TEXT FORM=ACTION:http://brightkite.com/account/signup ATTR=ID:person_login CONTENT={{!COL4}}
+SET !ENCRYPTION NO
+TAG POS=1 TYPE=INPUT:PASSWORD FORM=ACTION:http://brightkite.com/account/signup ATTR=ID:person_password CONTENT={{!COL8}}
+TAG POS=1 TYPE=A ATTR=TXT:Sign<SP>up

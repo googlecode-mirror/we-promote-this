@@ -1,6 +1,6 @@
 <?php
 require_once ("CBUtils/CBAbstract.php");
-require_once ('Account/YoutubeAccount.php');
+require_once 'Video/User.php';
 class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 	function __construct() {
 		parent::__construct ();
@@ -9,142 +9,114 @@ class WPTCreateYoutubeAccountForUsers extends CBAbstract {
 		parent::__destruct ();
 	}
 	function constructClass() {
-		if (isset ( $_REQUEST ['manual'] ) && isset ( $_REQUEST ['count'] ) && isset ( $_REQUEST ['uid'] )) {
-			$className = get_class ( $this );
-			$file = $className . ".txt";
-			$uid = $_REQUEST ['uid'];
-			$count = $_REQUEST ['count'];
-			echo ("<hr>Manual Override - Start Date/Time: " . date ( "m/d/Y h:i:s A" ) . "<br>Creating " . $count . " YT Account(s) for user: " . $uid . "<br>");
-			for($i = 0; $i < $count; $i ++) {
-				$cmd = $className . ".php uid=$uid count=$i"; // Added count so the command would be different and get processed.
-				$this->getCommandLineHelper ()->run_in_background ( $cmd, $file );
-				//echo("Running command: $cmd<br>");
-				// $this->createYTAccountFor ($uid );
-			}
-		} else {
-			$this->handleARGV ();
-		}
-	}
-	function handleARGV() {
-		global $argv;
-		if (! isset ( $argv ) || count ( $argv ) <= 1) {
-			$this->createYTAccountForUsers ();
-		} else {
-			array_shift ( $argv );
-			foreach ( $argv as $value ) {
-				$keyArray = split ( "=", $value );
-				$key = $keyArray [0];
-				$keyValue = $keyArray [1];
-				switch ($key) {
-					case "uid" :
-						$uid = $keyValue;
-						if (isset ( $uid )) {
-							$this->createYTAccountFor ( $uid );
-						}
-						break;
-				}
-			}
-		}
-	}
-	function createYTAccountForUsers() {
-		// For each user create one new YT account
-		echo ("<hr>Start Date/Time: " . date ( "m/d/Y h:i:s A" ) . "<br>");
-		$query = "SELECT um.user_id as uid, l.id as level ,um3.meta_value AS earned FROM
-		 		wp_2_pmpro_memberships_users AS mu 
-                JOIN wp_2_pmpro_membership_levels AS l ON (l.id = mu.membership_id)
-                JOIN wp_usermeta AS um ON (um.meta_key='clickbank' AND um.user_id=mu.user_id)
-                LEFT JOIN wp_usermeta AS um2 ON (um2.meta_key='clickbank_clerk_api_key' AND um2.user_id=mu.user_id)
-                LEFT JOIN wp_usermeta AS um3 ON (um3.meta_key='cbearnings' AND um3.user_id = um.user_id)
-				WHERE CHAR_LENGTH(um.meta_value)>0 and CHAR_LENGTH(um3.meta_value)>0";
-		// echo ("Query: $query<br><br>");
-		$className = get_class ( $this );
-		$file = $className . ".txt";
-		$result = $this->getDBConnection ()->queryWP ( $query );
-		while ( ($row = $result-> fetch_assoc()) ) {
-			$uid = $row ["uid"];
-			$level = $row ["level"];
-			$earned = $row ["earned"];
-			// find out how mand account the user already has
-			$accountsQuery = "Select count(*) as accounts FROM users where user_wp_id = $uid";
-			$aresult = $this->getDBConnection()->queryDB ( $accountsQuery );
-			$arow = $aresult-> fetch_assoc();
-			$numAccount = $arow ["accounts"];
-			
-			// Override level for user id 1 (cq2smooth)
-			//if ($uid == 1) {
-				//$level = 6;
-			//}
-			
-			// Define max limits
-			$maxEarning = 0;
-			$maxAccounts = 0;
-			switch ($level) {
-				case 1 :
-					$maxEarning = 10;
-					$maxAccounts = 20;
-					break;
-				case 2 :
-					$maxEarning = 20;
-					$maxAccounts = 30;
-					break;
-				case 3 :
-					$maxEarning = 40;
-					$maxAccounts = 35;
-					break;
-				case 4 :
-					$maxEarning = 100;
-					$maxAccounts = 40;
-					break;
-				case 5 :
-					$maxEarning = 250;
-					$maxAccounts = 45;
-					break;
-				case 6 :
-					$maxEarning = 10000000000;
-					$maxAccounts = 50;
-					break;
-			}
-			$pass = ($earned >= $maxEarning) ? false : true;
-			$pass = ($numAccount >= $maxAccounts) ? false : $pass;
-			if ($pass) {
-				$cmd = $className . ".php uid=$uid";
-				$this->getCommandLineHelper ()->run_in_background ( $cmd, $file );
-			}
-		}
-	}
-	function createYTAccountFor($uid) {
-		echo ("Creating YT Account for User ID($uid) at " . date ( "m-d-y h:i:s A" ) . "<br>");
-		$yt = new YoutubeAccount ( $this->getDBConnection ()->getDBConnection () );
-		// Find name that doesnt already exist
-		$validUserName = false;
-		do {
-			$username = "wptAAcq" . rand ( 1000, 40000 );
-			$userEntry = $yt->getService ()->retrieveUser ( $username );
-			if (! isset ( $userEntry )) {
-				$validUserName = true;
-			}
-		} while ( ! $validUserName );
-		$password = 'Tpw2012' . rand ( 0, 1000 ) . '$';
-		$yt->create ( $username, $password );
-		if ($yt->isValid ()) {
-			echo ("Created YT Account: " . $yt->userName . "<br>");
-			// Insert new yt account into wordpress database
-			//$this->getDBConnection ()->queryWP ( "LOCK TABLES wp_usermeta WRITE" );
-			$accountQuery = "Select meta_key as account FROM wp_usermeta where user_id = $uid AND meta_key like 'youtube%_password' ORDER BY umeta_id DESC limit 1";
+		
+		// Check for submissions of youtube account credentials
+		if (isset ( $_REQUEST ['user_wp_id'] ) && isset ( $_REQUEST ['email'] ) && isset ( $_REQUEST ['password'] )) {
+			$user = new User ( );
+			$user->user_id = $_REQUEST ['email'];
+			$user->user_password = $_REQUEST ['password'];
+			$user->user_wp_id = $_REQUEST ['user_wp_id'];
+
+			$accountQuery = "Select meta_key as account FROM wp_usermeta where user_id = " . $user->user_wp_id . " AND meta_key like 'youtube%_password' ORDER BY umeta_id DESC limit 1";
 			$aresult = $this->getDBConnection ()->queryWP ( $accountQuery );
-			$arow = $aresult->fetch_assoc();
+			$arow = $aresult->fetch_assoc ();
 			$account = $arow ["account"];
 			$account = str_ireplace ( 'youtube', '', $account );
 			$account = str_ireplace ( '_password', '', $account );
 			$numAccount = (( int ) $account) + 1;
-			$insertQuery = "Insert into wp_usermeta (user_id, meta_key,meta_value) VALUES($uid,'youtube" . $numAccount . "','" . $yt->userName . "'),($uid,'youtube" . $numAccount . "_password','" . $yt->password . "')";
+			$insertQuery = "Insert into wp_usermeta (user_id, meta_key,meta_value) VALUES(" . $user->user_wp_id . ",'youtube" . $numAccount . "','" . $user->user_id . "'),(" . $user->user_wp_id . ",'youtube" . $numAccount . "_password','" . $user->user_password . "')";
 			// echo ("Insert Query:$insertQuery<br>");
 			$this->getDBConnection ()->queryWP ( $insertQuery );
-			//$this->getDBConnection ()->queryWP ( "UNLOCK TABLES" );
-		} else {
-			echo ("Could not create a valid YT account<br>");
+			
+			echo ("Youtube Channel Added Successfully<br>");
 		}
+		
+		// Select a random user that needs a channel created
+		//  TODO: Change so the query gets the main youtube account and password
+		
+
+		$query = "Select u1.meta_value AS 'user_id', u2.meta_value AS 'user_password', u1.user_id AS 'user_wp_id' FROM wp_usermeta AS u1
+		JOIN wp_usermeta AS u2 ON (u1.user_id = u2.user_id)
+		JOIN wp_usermeta AS u3 ON (u2.user_id = u3.user_id)
+		JOIN wp_usermeta AS u4 ON (u3.user_id = u4.user_id)
+		
+		WHERE u1.meta_key LIKE 'youtube%' AND u1.meta_value IS NOT NULL
+		AND u2.meta_key=CONCAT(u1.meta_key,'_password') AND u2.meta_value IS NOT NULL
+		AND u3.meta_key='clickbank' AND u3.meta_value IS NOT NULL
+		AND u4.meta_key='clickbank_clerk_api_key' AND u4.meta_value IS NOT NULL";
+		$result = $this->getDBConnection ()->queryWP ( $query );
+		$users = array ();
+		while ( ($row = $result->fetch_assoc ()) ) {
+			
+			//TODO: Remove this hardcoded entries when the query is updated
+			$row ['user_id'] = 'tbyum07@gmail.com';
+			$row ['user_password'] = 'Neeuq011!$';
+			//$row['user_wp_id'] = '3';
+			
+
+			$user = new User ( );
+			$user->user_id = $row ['user_id'];
+			$user->user_password = $row ['user_password'];
+			$user->user_wp_id = $row ['user_wp_id'];
+			$users [$row ['user_wp_id']] = $user;
+			//echo("Adding user: $user<br>");
+		}
+		
+		// TODO: Use another query to determine what user has the least amount of channels
+		
+
+		// Get user channels ordered by the least amount of youtube channels
+		$orderedUsersQuery = "SELECT user_wp_id FROM users WHERE user_wp_id IN (" . implode ( ',', array_keys ( $users ) ) . ") GROUP BY user_wp_id ORDER BY COUNT(user_id) ASC";
+		//echo("Ordered Useres Query: ".$orderedUsersQuery."<br>");
+		$result = $this->runQuery ( $orderedUsersQuery, $this->getDBConnection ()->getDBConnection () );
+		$usersOrderedByChannelCountAsc = array ();
+		while ( ($row = $result->fetch_assoc ()) ) {
+			if (isset ( $users [$row ['user_wp_id']] )) {
+				$usersOrderedByChannelCountAsc [] = $users [$row ['user_wp_id']];
+			}
+		}
+		//echo('Users Ordered By Channel Count Asc: '.print_r($usersOrderedByChannelCountAsc,true));
+		
+
+		// Found out if there are any users that dont have any channels
+		$usersWithoutChannels = array_diff ( $users, $usersOrderedByChannelCountAsc );
+		
+		if (count ( $usersWithoutChannels ) > 0) {
+			// If there are users withou channels pick a random user from the group
+			$user = $usersWithoutChannels [array_rand ( $usersWithoutChannels )];
+			echo ( 'Users Without Channels: ' . print_r ( $usersWithoutChannels, true ) );
+		} else {
+			// Otherwise pick the user with the least amount of channels
+			$user = array_shift ( $usersOrderedByChannelCountAsc );
+			echo ( 'User ID  with least amount of Channels: ' . $user->user_wp_id );
+		
+		}
+		
+		echo ('
+		<html>
+		<body>
+		<form id="wptyoutubechannelcreation" name="" action="WPTCreateYoutubeAccountForUsers.php" method="POST">
+		<input type="text" id="new_channel_id" name="new_channel_id" value="WPT_' . date ( 'Y_m_d_h_i_s' ) . '" disabled ><br>
+		<input type="text" id="user_id" name="user_id" value="' . $user->user_id . '" disabled ><br>
+		<input type="text" id="user_password" name="user_password" value="' . $user->user_password . '" disabled ><br>
+		<input type="hidden" id="user_wp_id" name="user_wp_id" value="' . $user->user_wp_id . '"><br>
+		');
+		
+		// Display fields for new youtube account creation
+		echo ('
+		<input type="text" id="email" name="email"><br>
+		<input type="text" id="password" name="password"><br>
+		<input type="submit" value="Submit"><br>
+		');
+		
+		// Close html tags
+		echo ('
+		</form>
+		</body>
+		</html>');
+	
 	}
+
 }
-$wcyafu = new WPTCreateYoutubeAccountForUsers ();
+$wcyafu = new WPTCreateYoutubeAccountForUsers ( );
 ?>

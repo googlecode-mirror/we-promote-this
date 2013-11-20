@@ -1,0 +1,28 @@
+VERSION BUILD=7300701 RECORDER=FX
+SET !EXTRACT_TEST_POPUP NO
+SET !DATASOURCE "E:\Documents\OnlyWireAccounts\create.csv"
+SET !DATASOURCE_COLUMNS 9
+SET !LOOP 2
+SET !DATASOURCE_LINE {{!LOOP}} 
+
+TAB T=1
+URL GOTO=http://www.dailymotion.com/register#hp-h-8
+TAG POS=1 TYPE=INPUT:TEXT FORM=ACTION:/register ATTR=ID:form_register_username CONTENT={{!COL4}}
+SET !ENCRYPTION NO
+TAG POS=1 TYPE=INPUT:PASSWORD FORM=ACTION:/register ATTR=ID:register_more_userPassword CONTENT={{!COL8}}
+TAG POS=1 TYPE=INPUT:PASSWORD FORM=ACTION:/register ATTR=ID:register_more_confirm_password CONTENT={{!COL8}}
+TAG POS=1 TYPE=INPUT:TEXT FORM=ACTION:/register ATTR=ID:register_more_email CONTENT={{!COL3}}
+TAG POS=1 TYPE=SELECT FORM=ACTION:/register ATTR=NAME:birthdate_month CONTENT=%{{!COL5}}
+TAG POS=1 TYPE=SELECT FORM=ACTION:/register ATTR=NAME:birthdate_day CONTENT=%{{!COL6}}
+TAG POS=1 TYPE=SELECT FORM=ACTION:/register ATTR=NAME:birthdate_year CONTENT=%{{!COL7}}
+TAG POS=1 TYPE=SELECT FORM=ACTION:/register ATTR=ID:register_more_dm_partners_mail CONTENT=%never
+
+'SEARCH SOURCE=REGEXP:"getcaptcha=1&amp;reset=1&amp;rand=([^a-zA-Z]+)\);" EXTRACT="$1"
+'SET !VAR1 http://www.dailymotion.com/register?getcaptcha=1&reset=0&rand={{!EXTRACT}}
+' deathByCaptcha can't solve these
+
+' Get Captcha code from user
+PROMPT "Please enter the Captcha text:" !VAR2 
+
+TAG POS=1 TYPE=INPUT:TEXT FORM=ACTION:/register ATTR=ID:register_more_advertise_captchaInput CONTENT={{!VAR2}}
+TAG POS=1 TYPE=INPUT:SUBMIT FORM=ID:form_register ATTR=ID:register_more_register_submit

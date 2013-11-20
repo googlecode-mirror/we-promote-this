@@ -1,7 +1,7 @@
 <movie service="craftsman-1.0">
-	<body>
-		<!-- Top level stack: contains the soundtrack and the video itself -->
-		<stack>
-		</stack>
-	</body>
+  <body>
+    <!-- Top level stack: contains the soundtrack and the video itself-->
+    <stack>
+    </stack>
+  </body>
 </movie>

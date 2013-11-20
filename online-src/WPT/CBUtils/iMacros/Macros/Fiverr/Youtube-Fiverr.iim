@@ -1,0 +1,33 @@
+﻿VERSION BUILD=7300701 RECORDER=FX
+SET !EXTRACT_TEST_POPUP NO
+PROMPT "Please enter the full path to your accounts file. Example C:\\Documents\\Accounts.csv" !VAR1
+SET !DATASOURCE {{!VAR1}}
+SET !DATASOURCE_COLUMNS 10
+SET !LOOP 2
+SET !DATASOURCE_LINE {{!LOOP}} 
+
+
+TAB T=1
+URL GOTO=http://www.youtube.com/signup?next=%2F
+TAG POS=1 TYPE=INPUT:TEXT FORM=NAME:signupForm ATTR=ID:username CONTENT={{!COL4}}
+TAG POS=1 TYPE=INPUT:TEXT FORM=NAME:signupForm ATTR=ID:signUpEmail CONTENT={{!COL3}}
+TAG POS=1 TYPE=INPUT:TEXT FORM=NAME:signupForm ATTR=ID:postal_code CONTENT={{!COL9}}
+TAG POS=1 TYPE=SELECT FORM=NAME:signupForm ATTR=NAME:birthday_mon CONTENT=%{{!COL5}}
+TAG POS=1 TYPE=SELECT FORM=NAME:signupForm ATTR=NAME:birthday_day CONTENT=%{{!COL6}}
+TAG POS=1 TYPE=SELECT FORM=NAME:signupForm ATTR=NAME:birthday_yr CONTENT=%{{!COL7}}
+TAG POS=1 TYPE=INPUT:RADIO FORM=ID:signupForm ATTR=ID:{{!COL10}}
+TAG POS=1 TYPE=BUTTON ATTR=ID:button-signin
+SET !ENCRYPTION NO
+TAG POS=1 TYPE=INPUT:PASSWORD FORM=NAME:createaccount ATTR=ID:Passwd CONTENT={{!COL8}}
+TAG POS=1 TYPE=INPUT:PASSWORD FORM=NAME:createaccount ATTR=ID:PasswdAgain CONTENT={{!COL8}}
+TAG POS=1 TYPE=INPUT:CHECKBOX FORM=NAME:createaccount ATTR=ID:smhck CONTENT=NO
+
+' Get Captcha code from user
+PROMPT "Please enter the Captcha text:" !VAR2 
+
+
+TAG POS=1 TYPE=INPUT:TEXT FORM=NAME:createaccount ATTR=ID:newaccountcaptcha CONTENT={{!VAR2}}
+TAG POS=1 TYPE=INPUT:SUBMIT FORM=ID:createaccount ATTR=ID:signup
+
+TAG POS=1 TYPE=BUTTON ATTR=CLASS:yt-uix-expander-arrow
+TAG POS=1 TYPE=A ATTR=TXT:Sign<SP>Out

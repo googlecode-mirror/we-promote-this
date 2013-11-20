@@ -1,0 +1,18 @@
+﻿VERSION BUILD=7300701 RECORDER=FX
+SET !EXTRACT_TEST_POPUP NO
+
+TAB T=1
+URL GOTO=http://www.melissadata.com/lookups/CountyZip.asp?State=MD24Maryland
+TAG POS=1 TYPE=SELECT FORM=ACTION:CountyZip.asp ATTR=NAME:fips CONTENT=%24001
+
+'SET !REPLAYSPEED SLOW
+
+SET !LOOP 3
+TAG XPATH="/html/body/div/table[5]/tbody/tr[2]/td/table/tbody/tr[{{!LOOP}}]/td/a[contains(@href,'ZipCityPhone')]" EXTRACT=TXT
+TAG XPATH="/html/body/div/table[5]/tbody/tr[2]/td/table/tbody/tr[{{!LOOP}}]/td[2]" EXTRACT=TXT
+
+
+
+'The SAVEAS statement was added manually to write the extracted table to a file
+'(The alternative way to get the extracted data is the Scripting Interface)
+SAVEAS TYPE=EXTRACT FOLDER=* FILE=zipcode_{{!NOW:yymmdd_hhnnss}}.csv
