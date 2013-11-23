@@ -4,12 +4,14 @@ error_reporting ( E_ALL);
 
 $prependFile = '/home/content/50/6934650/html/pear/includes/prepend.php';
 if (file_exists ( $prependFile )) {
-	include_once $prependFile;
+	require_once $prependFile;
 }
 
 require_once 'Zend/Loader.php'; // the Zend dir must be in your include_path
-Zend_Loader::loadClass ( 'Zend_Mail_Storage_Imap' );
+
+
 Zend_Loader::loadClass ( 'Zend_Mail_Storage' );
+Zend_Loader::loadClass ( 'Zend_Mail_Storage_Imap' );
 Zend_Loader::loadClass ( 'Zend_Mail_Protocol_Exception' );
 
 class GmailEmailConfirmer {
@@ -134,7 +136,6 @@ class GmailEmailConfirmer {
 		echo ($prefix . "Connecting To Email<br>");
 		// connecting with Imap
 		$this->mail = new Zend_Mail_Storage_Imap ( array ('host' => 'imap.gmail.com', 'user' => $this->username, 'password' => $this->password, 'ssl' => 'SSL' ) );
-	
 	}
 
 }
