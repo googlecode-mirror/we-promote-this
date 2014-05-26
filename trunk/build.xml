@@ -12,7 +12,6 @@
 	<target name="fullbuild"
 		depends="bootstrap,php-documentor,php-codesniffer,phpunit,pdepend,phpmd,phpcb" />
 	<target name="bootstrap" depends="clean,checkout" />
-	</target>
 	<target name="clean">
 		<exec executable="phpuc.bat" failonerror="off">
 			<arg line="clean -j ${ant.project.name} -d 30 K:\CruiseControl" />
